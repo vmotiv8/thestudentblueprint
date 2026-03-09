@@ -69,8 +69,30 @@ export async function POST(request: NextRequest) {
     }
     const ai = new GoogleGenAI({ apiKey })
 
+    // Fetch knowledge hub resources for the organization to enrich the AI prompt
+    let knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
+    if (assessment.organization_id) {
+      const { data: khData } = await supabase
+        .from('knowledge_hub_resources')
+        .select('type, title, description')
+        .eq('organization_id', assessment.organization_id)
+      knowledgeHubResources = khData || []
+    }
+
+    const khByType: Record<string, string[]> = {}
+    for (const r of knowledgeHubResources) {
+      if (!khByType[r.type]) khByType[r.type] = []
+      khByType[r.type].push(r.description ? `${r.title} (${r.description})` : r.title)
+    }
+    const khSection = Object.keys(khByType).length > 0
+      ? '\nSCHOOL-SPECIFIC RESOURCES (uploaded by the student\'s school — prioritize these in your recommendations):\n' +
+        Object.entries(khByType)
+          .map(([type, items]) => `- ${type.replace(/_/g, ' ')}: ${items.join('; ')}`)
+          .join('\n')
+      : ''
+
     const currentGrade = assessment.students?.current_grade || assessment.basic_info?.currentGrade || '10th Grade'
-    
+
     const prompt = `You are an expert college admissions counselor and academic success strategist specializing in Ivy League and Top 20 college admissions with 15+ years of experience. Your students have been accepted to Harvard, Stanford, MIT, Yale, Princeton, and other elite institutions. You understand what sets apart successful applicants: intellectual vitality, demonstrated impact, authentic passion, and a compelling narrative.
 
 CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation. Think about what would impress admissions officers at Harvard, Stanford, MIT, Yale, and Princeton.
@@ -79,6 +101,7 @@ Analyze this comprehensive student profile and create a personalized roadmap to 
 
 STUDENT PROFILE:
 ${JSON.stringify(assessment, null, 2)}
+${khSection}
 
   Generate a comprehensive analysis with the following structure in JSON format:
   {

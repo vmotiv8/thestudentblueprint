@@ -123,7 +123,17 @@ export async function POST(request: Request) {
         .eq('id', assessmentId)
     }
 
-    const analysis = await analyzeWithGemini(formData)
+    // Fetch knowledge hub resources for the organization to enrich the AI prompt
+    let knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
+    if (organization?.id) {
+      const { data: khData } = await supabase
+        .from('knowledge_hub_resources')
+        .select('type, title, description')
+        .eq('organization_id', organization.id)
+      knowledgeHubResources = khData || []
+    }
+
+    const analysis = await analyzeWithGemini(formData, knowledgeHubResources)
 
     const failed = !!analysis.generationFailed
 
@@ -259,7 +269,10 @@ function toStringList(value: unknown): string {
   return ''
 }
 
-async function analyzeWithGemini(formData: Record<string, unknown>) {
+async function analyzeWithGemini(
+  formData: Record<string, unknown>,
+  knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
+) {
   const apiKey = process.env.GEMINI_API_KEY
 
   if (!apiKey) {
@@ -333,12 +346,24 @@ async function analyzeWithGemini(formData: Record<string, unknown>) {
   Time Commitment:
   - School Year: ${sanitizeForPrompt(timeCommitment.hoursSchoolYear) || 'Not provided'}
   - Summer: ${sanitizeForPrompt(timeCommitment.hoursSummer) || 'Not provided'}
-
+${(() => {
+    const khByType: Record<string, string[]> = {}
+    for (const r of knowledgeHubResources) {
+      if (!khByType[r.type]) khByType[r.type] = []
+      khByType[r.type].push(r.description ? `${r.title} (${r.description})` : r.title)
+    }
+    if (Object.keys(khByType).length === 0) return ''
+    return '\n  School-Specific Resources (uploaded by the student\'s school — prioritize these in recommendations):\n' +
+      Object.entries(khByType)
+        .map(([type, items]) => `  - ${type.replace(/_/g, ' ')}: ${items.join('; ')}`)
+        .join('\n')
+  })()}
   IMPORTANT GUIDELINES:
   1. If the student is from India, you MUST include local Indian competitions, hackathons, and opportunities (e.g., Imperial STEM Hackathon, ISEF India, national coding challenges like ZCO/ZIO, various Olympiads, IRIS National Science Fair, etc.) in the roadmap.
   2. If the student is planning to study abroad, update the "Reach/Target/Safety schools" and recommendations based on the admissions data of universities in their target countries.
   3. Tailor the roadmap actions, goals, and projects to the student's specific location and curriculum (${sanitizeForPrompt(basicInfo.curriculum)}).
   4. If the student is in a specific curriculum (like CBSE or IB), ensure the academic suggestions respect that curriculum's requirements and timelines.
+  5. If school-specific resources are listed above (courses, clubs, competitions, extracurriculars), PRIORITIZE recommending those specific options over generic alternatives wherever applicable.
 
   Generate a comprehensive analysis with the following structure in JSON format:
   {

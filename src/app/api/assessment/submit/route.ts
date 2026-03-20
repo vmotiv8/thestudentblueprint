@@ -300,6 +300,7 @@ async function analyzeWithGemini(
   const researchExperience = (formData.researchExperience || {}) as Record<string, unknown>
   const summerPrograms = (formData.summerPrograms || {}) as Record<string, unknown>
   const specialTalents = (formData.specialTalents || {}) as Record<string, unknown>
+  const familyContext = (formData.familyContext || {}) as Record<string, unknown>
   const personality = (formData.personality || {}) as Record<string, unknown>
   const personalStories = (formData.personalStories || {}) as Record<string, unknown>
   const timeCommitment = (formData.timeCommitment || {}) as Record<string, unknown>
@@ -310,16 +311,26 @@ async function analyzeWithGemini(
   - Name: ${sanitizeForPrompt(basicInfo.fullName)}
   - Current Grade: ${sanitizeForPrompt(basicInfo.currentGrade) || 'Not provided'}
   - Location: ${sanitizeForPrompt(basicInfo.address)}, ${sanitizeForPrompt(basicInfo.city)}, ${sanitizeForPrompt(basicInfo.state)}, ${sanitizeForPrompt(basicInfo.country)}
-  - Curriculum: ${sanitizeForPrompt(basicInfo.curriculum) || 'Not provided'}
+  - Curriculum: ${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum) || 'Not provided'}
   - Planning to Study Abroad: ${basicInfo.studyAbroad ? 'Yes' : 'No'}
   - Target Countries: ${sanitizeForPrompt(toStringList(basicInfo.targetCountries || []))}
-  - GPA: ${sanitizeForPrompt(academicProfile.gpaUnweighted) || 'Not provided'} (unweighted)
+  - GPA Scale: ${sanitizeForPrompt(academicProfile.gpaScale) || 'Not provided'}
+  - GPA: ${sanitizeForPrompt(academicProfile.gpaUnweighted) || 'Not provided'} (unweighted), ${sanitizeForPrompt(academicProfile.gpaWeighted) || 'Not provided'} (weighted)
 
   Academic Profile:
-  - Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.coursesTaken))}
+  - Advanced/Curriculum Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.coursesTaken))}
+  - Regular Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesTaken))}
+  - Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.coursesPlanned))}
+  - Regular Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesPlanned))}
+  - Class Rank: ${sanitizeForPrompt(academicProfile.classRank) || 'Not provided'}
+  - Academic Awards: ${sanitizeForPrompt(academicProfile.academicAwards) || 'Not provided'}
   - Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.favoriteSubjects))}
-  - SAT Score: ${sanitizeForPrompt(testingInfo.satScore) || 'Not taken'}
-  - ACT Score: ${sanitizeForPrompt(testingInfo.actScore) || 'Not taken'}
+  - Least Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.leastFavoriteSubjects))}
+  - PSAT Score: ${sanitizeForPrompt(testingInfo.psatScore) || 'Not taken'}${testingInfo.psatMath ? ` (Math: ${sanitizeForPrompt(testingInfo.psatMath)}, Reading: ${sanitizeForPrompt(testingInfo.psatReading)})` : ''}
+  - SAT Score: ${sanitizeForPrompt(testingInfo.satScore) || 'Not taken'}${testingInfo.satMath ? ` (Math: ${sanitizeForPrompt(testingInfo.satMath)}, Reading: ${sanitizeForPrompt(testingInfo.satReading)})` : ''}
+  - ACT Score: ${sanitizeForPrompt(testingInfo.actScore) || 'Not taken'}${testingInfo.actEnglish ? ` (English: ${sanitizeForPrompt(testingInfo.actEnglish)}, Math: ${sanitizeForPrompt(testingInfo.actMath)}, Reading: ${sanitizeForPrompt(testingInfo.actReading)}, Science: ${sanitizeForPrompt(testingInfo.actScience)})` : ''}
+  - AP/IB Exam Scores: ${sanitizeForPrompt(testingInfo.apScores) || 'Not provided'}
+  - Testing Timeline: ${sanitizeForPrompt(testingInfo.testingTimeline) || 'Not provided'}
 
   Extracurriculars & Leadership:
   ${sanitizeForPrompt(JSON.stringify(extracurriculars.activities || []), 2000)}
@@ -339,9 +350,23 @@ async function analyzeWithGemini(
   - Summer Programs: ${sanitizeForPrompt(summerPrograms.programs) || 'Not provided'}
   - Special Talents: ${sanitizeForPrompt(JSON.stringify(specialTalents), 2000)}
 
+  Family Context:
+  - Father's Profession: ${sanitizeForPrompt(familyContext.fatherProfession) || 'Not provided'}
+  - Mother's Profession: ${sanitizeForPrompt(familyContext.motherProfession) || 'Not provided'}
+  - Sibling Professions: ${sanitizeForPrompt(familyContext.siblingProfessions) || 'Not provided'}
+  - Legacy Connections: ${sanitizeForPrompt(JSON.stringify(familyContext.legacyEntries || []), 1000)}
+  - Financial Aid Needed: ${familyContext.financialAidNeeded ? 'Yes' : 'No'}
+  - Merit Scholarship Interest: ${familyContext.meritScholarshipInterest ? 'Yes' : 'No'}
+
   Personality & Story:
   - Strengths: ${sanitizeForPrompt(toStringList(personality.topStrengths))}
+  - Weaknesses: ${sanitizeForPrompt(toStringList(personality.topWeaknesses))}
+  - Personality Type: ${sanitizeForPrompt(personality.introvertExtrovert) || 'Not provided'}
+  - Archetypes: ${sanitizeForPrompt(toStringList(personality.archetypes))}
   - Life Challenge: ${sanitizeForPrompt(personalStories.lifeChallenge) || 'Not provided'}
+  - Leadership Moment: ${sanitizeForPrompt(personalStories.leadershipMoment) || 'Not provided'}
+  - Failure Lesson: ${sanitizeForPrompt(personalStories.failureLesson) || 'Not provided'}
+  - Proud Moment: ${sanitizeForPrompt(personalStories.proudMoment) || 'Not provided'}
 
   Time Commitment:
   - School Year: ${sanitizeForPrompt(timeCommitment.hoursSchoolYear) || 'Not provided'}
@@ -361,7 +386,7 @@ ${(() => {
   IMPORTANT GUIDELINES:
   1. If the student is from India, you MUST include local Indian competitions, hackathons, and opportunities (e.g., Imperial STEM Hackathon, ISEF India, national coding challenges like ZCO/ZIO, various Olympiads, IRIS National Science Fair, etc.) in the roadmap.
   2. If the student is planning to study abroad, update the "Reach/Target/Safety schools" and recommendations based on the admissions data of universities in their target countries.
-  3. Tailor the roadmap actions, goals, and projects to the student's specific location and curriculum (${sanitizeForPrompt(basicInfo.curriculum)}).
+  3. Tailor the roadmap actions, goals, and projects to the student's specific location and curriculum (${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)}).
   4. If the student is in a specific curriculum (like CBSE or IB), ensure the academic suggestions respect that curriculum's requirements and timelines.
   5. If school-specific resources are listed above (courses, clubs, competitions, extracurriculars), PRIORITIZE recommending those specific options over generic alternatives wherever applicable.
 

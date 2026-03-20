@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -60,10 +60,10 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import { 
-    SECTION_TITLES, 
-    GRADE_OPTIONS, 
-    SUBJECT_OPTIONS, 
+import {
+    SECTION_TITLES,
+    GRADE_OPTIONS,
+    SUBJECT_OPTIONS,
       ARCHETYPE_OPTIONS,
       CAREER_STATEMENT_OPTIONS,
       PACE_OPTIONS,
@@ -71,13 +71,17 @@ import {
       US_STATES,
       AP_COURSE_OPTIONS,
       COURSE_CATEGORIES,
+      REGULAR_COURSE_CATEGORIES,
       CURRICULUM_OPTIONS,
+      GPA_SCALE_OPTIONS,
+      PHONE_COUNTRY_CODES,
       initialFormData,
       type Activity,
       type LeadershipEntry,
       type CompetitionEntry,
       type ResearchEntry,
-      type SummerProgramEntry
+      type SummerProgramEntry,
+      type LegacyEntry
     } from "@/lib/assessment-types"
 
 
@@ -144,45 +148,41 @@ function AssessmentContent() {
   }, [formData])
 
   const filteredCourseCategories = useMemo(() => {
-    const curriculum = formData.basicInfo.curriculum
-    if (!curriculum) return COURSE_CATEGORIES
+    const curriculum = formData.academicProfile.curriculum || formData.basicInfo.curriculum
 
-    return COURSE_CATEGORIES.map(category => {
-      let filteredCourses = category.courses
+    const getCurriculumTags = (curr: string): string[] => {
+      if (!curr || curr === "Other") return []
+      if (curr.includes("IB")) return ["IB"]
+      if (curr.includes("AP") || curr === "US High School Diploma") return ["AP", "US", "Honors"]
+      if (curr.includes("A-Levels")) return ["A-Level"]
+      if (curr.includes("IGCSE")) return ["IGCSE"]
+      if (curr === "CBSE") return ["CBSE"]
+      if (curr.includes("ICSE")) return ["ICSE"]
+      if (curr === "NIOS") return ["NIOS"]
+      if (curr.includes("French")) return ["French_Bac"]
+      if (curr.includes("German")) return ["German_Abitur"]
+      if (curr.includes("European")) return ["European_Bac"]
+      if (curr.includes("Scottish")) return ["Scottish"]
+      if (curr.includes("Swiss") || curr.includes("Italian") || curr.includes("Maturit")) return ["Swiss_Matura", "Italian_Matura"]
+      if (curr.includes("OSSD")) return ["OSSD"]
+      if (curr.includes("BC Curriculum")) return ["BC"]
+      if (curr.includes("Australian")) return ["Australian"]
+      if (curr.includes("NCEA")) return ["NCEA"]
+      if (curr.includes("BTEC")) return ["BTEC"]
+      if (curr.includes("Gaokao")) return ["Gaokao"]
+      return []
+    }
 
-      if (curriculum.includes("CBSE")) {
-        filteredCourses = category.courses.filter(course => 
-          course.startsWith("CBSE") || 
-          (!course.startsWith("AP") && !course.startsWith("IB") && !course.startsWith("A-Level") && !course.startsWith("ISC"))
-        )
-      } else if (curriculum.includes("ICSE/ISC")) {
-        filteredCourses = category.courses.filter(course => 
-          course.startsWith("ISC") || 
-          (!course.startsWith("AP") && !course.startsWith("IB") && !course.startsWith("A-Level") && !course.startsWith("CBSE"))
-        )
-      } else if (curriculum.includes("Cambridge")) {
-        filteredCourses = category.courses.filter(course => 
-          course.startsWith("A-Level") || 
-          (!course.startsWith("AP") && !course.startsWith("IB") && !course.startsWith("CBSE") && !course.startsWith("ISC"))
-        )
-      } else if (curriculum.includes("International Baccalaureate")) {
-        filteredCourses = category.courses.filter(course => 
-          course.startsWith("IB") || 
-          (!course.startsWith("AP") && !course.startsWith("A-Level") && !course.startsWith("CBSE") && !course.startsWith("ISC"))
-        )
-      } else if (curriculum.includes("Advanced Placement")) {
-        filteredCourses = category.courses.filter(course => 
-          course.startsWith("AP") || 
-          (!course.startsWith("IB") && !course.startsWith("A-Level") && !course.startsWith("CBSE") && !course.startsWith("ISC"))
-        )
-      }
+    const activeTags = getCurriculumTags(curriculum || "")
+    const showAll = activeTags.length === 0
 
-      return {
-        ...category,
-        courses: filteredCourses
-      }
-    }).filter(category => category.courses.length > 0)
-  }, [formData.basicInfo.curriculum])
+    return COURSE_CATEGORIES.map(category => ({
+      ...category,
+      courses: category.courses
+        .filter(course => showAll || course.tags.some(tag => activeTags.includes(tag)) || course.tags.includes("Universal"))
+        .map(course => course.name)
+    })).filter(cat => cat.courses.length > 0)
+  }, [formData.academicProfile.curriculum, formData.basicInfo.curriculum])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -372,12 +372,17 @@ function AssessmentContent() {
     setFormData({
       basicInfo: {
         ...basicInfoData,
-        dreamSchools: dreamSchools.length > 0 ? dreamSchools : ["", "", ""]
+        dreamSchools: dreamSchools.length > 0 ? dreamSchools : ["", "", ""],
+        parentPhone: basicInfoData.parentPhone || ""
       } as typeof initialFormData.basicInfo,
       academicProfile: {
         ...academicProfileData,
         coursesTaken,
-        coursesPlanned
+        coursesPlanned,
+        regularCoursesTaken: Array.isArray(academicProfileData.regularCoursesTaken) ? academicProfileData.regularCoursesTaken : [],
+        regularCoursesPlanned: Array.isArray(academicProfileData.regularCoursesPlanned) ? academicProfileData.regularCoursesPlanned : [],
+        gpaScale: academicProfileData.gpaScale || "",
+        curriculum: academicProfileData.curriculum || ""
       } as typeof initialFormData.academicProfile,
       testingInfo: mergeWithDefaults(assessment.testing_info, initialFormData.testingInfo),
       extracurriculars: {
@@ -797,6 +802,43 @@ function AssessmentContent() {
     }))
   }
 
+  const addLegacyEntry = () => {
+    const current = formData.familyContext.legacyEntries || []
+    if (current.length < 5) {
+      setFormData(prev => ({
+        ...prev,
+        familyContext: {
+          ...prev.familyContext,
+          legacyEntries: [...current, { college: "", relation: "" }]
+        }
+      }))
+    }
+  }
+
+  const removeLegacyEntry = (index: number) => {
+    const current = formData.familyContext.legacyEntries || []
+    setFormData(prev => ({
+      ...prev,
+      familyContext: {
+        ...prev.familyContext,
+        legacyEntries: current.filter((_, i) => i !== index)
+      }
+    }))
+  }
+
+  const updateLegacyEntry = (index: number, field: keyof LegacyEntry, value: string) => {
+    const current = formData.familyContext.legacyEntries || []
+    const updated = [...current]
+    updated[index] = { ...updated[index], [field]: value }
+    setFormData(prev => ({
+      ...prev,
+      familyContext: {
+        ...prev.familyContext,
+        legacyEntries: updated
+      }
+    }))
+  }
+
   const addDreamSchool = () => {
     updateFormData("basicInfo", "dreamSchools", [...(formData.basicInfo.dreamSchools as string[] || []), ""])
   }
@@ -914,6 +956,40 @@ function AssessmentContent() {
                     {validationErrors.parentEmail}
                   </p>
                 )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="parentPhone">Parent Phone Number</Label>
+              <div className="flex gap-2">
+                <Select
+                  value={formData.basicInfo.parentPhone?.split(' ')[0] || "+1"}
+                  onValueChange={(code) => {
+                    const currentNumber = formData.basicInfo.parentPhone?.split(' ').slice(1).join(' ') || ''
+                    updateFormData("basicInfo", "parentPhone", `${code} ${currentNumber}`)
+                  }}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PHONE_COUNTRY_CODES.map((item) => (
+                      <SelectItem key={`${item.country}-${item.code}`} value={item.code}>
+                        {item.flag} {item.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="parentPhone"
+                  type="tel"
+                  placeholder="Phone number"
+                  value={formData.basicInfo.parentPhone?.split(' ').slice(1).join(' ') || ''}
+                  onChange={(e) => {
+                    const code = formData.basicInfo.parentPhone?.split(' ')[0] || "+1"
+                    updateFormData("basicInfo", "parentPhone", `${code} ${e.target.value}`)
+                  }}
+                  className="flex-1"
+                />
               </div>
             </div>
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
@@ -1293,6 +1369,75 @@ function AssessmentContent() {
                 </div>
               </div>
 
+            {/* Divider */}
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-lg font-semibold mb-4">Regular Courses</h3>
+
+              <div className="space-y-4">
+                <Label>Regular Courses Taken</Label>
+                <div className="max-h-[400px] overflow-y-auto border rounded-lg p-4 space-y-4">
+                  {REGULAR_COURSE_CATEGORIES.map((category) => (
+                    <div key={category.category}>
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{category.category}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {category.courses.map((course) => (
+                          <div key={course} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`regular-taken-${course}`}
+                              checked={formData.academicProfile.regularCoursesTaken?.includes(course)}
+                              onCheckedChange={(checked) => {
+                                const current = formData.academicProfile.regularCoursesTaken || []
+                                updateFormData(
+                                  "academicProfile",
+                                  "regularCoursesTaken",
+                                  checked ? [...current, course] : current.filter((c: string) => c !== course)
+                                )
+                              }}
+                            />
+                            <Label htmlFor={`regular-taken-${course}`} className="text-sm font-normal cursor-pointer">
+                              {course}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 mt-6">
+                <Label>Regular Courses Planned</Label>
+                <div className="max-h-[400px] overflow-y-auto border rounded-lg p-4 space-y-4">
+                  {REGULAR_COURSE_CATEGORIES.map((category) => (
+                    <div key={category.category}>
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{category.category}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {category.courses.map((course) => (
+                          <div key={course} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`regular-planned-${course}`}
+                              checked={formData.academicProfile.regularCoursesPlanned?.includes(course)}
+                              onCheckedChange={(checked) => {
+                                const current = formData.academicProfile.regularCoursesPlanned || []
+                                updateFormData(
+                                  "academicProfile",
+                                  "regularCoursesPlanned",
+                                  checked ? [...current, course] : current.filter((c: string) => c !== course)
+                                )
+                              }}
+                            />
+                            <Label htmlFor={`regular-planned-${course}`} className="text-sm font-normal cursor-pointer">
+                              {course}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="classRank">Class Rank (if available)</Label>
               <Input
@@ -1325,6 +1470,7 @@ function AssessmentContent() {
                   <Select
                     value={formData.basicInfo.curriculum}
                     onValueChange={(value) => {
+                      updateFormData("academicProfile", "curriculum", value)
                       updateFormData("basicInfo", "curriculum", value)
                       if (validationErrors.curriculum) {
                         setValidationErrors(prev => ({ ...prev, curriculum: "" }))
@@ -1335,8 +1481,13 @@ function AssessmentContent() {
                       <SelectValue placeholder="Select curriculum" />
                     </SelectTrigger>
                     <SelectContent>
-                      {CURRICULUM_OPTIONS.map((curriculum) => (
-                        <SelectItem key={curriculum} value={curriculum}>{curriculum}</SelectItem>
+                      {CURRICULUM_OPTIONS.map((group) => (
+                        <SelectGroup key={group.category}>
+                          <SelectLabel className="font-semibold text-xs text-muted-foreground">{group.category}</SelectLabel>
+                          {group.curriculums.map((curr) => (
+                            <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                          ))}
+                        </SelectGroup>
                       ))}
                     </SelectContent>
                   </Select>
@@ -1347,6 +1498,22 @@ function AssessmentContent() {
                     </p>
                   )}
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Select GPA Scale</Label>
+                <Select
+                  value={formData.academicProfile.gpaScale || ""}
+                  onValueChange={(value) => updateFormData("academicProfile", "gpaScale", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your school's GPA scale" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GPA_SCALE_OPTIONS.map((scale) => (
+                      <SelectItem key={scale.value} value={scale.value}>{scale.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
                 <div className="space-y-4 p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg">
                   <div className="flex items-center space-x-2">
@@ -1717,6 +1884,18 @@ function AssessmentContent() {
         return (
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm">List up to 10 extracurricular activities with details about your involvement.</p>
+            <div className="flex items-center space-x-2 mb-4">
+              <Checkbox
+                id="noExtracurriculars"
+                checked={formData.extracurriculars.noExtracurriculars}
+                onCheckedChange={(checked) => updateFormData("extracurriculars", "noExtracurriculars", checked)}
+              />
+              <Label htmlFor="noExtracurriculars" className="text-sm font-normal cursor-pointer">
+                I don&apos;t have any extracurricular activities yet
+              </Label>
+            </div>
+            {!formData.extracurriculars.noExtracurriculars && (
+            <>
             {formData.extracurriculars.activities.map((activity, index) => (
               <Card key={index} className="border-[#e5e0d5]">
                 <CardHeader className="pb-4">
@@ -1793,6 +1972,8 @@ function AssessmentContent() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add Another Activity
               </Button>
+            )}
+            </>
             )}
           </div>
         )
@@ -2266,6 +2447,18 @@ function AssessmentContent() {
         return (
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm">Add any summer programs (academic, leadership, pre-college, etc.) you have attended or plan to attend.</p>
+            <div className="flex items-center space-x-2 mb-4">
+              <Checkbox
+                id="noSummerPrograms"
+                checked={formData.summerPrograms.noSummerPrograms}
+                onCheckedChange={(checked) => updateFormData("summerPrograms", "noSummerPrograms", checked)}
+              />
+              <Label htmlFor="noSummerPrograms" className="text-sm font-normal cursor-pointer">
+                I haven&apos;t done or planned any summer programs yet
+              </Label>
+            </div>
+            {!formData.summerPrograms.noSummerPrograms && (
+            <>
             {(formData.summerPrograms.entries || []).map((entry, index) => (
               <Card key={index} className="border-[#e5e0d5]">
                 <CardHeader className="pb-4">
@@ -2333,6 +2526,8 @@ function AssessmentContent() {
                 Add Another Summer Program
               </Button>
             )}
+            </>
+            )}
           </div>
         )
 
@@ -2385,50 +2580,103 @@ function AssessmentContent() {
       case 12:
         return (
           <div className="space-y-6">
-            <p className="text-[#5a7a9a] text-sm italic">This section is optional but can help us provide more tailored recommendations.</p>
-            <div className="space-y-2">
-              <Label htmlFor="familyProfessions">Family Professions</Label>
-              <Textarea
-                id="familyProfessions"
-                value={formData.familyContext.familyProfessions}
-                onChange={(e) => updateFormData("familyContext", "familyProfessions", e.target.value)}
-                placeholder="What do your parents/guardians do professionally?"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="legacyConnections">Legacy Connections to Top Colleges</Label>
-              <Textarea
-                id="legacyConnections"
-                value={formData.familyContext.legacyConnections}
-                onChange={(e) => updateFormData("familyContext", "legacyConnections", e.target.value)}
-                placeholder="Do any family members have connections to specific universities?"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="financialAidNeeded">Financial Aid or Merit Scholarship Interest</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="financialAidNeeded"
-                    checked={formData.familyContext.financialAidNeeded}
-                    onCheckedChange={(checked) => updateFormData("familyContext", "financialAidNeeded", checked)}
-                  />
-                  <Label htmlFor="financialAidNeeded" className="font-normal cursor-pointer">
-                    Financial Aid
-                  </Label>
+                <Label htmlFor="fatherProfession">Father&apos;s Profession</Label>
+                <Input
+                  id="fatherProfession"
+                  placeholder="e.g., Software Engineer at Google"
+                  value={formData.familyContext.fatherProfession || ""}
+                  onChange={(e) => updateFormData("familyContext", "fatherProfession", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motherProfession">Mother&apos;s Profession</Label>
+                <Input
+                  id="motherProfession"
+                  placeholder="e.g., Doctor at Mayo Clinic"
+                  value={formData.familyContext.motherProfession || ""}
+                  onChange={(e) => updateFormData("familyContext", "motherProfession", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="siblingProfessions">Sibling Professions (if any)</Label>
+              <Input
+                id="siblingProfessions"
+                placeholder="e.g., Sister - MIT student, Brother - Investment Banking at Goldman Sachs"
+                value={formData.familyContext.siblingProfessions || ""}
+                onChange={(e) => updateFormData("familyContext", "siblingProfessions", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Legacy College Connections</Label>
+                {(formData.familyContext.legacyEntries || []).length < 5 && (
+                  <Button type="button" variant="outline" size="sm" onClick={addLegacyEntry}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Connection
+                  </Button>
+                )}
+              </div>
+              {(formData.familyContext.legacyEntries || []).map((entry, index) => (
+                <div key={index} className="flex gap-3 items-start">
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder="College name (e.g., Harvard University)"
+                      value={entry.college}
+                      onChange={(e) => updateLegacyEntry(index, "college", e.target.value)}
+                    />
+                  </div>
+                  <div className="w-[200px]">
+                    <Select
+                      value={entry.relation}
+                      onValueChange={(value) => updateLegacyEntry(index, "relation", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Relation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Parent (Alumnus/Alumna)">Parent (Alumnus/Alumna)</SelectItem>
+                        <SelectItem value="Grandparent">Grandparent</SelectItem>
+                        <SelectItem value="Sibling">Sibling</SelectItem>
+                        <SelectItem value="Aunt / Uncle">Aunt / Uncle</SelectItem>
+                        <SelectItem value="Cousin">Cousin</SelectItem>
+                        <SelectItem value="Other Family">Other Family</SelectItem>
+                        <SelectItem value="Family Donor">Family Donor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {(formData.familyContext.legacyEntries || []).length > 1 && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeLegacyEntry(index)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  )}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="meritScholarshipInterest"
-                    checked={formData.familyContext.meritScholarshipInterest}
-                    onCheckedChange={(checked) => updateFormData("familyContext", "meritScholarshipInterest", checked)}
-                  />
-                  <Label htmlFor="meritScholarshipInterest" className="font-normal cursor-pointer">
-                    Merit Scholarships
-                  </Label>
-                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="financialAid"
+                  checked={formData.familyContext.financialAidNeeded}
+                  onCheckedChange={(checked) => updateFormData("familyContext", "financialAidNeeded", checked === true)}
+                />
+                <Label htmlFor="financialAid" className="text-sm font-normal cursor-pointer">
+                  We will need financial aid for college
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="meritScholarship"
+                  checked={formData.familyContext.meritScholarshipInterest}
+                  onCheckedChange={(checked) => updateFormData("familyContext", "meritScholarshipInterest", checked === true)}
+                />
+                <Label htmlFor="meritScholarship" className="text-sm font-normal cursor-pointer">
+                  Interested in merit-based scholarships
+                </Label>
               </div>
             </div>
           </div>
@@ -3030,14 +3278,14 @@ function AssessmentContent() {
   )
 }
 
-function InfoTooltip({ content }: { content: string }) {
+function InfoTooltip({ content, wide }: { content: string, wide?: boolean }) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Info className="w-4 h-4 text-[#5a7a9a] cursor-help ml-1.5 inline-block" />
         </TooltipTrigger>
-        <TooltipContent className="max-w-[250px] bg-[#1e3a5f] text-white border-none p-3 shadow-xl">
+        <TooltipContent className={`${wide ? "max-w-sm" : "max-w-xs"} bg-[#1e3a5f] text-white border-none p-3 shadow-xl`}>
           <p className="text-xs font-normal leading-relaxed">{content}</p>
         </TooltipContent>
       </Tooltip>

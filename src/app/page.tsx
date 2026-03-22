@@ -488,7 +488,17 @@ function LandingPage() {
           style={{ opacity: heroOpacity, y: heroY, scale: heroScale }}
           className="relative z-10 max-w-6xl mx-auto px-6 text-center"
         >
-          {/* Main headline — empowering */}
+          {/* Eyebrow */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-[#c9a227]/80 mb-6 sm:mb-8"
+          >
+            The platform behind the top 1% of admissions agencies
+          </motion.p>
+
+          {/* Main headline */}
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -496,63 +506,54 @@ function LandingPage() {
             className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6 sm:mb-8"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            <span className="text-white">Scale Your Agency.</span>
+            <span className="text-white">What If Every Student</span>
             <br />
-            <span className="text-white">Transform Every</span>
+            <span className="text-white">Got a Roadmap Built by</span>
             <br />
             <span className="bg-gradient-to-r from-[#c9a227] via-[#e8d48b] to-[#c9a227] bg-clip-text text-transparent">
-              Student&apos;s Future.
+              an Ivy League Strategist?
             </span>
           </motion.h1>
 
-          {/* Subheadline — value prop */}
+          {/* Subheadline — the reveal */}
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.7 }}
-            className="text-lg sm:text-xl md:text-2xl text-white/60 max-w-3xl mx-auto leading-relaxed mb-6"
+            className="text-lg sm:text-xl md:text-2xl text-white/50 max-w-3xl mx-auto leading-relaxed mb-10 sm:mb-12"
           >
-            <span className="text-white font-medium">Blueprint Intelligence</span> empowers your agency to deliver
-            personalized, data-driven college strategies to <span className="text-[#c9a227]">every student you serve</span> — at scale, without sacrificing quality.
-          </motion.p>
-
-          {/* Value prop line */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.9 }}
-            className="text-sm text-white/40 mb-10 sm:mb-12"
-          >
-            Trusted by agencies to deliver <span className="text-white/70 font-medium">higher-quality roadmaps</span> with <span className="text-white/70 font-medium">3x faster turnaround</span>.
+            Now they can. <span className="text-white font-medium">Blueprint Intelligence</span> gives
+            your agency the power to deliver elite, personalized college strategies
+            to <span className="text-[#c9a227] font-medium">hundreds of students</span> — in the time it used to take for one.
           </motion.p>
 
           {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.1 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
+            transition={{ duration: 1, delay: 1.0 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
           >
             <Button asChild size="lg" className="bg-[#c9a227] hover:bg-[#e8d48b] text-[#0a0a0a] px-10 sm:px-14 py-6 sm:py-7 h-auto text-sm sm:text-base font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#c9a227]/20 tracking-wide">
               <Link href="/get-started">
-                Start Your Free Setup <ArrowRight className="ml-3 w-5 h-5" />
+                See It in Action <ArrowRight className="ml-3 w-5 h-5" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-white/15 text-white/70 hover:text-white hover:border-white/30 px-10 py-6 sm:py-7 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
               <Link href="#methodology">
-                See How It Works
+                How It Works
               </Link>
             </Button>
           </motion.div>
 
-          {/* Micro-commitment reducer */}
+          {/* Trust line */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.3 }}
-            className="text-xs text-white/30"
+            transition={{ duration: 1, delay: 1.2 }}
+            className="text-xs text-white/25"
           >
-            No credit card required to explore. Set up in under 5 minutes.
+            Free to explore. No credit card. Set up in 5 minutes.
           </motion.p>
         </motion.div>
 
@@ -582,11 +583,11 @@ function LandingPage() {
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] text-white/90"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            Imagine delivering a personalized Ivy League roadmap to{" "}
+            A single counselor. Hundreds of students.{" "}
             <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent font-medium italic">
-              every student who walks through your door
+              Every roadmap as personal as a one-on-one session.
             </span>{" "}
-            — powered by data, backed by expertise, and ready in minutes.
+            That&apos;s not a dream — it&apos;s what Blueprint agencies deliver every day.
           </p>
         </motion.div>
       </section>
@@ -601,31 +602,48 @@ function LandingPage() {
       </section>
 
       {/* ── Section 4: How It Works ──────────────────────────────────────── */}
-      <section id="methodology" className="py-32 sm:py-48 bg-[#faf8f3] px-6">
-        <div className="max-w-7xl mx-auto">
+      <section id="methodology" className="relative py-32 sm:py-48 bg-[#0a0a0a] px-6 overflow-hidden">
+        {/* Background accents */}
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#c9a227]/[0.02] rounded-full blur-[200px]" />
+
+        <div className="relative max-w-7xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
             <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">The Process</p>
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              How It Works
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Three Steps to{" "}
+              <span className="bg-gradient-to-r from-[#c9a227] via-[#e8d48b] to-[#c9a227] bg-clip-text text-transparent">
+                Transform
+              </span>{" "}
+              Your Agency
             </h2>
+            <p className="mt-6 text-lg text-white/40 max-w-2xl mx-auto">
+              From setup to scale in under a week. No technical expertise required.
+            </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 sm:gap-12">
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
             {[
               {
                 step: "01",
                 title: "Deploy",
-                description: "White-labeled assessment under your brand. Send to students as part of onboarding or premium strategy sessions."
+                subtitle: "Launch in minutes",
+                description: "White-labeled assessment under your brand. Send to students as part of onboarding or premium strategy sessions.",
+                icon: "🚀",
               },
               {
                 step: "02",
                 title: "Analyze",
-                description: "Blueprint Intelligence generates personalized Ivy League roadmaps in seconds. Data-driven insights your counselors can act on immediately."
+                subtitle: "Powered by Blueprint Intelligence",
+                description: "Personalized Ivy League roadmaps generated in seconds. Data-driven insights your counselors can act on immediately.",
+                icon: "⚡",
               },
               {
                 step: "03",
                 title: "Scale",
-                description: "Increase revenue with premium data-driven services. Turn every student interaction into a high-margin opportunity."
+                subtitle: "Grow without limits",
+                description: "Serve 10x more students without adding headcount. Turn every interaction into a premium, high-margin service.",
+                icon: "📈",
               }
             ].map((item, i) => (
               <motion.div
@@ -633,22 +651,48 @@ function LandingPage() {
                 {...stagger(i, 0.2)}
                 className="relative group"
               >
-                <div className="mb-8">
-                  <span className="text-7xl sm:text-8xl font-bold text-[#0a0a0a]/[0.04]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    {item.step}
-                  </span>
+                {/* Card */}
+                <div className="relative p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm hover:border-[#c9a227]/30 hover:bg-white/[0.04] transition-all duration-700 h-full overflow-hidden">
+                  {/* Hover glow */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#c9a227]/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
+
+                  <div className="relative z-10">
+                    {/* Step number + icon */}
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="text-5xl sm:text-6xl font-bold bg-gradient-to-b from-white/10 to-transparent bg-clip-text text-transparent" style={{ fontFamily: "'Playfair Display', serif" }}>
+                        {item.step}
+                      </span>
+                      <div className="w-12 h-12 rounded-xl bg-[#c9a227]/10 border border-[#c9a227]/20 flex items-center justify-center text-xl group-hover:bg-[#c9a227]/20 group-hover:scale-110 transition-all duration-500">
+                        {item.icon}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                      {item.title}
+                    </h3>
+                    <p className="text-sm font-medium text-[#c9a227] mb-4 tracking-wide">
+                      {item.subtitle}
+                    </p>
+                    <p className="text-base text-white/50 leading-relaxed">
+                      {item.description}
+                    </p>
+
+                    {/* Bottom accent */}
+                    <div className="mt-8 h-px w-full bg-gradient-to-r from-[#c9a227]/30 via-[#c9a227]/10 to-transparent group-hover:from-[#c9a227]/50 group-hover:via-[#c9a227]/20 transition-all duration-700" />
+                  </div>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  {item.title}
-                </h3>
-                <p className="text-base text-[#0a0a0a]/70 leading-relaxed">
-                  {item.description}
-                </p>
-                <div className="mt-8 h-px w-full bg-gradient-to-r from-[#c9a227]/40 to-transparent" />
+
+                {/* Connector line between cards (hidden on last) */}
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-[#c9a227]/30 to-[#c9a227]/10" />
+                )}
               </motion.div>
             ))}
           </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
       </section>
 
       {/* ── Section 5: Features ──────────────────────────────────────────── */}

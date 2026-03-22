@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyApiKey } from "@/lib/api-auth"
 import { resend } from "@/lib/resend"
 import { createServerSupabaseClient } from "@/lib/supabase"
+import { buildOrgAssessmentUrl } from "@/lib/url"
 
 function escapeHtml(str: string): string {
   return str
@@ -41,8 +42,10 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.thestudentblueprint.com"
-    const assessmentUrl = `${baseUrl}/${org.slug}/checkout${coupon_code ? `?code=${coupon_code}` : ""}`
+    const assessmentBaseUrl = buildOrgAssessmentUrl(org.slug, undefined, null, org.free_assessments)
+    const assessmentUrl = (!org.free_assessments && coupon_code)
+      ? `${assessmentBaseUrl}?code=${coupon_code}`
+      : assessmentBaseUrl
 
     // 2. Prepare White-labeled Email
     const fromName = org.custom_email_from || org.name

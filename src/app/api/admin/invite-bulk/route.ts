@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    const assessmentUrl = buildOrgAssessmentUrl(org.slug, undefined, org.domain_verified ? org.domain : null)
+    const assessmentUrl = buildOrgAssessmentUrl(org.slug, undefined, org.domain_verified ? org.domain : null, org.free_assessments)
 
     const fromName = org.custom_email_from || org.name
 

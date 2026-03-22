@@ -19,6 +19,7 @@ export interface Organization {
   max_admins: number;
   current_students_count: number;
   assessment_price: number;
+  free_assessments: boolean;
   settings: OrganizationSettings;
   custom_email_from?: string;
   custom_email_reply_to?: string;

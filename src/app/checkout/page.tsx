@@ -52,6 +52,12 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!tenantLoaded) return
 
+    // If org has free assessments, redirect to assessment directly
+    if (tenant?.free_assessments) {
+      router.push('/assessment')
+      return
+    }
+
     const checkExistingPayment = async () => {
       const resumeEmail = localStorage.getItem("studentblueprint_resume_email")
       const paidEmail = localStorage.getItem("studentblueprint_paid_email")

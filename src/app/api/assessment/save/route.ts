@@ -55,7 +55,9 @@ export async function POST(request: Request) {
         updated_at: new Date().toISOString()
       }
 
-      if (validatedCoupon) {
+      if (organization.free_assessments) {
+        updateData.payment_status = 'free'
+      } else if (validatedCoupon) {
         updateData.coupon_code = couponCode!.toUpperCase()
         updateData.payment_status = validatedCoupon.discount_type === 'free' ? 'free' : 'paid'
       }
@@ -149,7 +151,9 @@ export async function POST(request: Request) {
         status: 'in_progress',
         responses: formData,
         coupon_code: validatedCoupon ? couponCode!.toUpperCase() : null,
-        payment_status: validatedCoupon ? (validatedCoupon.discount_type === 'free' ? 'free' : 'paid') : 'unpaid',
+        payment_status: organization.free_assessments
+          ? 'free'
+          : (validatedCoupon ? (validatedCoupon.discount_type === 'free' ? 'free' : 'paid') : 'unpaid'),
         started_at: new Date().toISOString()
       })
       .select()

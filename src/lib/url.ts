@@ -96,14 +96,13 @@ export function buildOrgUrl(
 /**
  * Build a URL for an organization's assessment
  */
-export function buildOrgAssessmentUrl(orgSlug: string, path?: string, orgDomain?: string | null): string {
+export function buildOrgAssessmentUrl(orgSlug: string, path?: string, orgDomain?: string | null, freeAssessments?: boolean): string {
+  const assessmentPath = path || (freeAssessments ? 'assessment' : 'checkout')
   if (orgDomain) {
-    const assessmentPath = path || 'checkout'
     const cleanPath = assessmentPath.startsWith('/') ? assessmentPath : `/${assessmentPath}`
     return `https://${orgDomain}${cleanPath}`
   }
   const base = getAppUrl()
-  const assessmentPath = path || 'checkout'
   return `${base}/${orgSlug}/${assessmentPath}`
 }
 

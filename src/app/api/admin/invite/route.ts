@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { sendStudentInviteEmail } from '@/lib/resend'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { isSubscriptionActive } from '@/lib/plan-enforcement'
+import { buildOrgAssessmentUrl } from '@/lib/url'
 import type { Organization } from '@/types'
 
 export async function POST(request: Request) {
@@ -49,10 +50,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email address is required' }, { status: 400 })
     }
 
-    const assessmentBaseUrl = org.domain && org.domain_verified
-      ? `https://${org.domain}/checkout`
-      : `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.thestudentblueprint.com'}/${org.slug}/checkout`
-    const assessmentUrl = couponCode ? `${assessmentBaseUrl}?code=${couponCode}` : assessmentBaseUrl
+    const assessmentBaseUrl = buildOrgAssessmentUrl(
+      org.slug,
+      undefined,
+      org.domain && org.domain_verified ? org.domain : null,
+      org.free_assessments
+    )
+    const assessmentUrl = (!org.free_assessments && couponCode)
+      ? `${assessmentBaseUrl}?code=${couponCode}`
+      : assessmentBaseUrl
 
     const fromName = org.custom_email_from || org.name
 

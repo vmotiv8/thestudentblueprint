@@ -87,7 +87,8 @@ export async function PATCH(request: NextRequest) {
       "domain",
       "enabled_sections",
       "onboarding_completed",
-      "assessment_price"
+      "assessment_price",
+      "free_assessments"
     ]
 
     const updates: any = {}

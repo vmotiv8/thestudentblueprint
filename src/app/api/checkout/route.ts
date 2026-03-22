@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 import { getOriginFromRequest } from '@/lib/url'
@@ -31,6 +32,14 @@ export async function POST(request: Request) {
       )
     }
 
+    // If org has free assessments, no checkout needed
+    if (organization.free_assessments) {
+      return NextResponse.json(
+        { error: 'Assessments are free for this organization', free: true },
+        { status: 400 }
+      )
+    }
+
     const assessmentPrice = Number(organization.assessment_price)
     if (!organization.assessment_price || !isFinite(assessmentPrice) || assessmentPrice <= 0) {
       return NextResponse.json(
@@ -50,7 +59,8 @@ export async function POST(request: Request) {
     const priceInCents = Math.round(assessmentPrice * 100)
     const origin = getOriginFromRequest(request)
 
-    const session = await stripe.checkout.sessions.create({
+    // Build Stripe checkout session options
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
@@ -74,7 +84,17 @@ export async function POST(request: Request) {
         organization_id: organization.id,
         organization_slug: organization.slug,
       },
-    })
+    }
+
+    // If the org has a Stripe Connect account, route payments to it
+    if (organization.stripe_connect_account_id) {
+      const session = await stripe.checkout.sessions.create(sessionParams, {
+        stripeAccount: organization.stripe_connect_account_id,
+      })
+      return NextResponse.json({ url: session.url })
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams)
 
     return NextResponse.json({ url: session.url })
   } catch (error) {

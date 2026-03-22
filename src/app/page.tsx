@@ -91,24 +91,64 @@ const stats = [
 
 const faqs = [
   {
+    question: "How long does the assessment take?",
+    answer: "The assessment typically takes about one hour to complete. It covers 15 sections including academics, extracurriculars, career aspirations, and personality. You can save your progress at any point and return later using a unique resume code sent to your email."
+  },
+  {
+    question: "What happens after I complete the assessment?",
+    answer: "Once you submit the assessment, our AI engine analyzes your profile and generates a comprehensive, personalized roadmap within minutes. You'll receive an email with a link to your full results dashboard, which includes your student archetype, competitiveness score, grade-by-grade action plan, college recommendations, and more."
+  },
+  {
+    question: "Can I retake the assessment?",
+    answer: "The assessment is designed to be taken once to capture an accurate snapshot of your current profile. However, if your circumstances change significantly, an admin can regenerate your report with updated data to reflect your latest achievements and goals."
+  },
+  {
     question: "How does this integrate with my tutoring agency?",
-    answer: "Our platform is designed to be a plug-and-play solution. You can send the assessment link to your students as part of their onboarding or as a premium strategy session. The results can be white-labeled to match your agency's branding."
+    answer: "The platform is designed as a plug-and-play solution for agencies. You can send the assessment link to students as part of onboarding or as a premium strategy session. Results can be fully white-labeled to match your agency's branding, and you get an admin dashboard to track all your students' progress."
   },
   {
     question: "Is there an agency partner program?",
-    answer: "Yes. We offer bulk pricing and enterprise licenses for tutoring agencies and schools. Contact us to learn about our agency tiers and revenue-sharing models."
+    answer: "Yes. We offer bulk pricing and enterprise licenses for tutoring agencies and schools. This includes white-labeling, custom domains, a dedicated admin dashboard, and priority support. Contact us to learn about our agency tiers and volume pricing."
   },
   {
-    question: "Do my counselors need special training?",
-    answer: "No. The platform handles the heavy lifting of data analysis. Your counselors can use the generated roadmap as a structured foundation for their 1-on-1 sessions, making them more effective and authoritative."
+    question: "What is the competitiveness score?",
+    answer: "The competitiveness score is a number from 0 to 100 that evaluates how strong your overall college application profile is relative to successful Ivy League and Top 20 applicants. It considers your academics, testing, extracurriculars, leadership, research experience, and personal narrative to give you a clear benchmark."
   },
   {
-    question: "Can I customize the assessment questions?",
-    answer: "Enterprise partners can request custom modules to align with their specific counseling methodology or regional requirements."
+    question: "What is a student archetype?",
+    answer: "Your student archetype is a unique two-to-three word descriptor that captures your core strengths and identity as an applicant — for example, 'Analytical Entrepreneur' or 'Creative Humanitarian.' It's derived from your personality traits, interests, and activities, and serves as the foundation for your personalized roadmap."
   },
   {
-    question: "How long does it take to set up?",
-    answer: "You can start using the platform with your students today. Setting up a full agency account with white-labeling typically takes less than 24 hours."
+    question: "How accurate are the college recommendations?",
+    answer: "Our college recommendations are generated based on your academic profile, test scores, extracurriculars, geographic preferences, and career goals. They are categorized into Reach, Target, and Safety tiers with match scores and explanations for each school. While no tool can guarantee admission, our recommendations are grounded in real admissions data and trends."
+  },
+  {
+    question: "Is my data private and secure?",
+    answer: "Absolutely. All assessment data is encrypted in transit and at rest. We use enterprise-grade database security with row-level access controls, and your personal information is never shared with third parties. Only you and your authorized counselor or agency can access your results."
+  },
+  {
+    question: "What grade levels is this designed for?",
+    answer: "The assessment is designed for students in grades 8 through 12. The roadmap automatically adapts to your current grade level, providing age-appropriate recommendations and a year-by-year plan through graduation. Earlier is better — students who start in 8th or 9th grade get the most actionable runway."
+  },
+  {
+    question: "Do I need to pay before taking the assessment?",
+    answer: "Payment is required before submitting the assessment for analysis. You can browse the assessment questions for free to understand what's involved, but generating your personalized roadmap and report requires a completed payment or a valid coupon code."
+  },
+  {
+    question: "Can I download my report as a PDF?",
+    answer: "Yes. Once your report is generated, you can download a professionally formatted PDF version directly from your results dashboard. The PDF includes your full archetype analysis, competitiveness score, strengths and gaps, grade-by-grade roadmap, college recommendations, and all other sections."
+  },
+  {
+    question: "What makes this different from a regular college counselor?",
+    answer: "A traditional counselor offers subjective advice based on their experience. Blueprint Intelligence combines AI-powered analysis with admissions data to deliver a structured, comprehensive strategy covering academics, testing, extracurriculars, leadership, research, internships, competitions, and more — all personalized to your specific profile, location, and curriculum."
+  },
+  {
+    question: "Does this work for international students?",
+    answer: "Yes. The platform supports students worldwide and tailors recommendations based on your country, curriculum (including CBSE, IB, A-Levels, and US curricula), and target study-abroad destinations. If you're planning to apply to US, UK, or Canadian universities from abroad, the roadmap will reflect those specific admissions requirements."
+  },
+  {
+    question: "How do I contact support?",
+    answer: "You can reach our support team by emailing hello@thestudentblueprint.com. For agency partners, priority support is available through your admin dashboard. We typically respond within 24 hours on business days."
   }
 ]
 
@@ -371,7 +411,17 @@ function LandingPage() {
         const faqsData = await faqsRes.json()
         const testimonialsData = await testimonialsRes.json()
 
-        if (faqsData.faqs) setFaqsList(faqsData.faqs)
+        if (faqsData.faqs) {
+          // Deduplicate FAQs by question text
+          const seen = new Set<string>()
+          const uniqueFaqs = faqsData.faqs.filter((faq: FAQ) => {
+            const key = faq.question.toLowerCase().trim()
+            if (seen.has(key)) return false
+            seen.add(key)
+            return true
+          })
+          setFaqsList(uniqueFaqs)
+        }
         if (testimonialsData.testimonials) {
           // Map CMS field names (content/author_name/author_title) to component field names (quote/name/school)
           setTestimonialsList(testimonialsData.testimonials.map((t: any) => ({
@@ -476,7 +526,7 @@ function LandingPage() {
       </nav>
 
       {/* ── Section 1: Hero ──────────────────────────────────────────────── */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] pt-24 sm:pt-28 md:pt-32">
         {/* Animated gradient background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#0f1419] to-[#0a0a0a]" />
@@ -503,7 +553,7 @@ function LandingPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6 sm:mb-8"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             <span className="text-white">What If Every Student</span>
@@ -520,7 +570,7 @@ function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.7 }}
-            className="text-lg sm:text-xl md:text-2xl text-white/50 max-w-3xl mx-auto leading-relaxed mb-10 sm:mb-12"
+            className="text-base sm:text-lg md:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2"
           >
             Now they can. <span className="text-white font-medium">Blueprint Intelligence</span> gives
             your agency the power to deliver elite, personalized college strategies
@@ -534,12 +584,12 @@ function LandingPage() {
             transition={{ duration: 1, delay: 1.0 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
           >
-            <Button asChild size="lg" className="bg-[#c9a227] hover:bg-[#e8d48b] text-[#0a0a0a] px-10 sm:px-14 py-6 sm:py-7 h-auto text-sm sm:text-base font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#c9a227]/20 tracking-wide">
+            <Button asChild size="lg" className="bg-[#c9a227] hover:bg-[#e8d48b] text-[#0a0a0a] px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#c9a227]/20 tracking-wide">
               <Link href="/get-started">
-                See It in Action <ArrowRight className="ml-3 w-5 h-5" />
+                See It in Action <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-white/15 text-white/70 hover:text-white hover:border-white/30 px-10 py-6 sm:py-7 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
+            <Button asChild variant="outline" size="lg" className="border-white/15 text-white/70 hover:text-white hover:border-white/30 px-8 sm:px-10 py-5 sm:py-6 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
               <Link href="#methodology">
                 How It Works
               </Link>

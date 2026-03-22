@@ -209,8 +209,8 @@ export default function GetStartedPage() {
         }),
       })
       const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
       } else {
         alert(data.error || "Something went wrong. Please try again.")
         setIsProcessing(false)
@@ -651,6 +651,74 @@ function Step1({
   )
 }
 
+// ─── Reusable InputField (must be outside Step2 to avoid remount on every keystroke) ──
+
+function InputField({
+  label,
+  field,
+  type = "text",
+  placeholder,
+  prefix,
+  suffix,
+  note,
+  value,
+  error,
+  onChange,
+  onBlur,
+}: {
+  label: string
+  field: string
+  type?: string
+  placeholder?: string
+  prefix?: React.ReactNode
+  suffix?: React.ReactNode
+  note?: string
+  value: string
+  error?: string
+  onChange: (field: string, value: string) => void
+  onBlur: (field: string) => void
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-white/60 mb-2">{label}</label>
+      <div className="relative">
+        {prefix && (
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-sm">{prefix}</span>
+        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(field, e.target.value)}
+          onBlur={() => onBlur(field)}
+          placeholder={placeholder}
+          className={`
+            w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border text-white placeholder-white/20 outline-none transition-all
+            ${prefix ? "pl-[140px]" : ""}
+            ${
+              error
+                ? "border-red-500/50 focus:border-red-500"
+                : "border-white/[0.08] focus:border-[#c9a227]/50 focus:bg-white/[0.06]"
+            }
+          `}
+        />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2">{suffix}</span>
+        )}
+      </div>
+      {note && !error && <p className="text-xs text-white/30 mt-1.5">{note}</p>}
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-xs text-red-400 mt-1.5"
+        >
+          {error}
+        </motion.p>
+      )}
+    </div>
+  )
+}
+
 // ─── Step 2: Create Your Account ────────────────────────────────────────────
 
 function Step2({
@@ -678,66 +746,6 @@ function Step2({
   onBack: () => void
   onNext: () => void
 }) {
-  function InputField({
-    label,
-    field,
-    type = "text",
-    placeholder,
-    prefix,
-    suffix,
-    note,
-  }: {
-    label: string
-    field: string
-    type?: string
-    placeholder?: string
-    prefix?: React.ReactNode
-    suffix?: React.ReactNode
-    note?: string
-  }) {
-    const val = formData[field as keyof typeof formData]
-    const err = errors[field]
-    return (
-      <div>
-        <label className="block text-sm font-medium text-white/60 mb-2">{label}</label>
-        <div className="relative">
-          {prefix && (
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-sm">{prefix}</span>
-          )}
-          <input
-            type={type}
-            value={val}
-            onChange={(e) => onFieldChange(field, e.target.value)}
-            onBlur={() => onBlur(field)}
-            placeholder={placeholder}
-            className={`
-              w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border text-white placeholder-white/20 outline-none transition-all
-              ${prefix ? "pl-[140px]" : ""}
-              ${
-                err
-                  ? "border-red-500/50 focus:border-red-500"
-                  : "border-white/[0.08] focus:border-[#c9a227]/50 focus:bg-white/[0.06]"
-              }
-            `}
-          />
-          {suffix && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2">{suffix}</span>
-          )}
-        </div>
-        {note && !err && <p className="text-xs text-white/30 mt-1.5">{note}</p>}
-        {err && (
-          <motion.p
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-xs text-red-400 mt-1.5"
-          >
-            {err}
-          </motion.p>
-        )}
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-10">
       {/* Header */}
@@ -761,19 +769,23 @@ function Step2({
         animate="visible"
         custom={1}
       >
-        <InputField label="Agency Name" field="agencyName" placeholder="e.g. Apex Admissions Group" />
+        <InputField label="Agency Name" field="agencyName" placeholder="e.g. Apex Admissions Group" value={formData.agencyName} error={errors.agencyName} onChange={onFieldChange} onBlur={onBlur} />
         <InputField
           label="URL Slug"
           field="slug"
           placeholder="apex-admissions-group"
           prefix="thestudentblueprint.com/"
           note="This will be your agency's unique URL."
+          value={formData.slug}
+          error={errors.slug}
+          onChange={onFieldChange}
+          onBlur={onBlur}
         />
 
         <div className="pt-2 border-t border-white/[0.06]" />
 
-        <InputField label="Your Name" field="name" placeholder="e.g. Sarah Mitchell" />
-        <InputField label="Email Address" field="email" type="email" placeholder="you@agency.com" />
+        <InputField label="Your Name" field="name" placeholder="e.g. Sarah Mitchell" value={formData.name} error={errors.name} onChange={onFieldChange} onBlur={onBlur} />
+        <InputField label="Email Address" field="email" type="email" placeholder="you@agency.com" value={formData.email} error={errors.email} onChange={onFieldChange} onBlur={onBlur} />
 
         {/* Password */}
         <div>

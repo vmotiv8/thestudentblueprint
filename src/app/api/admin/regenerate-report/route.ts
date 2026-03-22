@@ -1,7 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase"
 import { resend } from "@/lib/resend"
-import { GoogleGenAI } from "@google/genai"
+import Anthropic from '@anthropic-ai/sdk'
+
+// Sanitize free-text input before sending to the AI prompt.
+function sanitizeForPrompt(value: unknown, maxLength = 1000): string {
+  if (value === null || value === undefined) return ''
+  let text = typeof value === 'string' ? value : String(value)
+
+  const injectionPatterns = /^(you are|ignore previous|system:|assistant:|human:|forget all|disregard|override|new instructions|<\/?s>|<\|)/im
+  text = text
+    .split('\n')
+    .filter(line => !injectionPatterns.test(line.trim()))
+    .join('\n')
+
+  if (text.length > maxLength) {
+    text = text.slice(0, maxLength) + '...[truncated]'
+  }
+
+  text = text.replace(/`/g, "'").replace(/\$\{/g, '(')
+
+  return text
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,11 +83,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Assessment is not completed yet" }, { status: 400 })
     }
 
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 })
+      return NextResponse.json({ error: "Anthropic API key not configured" }, { status: 500 })
     }
-    const ai = new GoogleGenAI({ apiKey })
 
     // Fetch knowledge hub resources for the organization to enrich the AI prompt
     let knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
@@ -93,6 +112,9 @@ export async function POST(request: NextRequest) {
 
     const currentGrade = assessment.students?.current_grade || assessment.basic_info?.currentGrade || '10th Grade'
 
+    // Sanitize the assessment data before including in the prompt
+    const sanitizedAssessment = sanitizeForPrompt(JSON.stringify(assessment), 10000)
+
     const prompt = `You are an expert college admissions counselor and academic success strategist specializing in Ivy League and Top 20 college admissions with 15+ years of experience. Your students have been accepted to Harvard, Stanford, MIT, Yale, Princeton, and other elite institutions. You understand what sets apart successful applicants: intellectual vitality, demonstrated impact, authentic passion, and a compelling narrative.
 
 CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation. Think about what would impress admissions officers at Harvard, Stanford, MIT, Yale, and Princeton.
@@ -100,7 +122,7 @@ CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Av
 Analyze this comprehensive student profile and create a personalized roadmap to maximize their college application competitiveness.
 
 STUDENT PROFILE:
-${JSON.stringify(assessment, null, 2)}
+${sanitizedAssessment}
 ${khSection}
 
   Generate a comprehensive analysis with the following structure in JSON format:
@@ -253,16 +275,30 @@ ${khSection}
     },
     "competitivenessScore": number 0-100
   }
-  
+
   Respond ONLY with valid JSON, no additional text.`
 
-    const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
-      contents: prompt,
-      config: { temperature: 0.7, maxOutputTokens: 8000 },
-    })
-    const text = result.text || ''
-    
+    const client = new Anthropic({ apiKey })
+    const TIMEOUT_MS = 120000
+    const result = await Promise.race([
+      client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 16000,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Claude API timeout after 120s')), TIMEOUT_MS)
+      ),
+    ])
+
+    const textBlock = result.content.find(block => block.type === 'text')
+    const text = textBlock?.text || ''
+
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error("Failed to parse AI response")
@@ -305,12 +341,12 @@ ${khSection}
           if (!Array.isArray(analysisResult.gradeByGradeRoadmap.nextYears) || analysisResult.gradeByGradeRoadmap.nextYears.length === 0) {
             analysisResult.gradeByGradeRoadmap.nextYears = futureGrades.map((grade) => ({
               grade,
-              focus: grade.includes('12th') 
+              focus: grade.includes('12th')
                 ? "Legacy and Application Excellence: finalizing your narrative and ensuring your impact lasts beyond your time in high school."
                 : grade.includes('11th')
                 ? "The 'Spike' Year: achieving peak performance in testing, leadership, and national-level recognitions."
                 : "Deepening and Leading: taking on significant responsibilities and launching your primary independent initiatives.",
-              academics: grade.includes('12th') 
+              academics: grade.includes('12th')
                 ? [
                     "Maintain 'Full Rigor' with 5-6 AP/IB courses to show colleges you are not slowing down in your final year.",
                     "Execute an Independent Study or Capstone project that synthesizes your academic interests and shows mastery.",
@@ -440,16 +476,17 @@ ${khSection}
       try {
         const studentRaw = assessment.students;
         const student = Array.isArray(studentRaw) ? studentRaw[0] : studentRaw;
-        
+
         if (!student?.email) {
           console.warn("No student email found, skipping email notification. Student data:", student);
         } else {
-          const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://thestudentblueprint.com'}/results/${assessmentId}`
-          
+          const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://thestudentblueprint.com'}/results/${assessmentId}`
+          const fromEmail = process.env.RESEND_FROM_EMAIL || 'Student Blueprint Team <hello@thestudentblueprint.com>'
+
           await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL!,
+            from: fromEmail,
             to: [student.email],
-            subject: "🔄 Your Updated Student Blueprint Report is Ready!",
+            subject: "Your Updated Student Blueprint Report is Ready!",
             html: `
   <!DOCTYPE html>
   <html>
@@ -462,12 +499,11 @@ ${khSection}
       <tr>
         <td align="center">
           <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5);">
-            
+
             <tr>
               <td style="background: linear-gradient(135deg, #1e3a5f 0%, #152a45 100%); padding: 50px 40px; text-align: center; position: relative;">
                 <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 50% 20%, rgba(201,162,39,0.15) 0%, transparent 60%);"></div>
                 <div style="position: relative; z-index: 1;">
-                  <div style="font-size: 56px; margin-bottom: 20px;">🔄</div>
                   <h1 style="margin: 0 0 12px; color: #ffffff; font-size: 32px; font-weight: 800;">Report Updated!</h1>
                   <p style="margin: 0; color: #c9a227; font-size: 16px; font-weight: 600;">Fresh Insights & Recommendations</p>
                 </div>
@@ -477,7 +513,7 @@ ${khSection}
             <tr>
               <td style="padding: 50px 40px;">
                 <h2 style="margin: 0 0 16px; color: #1e3a5f; font-size: 24px; font-weight: 700;">
-                  Hi ${student.full_name || "there"}! 👋
+                  Hi ${student.full_name || "there"}!
                 </h2>
                 <p style="margin: 0 0 30px; color: #5a7a9a; font-size: 16px; line-height: 1.7;">
                   We've regenerated your Student Blueprint assessment with the latest analysis and enhanced recommendations. Your roadmap has been updated with fresh insights!
@@ -502,13 +538,13 @@ ${khSection}
 
                 <div style="text-align: center; margin: 40px 0;">
                   <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #c9a227 0%, #d4af37 100%); color: #1e3a5f; padding: 18px 48px; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 17px; box-shadow: 0 10px 30px rgba(201,162,39,0.35);">
-                    View Updated Report →
+                    View Updated Report
                   </a>
                 </div>
 
                 <div style="background: linear-gradient(135deg, #f8f6f1 0%, #faf8f3 100%); border-radius: 12px; padding: 24px; border-left: 4px solid #c9a227;">
                   <p style="margin: 0; color: #5a7a9a; font-size: 14px; line-height: 1.7;">
-                    <strong style="color: #1e3a5f;">💡 What's New:</strong><br>
+                    <strong style="color: #1e3a5f;">What's New:</strong><br>
                     Enhanced recommendations, updated timelines, and fresh insights based on the latest assessment methodology.
                   </p>
                 </div>

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
-import { GoogleGenAI } from '@google/genai'
+import Anthropic from '@anthropic-ai/sdk'
 import { webhookEvents } from '@/lib/organization/webhooks'
 import { buildResultsUrl } from '@/lib/url'
 import { sendStudentResultsEmail, sendParentEmail } from '@/lib/resend'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 
-// Sanitize free-text input before sending to the Gemini prompt.
+// Sanitize free-text input before sending to the AI prompt.
 // Strips prompt-injection patterns, truncates long strings, and escapes
 // characters that could break the prompt template.
 function sanitizeForPrompt(value: unknown, maxLength = 1000): string {
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
       knowledgeHubResources = khData || []
     }
 
-    const analysis = await analyzeWithGemini(formData, knowledgeHubResources)
+    const analysis = await analyzeWithClaude(formData, knowledgeHubResources)
 
     const failed = !!analysis.generationFailed
 
@@ -269,14 +269,16 @@ function toStringList(value: unknown): string {
   return ''
 }
 
-async function analyzeWithGemini(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function analyzeWithClaude(
   formData: Record<string, unknown>,
   knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
-) {
-  const apiKey = process.env.GEMINI_API_KEY
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  const apiKey = process.env.ANTHROPIC_API_KEY
 
   if (!apiKey) {
-    console.error('No Gemini API key found - cannot generate analysis')
+    console.error('No Anthropic API key found - cannot generate analysis')
     return {
       generationFailed: true,
       error: 'AI analysis failed - no API key configured',
@@ -305,73 +307,9 @@ async function analyzeWithGemini(
   const personalStories = (formData.personalStories || {}) as Record<string, unknown>
   const timeCommitment = (formData.timeCommitment || {}) as Record<string, unknown>
 
-  const prompt = `You are an expert college admissions counselor. Analyze this student profile and create a personalized roadmap.
+  const currentGrade = sanitizeForPrompt(basicInfo.currentGrade) || 'Not provided'
 
-  Student Information:
-  - Name: ${sanitizeForPrompt(basicInfo.fullName)}
-  - Current Grade: ${sanitizeForPrompt(basicInfo.currentGrade) || 'Not provided'}
-  - Location: ${sanitizeForPrompt(basicInfo.address)}, ${sanitizeForPrompt(basicInfo.city)}, ${sanitizeForPrompt(basicInfo.state)}, ${sanitizeForPrompt(basicInfo.country)}
-  - Curriculum: ${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum) || 'Not provided'}
-  - Planning to Study Abroad: ${basicInfo.studyAbroad ? 'Yes' : 'No'}
-  - Target Countries: ${sanitizeForPrompt(toStringList(basicInfo.targetCountries || []))}
-  - GPA Scale: ${sanitizeForPrompt(academicProfile.gpaScale) || 'Not provided'}
-  - GPA: ${sanitizeForPrompt(academicProfile.gpaUnweighted) || 'Not provided'} (unweighted), ${sanitizeForPrompt(academicProfile.gpaWeighted) || 'Not provided'} (weighted)
-
-  Academic Profile:
-  - Advanced/Curriculum Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.coursesTaken))}
-  - Regular Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesTaken))}
-  - Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.coursesPlanned))}
-  - Regular Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesPlanned))}
-  - Class Rank: ${sanitizeForPrompt(academicProfile.classRank) || 'Not provided'}
-  - Academic Awards: ${sanitizeForPrompt(academicProfile.academicAwards) || 'Not provided'}
-  - Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.favoriteSubjects))}
-  - Least Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.leastFavoriteSubjects))}
-  - PSAT Score: ${sanitizeForPrompt(testingInfo.psatScore) || 'Not taken'}${testingInfo.psatMath ? ` (Math: ${sanitizeForPrompt(testingInfo.psatMath)}, Reading: ${sanitizeForPrompt(testingInfo.psatReading)})` : ''}
-  - SAT Score: ${sanitizeForPrompt(testingInfo.satScore) || 'Not taken'}${testingInfo.satMath ? ` (Math: ${sanitizeForPrompt(testingInfo.satMath)}, Reading: ${sanitizeForPrompt(testingInfo.satReading)})` : ''}
-  - ACT Score: ${sanitizeForPrompt(testingInfo.actScore) || 'Not taken'}${testingInfo.actEnglish ? ` (English: ${sanitizeForPrompt(testingInfo.actEnglish)}, Math: ${sanitizeForPrompt(testingInfo.actMath)}, Reading: ${sanitizeForPrompt(testingInfo.actReading)}, Science: ${sanitizeForPrompt(testingInfo.actScience)})` : ''}
-  - AP/IB Exam Scores: ${sanitizeForPrompt(testingInfo.apScores) || 'Not provided'}
-  - Testing Timeline: ${sanitizeForPrompt(testingInfo.testingTimeline) || 'Not provided'}
-
-  Extracurriculars & Leadership:
-  ${sanitizeForPrompt(JSON.stringify(extracurriculars.activities || []), 2000)}
-  - Leadership: ${sanitizeForPrompt(leadership.positions) || 'Not provided'}
-  - Competitions: ${sanitizeForPrompt(competitions.competitions) || 'Not provided'}
-
-  Passions & Interests:
-  - Topics They Love: ${sanitizeForPrompt(toStringList(passions.topicsYouLove))}
-  - Industries Curious About: ${sanitizeForPrompt(toStringList(passions.industriesCurious))}
-
-  Career Aspirations:
-  - Top Careers: ${sanitizeForPrompt(toStringList(careerAspirations.career1 || ''))}, ${sanitizeForPrompt(toStringList(careerAspirations.career2 || ''))}
-  - Dream Job: ${sanitizeForPrompt(careerAspirations.dreamJobTitle) || 'Not provided'}
-
-  Experience & Talents:
-  - Research: ${sanitizeForPrompt(researchExperience.researchExperience) || 'Not provided'}
-  - Summer Programs: ${sanitizeForPrompt(summerPrograms.programs) || 'Not provided'}
-  - Special Talents: ${sanitizeForPrompt(JSON.stringify(specialTalents), 2000)}
-
-  Family Context:
-  - Father's Profession: ${sanitizeForPrompt(familyContext.fatherProfession) || 'Not provided'}
-  - Mother's Profession: ${sanitizeForPrompt(familyContext.motherProfession) || 'Not provided'}
-  - Sibling Professions: ${sanitizeForPrompt(familyContext.siblingProfessions) || 'Not provided'}
-  - Legacy Connections: ${sanitizeForPrompt(JSON.stringify(familyContext.legacyEntries || []), 1000)}
-  - Financial Aid Needed: ${familyContext.financialAidNeeded ? 'Yes' : 'No'}
-  - Merit Scholarship Interest: ${familyContext.meritScholarshipInterest ? 'Yes' : 'No'}
-
-  Personality & Story:
-  - Strengths: ${sanitizeForPrompt(toStringList(personality.topStrengths))}
-  - Weaknesses: ${sanitizeForPrompt(toStringList(personality.topWeaknesses))}
-  - Personality Type: ${sanitizeForPrompt(personality.introvertExtrovert) || 'Not provided'}
-  - Archetypes: ${sanitizeForPrompt(toStringList(personality.archetypes))}
-  - Life Challenge: ${sanitizeForPrompt(personalStories.lifeChallenge) || 'Not provided'}
-  - Leadership Moment: ${sanitizeForPrompt(personalStories.leadershipMoment) || 'Not provided'}
-  - Failure Lesson: ${sanitizeForPrompt(personalStories.failureLesson) || 'Not provided'}
-  - Proud Moment: ${sanitizeForPrompt(personalStories.proudMoment) || 'Not provided'}
-
-  Time Commitment:
-  - School Year: ${sanitizeForPrompt(timeCommitment.hoursSchoolYear) || 'Not provided'}
-  - Summer: ${sanitizeForPrompt(timeCommitment.hoursSummer) || 'Not provided'}
-${(() => {
+  const khSection = (() => {
     const khByType: Record<string, string[]> = {}
     for (const r of knowledgeHubResources) {
       if (!khByType[r.type]) khByType[r.type] = []
@@ -382,52 +320,248 @@ ${(() => {
       Object.entries(khByType)
         .map(([type, items]) => `  - ${type.replace(/_/g, ' ')}: ${items.join('; ')}`)
         .join('\n')
-  })()}
-  IMPORTANT GUIDELINES:
-  1. If the student is from India, you MUST include local Indian competitions, hackathons, and opportunities (e.g., Imperial STEM Hackathon, ISEF India, national coding challenges like ZCO/ZIO, various Olympiads, IRIS National Science Fair, etc.) in the roadmap.
-  2. If the student is planning to study abroad, update the "Reach/Target/Safety schools" and recommendations based on the admissions data of universities in their target countries.
-  3. Tailor the roadmap actions, goals, and projects to the student's specific location and curriculum (${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)}).
-  4. If the student is in a specific curriculum (like CBSE or IB), ensure the academic suggestions respect that curriculum's requirements and timelines.
-  5. If school-specific resources are listed above (courses, clubs, competitions, extracurriculars), PRIORITIZE recommending those specific options over generic alternatives wherever applicable.
+  })()
 
-  Generate a comprehensive analysis with the following structure in JSON format:
-  {
-    "studentArchetype": "A unique 2-3 word descriptor",
-    "archetypeScores": {
-      "Visionary": number 0-100,
-      "Builder": number 0-100,
-      "Healer": number 0-100,
-      "Analyst": number 0-100,
-      "Artist": number 0-100,
-      "Advocate": number 0-100,
-      "Entrepreneur": number 0-100,
-      "Researcher": number 0-100
-    },
-    "strengthsAnalysis": {
-      "competitiveAdvantages": ["3-5 specific competitive advantages"],
-      "uniqueDifferentiators": ["3-4 unique differentiators"],
-      "alignedActivities": ["Specific activities that match their passions"]
-    },
-    "gapAnalysis": {
-      "missingElements": ["5-7 specific elements missing"],
-      "activitiesToDeepen": ["4-6 activities needing more depth"],
-      "skillsToDevelope": ["5-7 skills needed"]
-    },
-    "roadmap": {
-      "immediate": ["8-10 specific actions for next 3 months"],
-      "shortTerm": ["8-10 goals for 3-6 months"],
-      "mediumTerm": ["8-10 projects for 6-12 months"],
-      "longTerm": ["8-10 trajectory items for 1+ years"]
-    },
-    "collegePlanning": {
-      "reachSchools": ["3-4 reach schools based on target countries"],
-      "targetSchools": ["3-4 target schools based on target countries"],
-      "safetySchools": ["3-4 safety schools based on target countries"]
-    },
-    "competitivenessScore": number 0-100
-  }
+  const prompt = `You are an expert college admissions counselor and academic success strategist specializing in Ivy League and Top 20 college admissions with 15+ years of experience. Your students have been accepted to Harvard, Stanford, MIT, Yale, Princeton, and other elite institutions. You understand what sets apart successful applicants: intellectual vitality, demonstrated impact, authentic passion, and a compelling narrative.
 
-  Respond ONLY with valid JSON, no additional text.`
+CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation.
+
+Analyze this student profile and create a personalized roadmap.
+
+Student Information:
+- Name: ${sanitizeForPrompt(basicInfo.fullName)}
+- Current Grade: ${currentGrade}
+- Location: ${sanitizeForPrompt(basicInfo.address)}, ${sanitizeForPrompt(basicInfo.city)}, ${sanitizeForPrompt(basicInfo.state)}, ${sanitizeForPrompt(basicInfo.country)}
+- Curriculum: ${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum) || 'Not provided'}
+- Planning to Study Abroad: ${basicInfo.studyAbroad ? 'Yes' : 'No'}
+- Target Countries: ${sanitizeForPrompt(toStringList(basicInfo.targetCountries || []))}
+- GPA Scale: ${sanitizeForPrompt(academicProfile.gpaScale) || 'Not provided'}
+- GPA: ${sanitizeForPrompt(academicProfile.gpaUnweighted) || 'Not provided'} (unweighted), ${sanitizeForPrompt(academicProfile.gpaWeighted) || 'Not provided'} (weighted)
+
+Academic Profile:
+- Advanced/Curriculum Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.coursesTaken))}
+- Regular Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesTaken))}
+- Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.coursesPlanned))}
+- Regular Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesPlanned))}
+- Class Rank: ${sanitizeForPrompt(academicProfile.classRank) || 'Not provided'}
+- Academic Awards: ${sanitizeForPrompt(academicProfile.academicAwards) || 'Not provided'}
+- Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.favoriteSubjects))}
+- Least Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.leastFavoriteSubjects))}
+- PSAT Score: ${sanitizeForPrompt(testingInfo.psatScore) || 'Not taken'}${testingInfo.psatMath ? ` (Math: ${sanitizeForPrompt(testingInfo.psatMath)}, Reading: ${sanitizeForPrompt(testingInfo.psatReading)})` : ''}
+- SAT Score: ${sanitizeForPrompt(testingInfo.satScore) || 'Not taken'}${testingInfo.satMath ? ` (Math: ${sanitizeForPrompt(testingInfo.satMath)}, Reading: ${sanitizeForPrompt(testingInfo.satReading)})` : ''}
+- ACT Score: ${sanitizeForPrompt(testingInfo.actScore) || 'Not taken'}${testingInfo.actEnglish ? ` (English: ${sanitizeForPrompt(testingInfo.actEnglish)}, Math: ${sanitizeForPrompt(testingInfo.actMath)}, Reading: ${sanitizeForPrompt(testingInfo.actReading)}, Science: ${sanitizeForPrompt(testingInfo.actScience)})` : ''}
+- AP/IB Exam Scores: ${sanitizeForPrompt(testingInfo.apScores) || 'Not provided'}
+- Testing Timeline: ${sanitizeForPrompt(testingInfo.testingTimeline) || 'Not provided'}
+
+Extracurriculars & Leadership:
+${sanitizeForPrompt(JSON.stringify(extracurriculars.activities || []), 2000)}
+- Leadership: ${sanitizeForPrompt(leadership.positions) || 'Not provided'}
+- Competitions: ${sanitizeForPrompt(competitions.competitions) || 'Not provided'}
+
+Passions & Interests:
+- Topics They Love: ${sanitizeForPrompt(toStringList(passions.topicsYouLove))}
+- Industries Curious About: ${sanitizeForPrompt(toStringList(passions.industriesCurious))}
+
+Career Aspirations:
+- Top Careers: ${sanitizeForPrompt(toStringList(careerAspirations.career1 || ''))}, ${sanitizeForPrompt(toStringList(careerAspirations.career2 || ''))}
+- Dream Job: ${sanitizeForPrompt(careerAspirations.dreamJobTitle) || 'Not provided'}
+
+Experience & Talents:
+- Research: ${sanitizeForPrompt(researchExperience.researchExperience) || 'Not provided'}
+- Summer Programs: ${sanitizeForPrompt(summerPrograms.programs) || 'Not provided'}
+- Special Talents: ${sanitizeForPrompt(JSON.stringify(specialTalents), 2000)}
+
+Family Context:
+- Father's Profession: ${sanitizeForPrompt(familyContext.fatherProfession) || 'Not provided'}
+- Mother's Profession: ${sanitizeForPrompt(familyContext.motherProfession) || 'Not provided'}
+- Sibling Professions: ${sanitizeForPrompt(familyContext.siblingProfessions) || 'Not provided'}
+- Legacy Connections: ${sanitizeForPrompt(JSON.stringify(familyContext.legacyEntries || []), 1000)}
+- Financial Aid Needed: ${familyContext.financialAidNeeded ? 'Yes' : 'No'}
+- Merit Scholarship Interest: ${familyContext.meritScholarshipInterest ? 'Yes' : 'No'}
+
+Personality & Story:
+- Strengths: ${sanitizeForPrompt(toStringList(personality.topStrengths))}
+- Weaknesses: ${sanitizeForPrompt(toStringList(personality.topWeaknesses))}
+- Personality Type: ${sanitizeForPrompt(personality.introvertExtrovert) || 'Not provided'}
+- Archetypes: ${sanitizeForPrompt(toStringList(personality.archetypes))}
+- Life Challenge: ${sanitizeForPrompt(personalStories.lifeChallenge) || 'Not provided'}
+- Leadership Moment: ${sanitizeForPrompt(personalStories.leadershipMoment) || 'Not provided'}
+- Failure Lesson: ${sanitizeForPrompt(personalStories.failureLesson) || 'Not provided'}
+- Proud Moment: ${sanitizeForPrompt(personalStories.proudMoment) || 'Not provided'}
+
+Time Commitment:
+- School Year: ${sanitizeForPrompt(timeCommitment.hoursSchoolYear) || 'Not provided'}
+- Summer: ${sanitizeForPrompt(timeCommitment.hoursSummer) || 'Not provided'}
+${khSection}
+IMPORTANT GUIDELINES:
+1. If the student is from India, you MUST include local Indian competitions, hackathons, and opportunities (e.g., Imperial STEM Hackathon, ISEF India, national coding challenges like ZCO/ZIO, various Olympiads, IRIS National Science Fair, etc.) in the roadmap.
+2. If the student is planning to study abroad, update the "Reach/Target/Safety schools" and recommendations based on the admissions data of universities in their target countries.
+3. Tailor the roadmap actions, goals, and projects to the student's specific location and curriculum (${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)}).
+4. If the student is in a specific curriculum (like CBSE or IB), ensure the academic suggestions respect that curriculum's requirements and timelines.
+5. If school-specific resources are listed above (courses, clubs, competitions, extracurriculars), PRIORITIZE recommending those specific options over generic alternatives wherever applicable.
+
+Generate a comprehensive analysis with the following structure in JSON format:
+{
+  "studentArchetype": "A unique 2-3 word descriptor (e.g., 'Analytical Entrepreneur', 'Creative Humanitarian')",
+  "archetypeScores": {
+    "Visionary": number 0-100,
+    "Builder": number 0-100,
+    "Healer": number 0-100,
+    "Analyst": number 0-100,
+    "Artist": number 0-100,
+    "Advocate": number 0-100,
+    "Entrepreneur": number 0-100,
+    "Researcher": number 0-100
+  },
+  "strengthsAnalysis": {
+    "competitiveAdvantages": ["3 specific competitive advantages with concrete examples"],
+    "uniqueDifferentiators": ["2-3 unique differentiators that make them stand out"],
+    "alignedActivities": ["Specific activities that match their passions"]
+  },
+  "gapAnalysis": {
+    "missingElements": ["3-4 specific elements missing for target schools"],
+    "activitiesToDeepen": ["2-3 activities needing more depth"],
+    "skillsToDevelope": ["3-4 skills needed for career goals"]
+  },
+  "roadmap": {
+    "immediate": ["4-5 specific high-impact actions for next 3 months"],
+    "shortTerm": ["4-5 detailed goals for 3-6 months"],
+    "mediumTerm": ["4-5 transformative projects for 6-12 months"],
+    "longTerm": ["4-5 trajectory items for 1+ years"]
+  },
+  "gradeByGradeRoadmap": {
+    "currentGrade": {
+      "grade": "${currentGrade}",
+      "focus": "Main focus areas for this year",
+      "academics": ["3-4 academic goals"],
+      "extracurriculars": ["3-4 specific extracurricular actions"],
+      "testing": ["2-3 testing milestones"],
+      "leadership": ["2-3 age-appropriate leadership opportunities"],
+      "summerPlan": "A 2-3 sentence summer plan"
+    },
+    "nextYears": [
+      {
+        "grade": "Next grade name",
+        "focus": "Focus for that year",
+        "academics": ["3-4 goals"],
+        "extracurriculars": ["3-4 actions"],
+        "testing": ["2-3 milestones"],
+        "leadership": ["2-3 opportunities"],
+        "summerPlan": "Summer plan"
+      }
+    ]
+  },
+  "academicCoursesRecommendations": {
+    "apCourses": ["4-5 specific AP courses with reasoning"],
+    "ibCourses": ["IB courses if applicable"],
+    "honorsCourses": ["3-4 Advanced/Honors courses"],
+    "electivesRecommended": ["3-4 strategic electives"]
+  },
+  "satActGoals": {
+    "targetSATScore": "Target composite score",
+    "satSectionGoals": { "reading": "target", "writing": "target", "math": "target" },
+    "targetACTScore": "Target composite score",
+    "actSectionGoals": { "english": "target", "math": "target", "reading": "target", "science": "target" },
+    "prepStrategy": "Recommended preparation approach",
+    "timeline": "When to take tests"
+  },
+  "researchPublicationsRecommendations": {
+    "researchTopics": ["4-5 specific research topics"],
+    "publicationOpportunities": ["3-4 publication venues"],
+    "mentorshipSuggestions": ["3-4 strategies for finding mentors"],
+    "timeline": "Timeline for research activities"
+  },
+  "leadershipRecommendations": {
+    "clubLeadership": ["3-4 specific leadership positions"],
+    "schoolWideRoles": ["2-3 student body/class officer positions"],
+    "communityLeadership": ["3-4 external leadership opportunities"],
+    "leadershipDevelopment": ["4-5 specific skills and experiences"]
+  },
+  "serviceCommunityRecommendations": {
+    "localOpportunities": ["4-5 community service opportunities"],
+    "nationalPrograms": ["3-4 national service programs"],
+    "internationalService": ["2-3 international volunteer opportunities"],
+    "sustainedCommitment": ["3-4 strategies for impact metrics"]
+  },
+  "summerIvyProgramsRecommendations": {
+    "preFreshmanPrograms": ["3-4 prestigious pre-college programs"],
+    "competitivePrograms": ["4-5 selective summer programs"],
+    "researchPrograms": ["4-5 summer research opportunities"],
+    "enrichmentPrograms": ["3-4 academic enrichment programs"]
+  },
+  "sportsRecommendations": {
+    "varsitySports": ["2-3 sports recommendations"],
+    "clubSports": ["2-3 club/travel team opportunities"],
+    "recruitingStrategy": ["3-4 athletic recruiting tips"],
+    "fitnessLeadership": ["2-3 leadership opportunities in fitness"]
+  },
+  "competitionsRecommendations": {
+    "academicCompetitions": ["5-6 competitions"],
+    "businessCompetitions": ["4-5 business competitions"],
+    "artsCompetitions": ["4-5 arts competitions"],
+    "debateSpeech": ["4-5 debate/speech competitions"]
+  },
+  "studentGovernmentRecommendations": {
+    "schoolGovernment": ["3-4 student council positions"],
+    "districtStateRoles": ["2-3 district/state advisory roles"],
+    "youthGovernment": ["3-4 youth government programs"],
+    "advocacyRoles": ["3-4 student advocacy positions"]
+  },
+  "internshipsRecommendations": {
+    "industryInternships": ["4-5 specific internships"],
+    "researchInternships": ["4-5 lab/research positions"],
+    "nonprofitInternships": ["3-4 nonprofit opportunities"],
+    "virtualOpportunities": ["3-4 remote internships"]
+  },
+  "cultureArtsRecommendations": {
+    "performingArts": ["3-4 performing arts opportunities"],
+    "visualArts": ["3-4 visual arts projects"],
+    "creativeWriting": ["4-5 publications and literary magazines"],
+    "culturalClubs": ["3-4 heritage/cultural organizations"]
+  },
+  "passionProjects": [
+    {
+      "title": "Specific project title",
+      "description": "Detailed description with concrete steps",
+      "timeCommitment": "Specific hours per week",
+      "skillsDeveloped": ["3-4 specific skills"],
+      "applicationImpact": "Detailed explanation of impact",
+      "resources": "List of resources",
+      "implementationSteps": ["4-5 step-by-step actions"]
+    }
+  ],
+  "careerRecommendations": {
+    "jobTitles": ["3 specific job titles"],
+    "blueOceanIndustries": [
+      { "industry": "Name of industry", "why": "Explanation" }
+    ],
+    "salaryPotential": "Description of salary potential",
+    "linkedInBioHeadline": "A professional headline"
+  },
+  "collegeRecommendations": {
+    "collegeBreakdown": {
+      "reach": ["3 reach schools"],
+      "target": ["3 target schools"],
+      "safety": ["3 safety schools"]
+    },
+    "schoolMatches": [
+      { "schoolName": "University Name", "matchScore": number 0-100, "why": "Detailed explanation" }
+    ]
+  },
+  "mentorRecommendations": {
+    "mentors": [
+      { "name": "Dr. Name", "university": "University Name", "department": "Department", "why": "Explanation" }
+    ]
+  },
+  "wasteOfTimeActivities": {
+    "activities": [
+      { "activity": "Activity to stop", "whyQuit": "Reason why it doesn't align" }
+    ]
+  },
+  "competitivenessScore": number 0-100
+}
+
+Respond ONLY with valid JSON, no additional text.`
 
   const failedResult = (reason: string) => ({
     generationFailed: true,
@@ -445,33 +579,36 @@ ${(() => {
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const ai = new GoogleGenAI({ apiKey })
-      const TIMEOUT_MS = 60000
+      const client = new Anthropic({ apiKey })
+      const TIMEOUT_MS = 120000
       const response = await Promise.race([
-        ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
-          contents: prompt,
-          config: {
-            temperature: 0.7,
-            maxOutputTokens: 8000,
-          }
+        client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 16000,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ]
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Gemini API timeout after 60s')), TIMEOUT_MS)
+          setTimeout(() => reject(new Error('Claude API timeout after 120s')), TIMEOUT_MS)
         ),
       ])
 
-      const content = response.text || ''
+      const textBlock = response.content.find(block => block.type === 'text')
+      const content = textBlock?.text || ''
 
       if (!content.trim()) {
-        console.error(`Gemini returned empty response (attempt ${attempt + 1})`)
+        console.error(`Claude returned empty response (attempt ${attempt + 1})`)
         lastError = new Error('Empty response')
         continue
       }
 
       const jsonMatch = content.match(/\{[\s\S]*\}/)
       if (!jsonMatch) {
-        console.error('Gemini returned non-JSON response:', content.slice(0, 500))
+        console.error('Claude returned non-JSON response:', content.slice(0, 500))
         return failedResult('AI analysis failed - invalid response format')
       }
 
@@ -479,14 +616,14 @@ ${(() => {
       try {
         parsed = JSON.parse(jsonMatch[0])
       } catch (parseError) {
-        console.error(`Gemini returned malformed JSON (attempt ${attempt + 1}):`, content.slice(0, 500))
+        console.error(`Claude returned malformed JSON (attempt ${attempt + 1}):`, content.slice(0, 500))
         lastError = parseError
-        continue // Retry — Gemini often succeeds on next attempt
+        continue
       }
 
       // Validate critical fields
       if (!parsed.studentArchetype || parsed.competitivenessScore == null) {
-        console.error('Gemini response missing critical fields')
+        console.error('Claude response missing critical fields')
         lastError = new Error('Incomplete response')
         continue
       }
@@ -495,14 +632,15 @@ ${(() => {
     } catch (error) {
       lastError = error
       const message = error instanceof Error ? error.message : String(error)
-      console.error(`Gemini API error (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, message)
+      console.error(`Claude API error (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, message)
 
       // Only retry on transient errors (network, rate limit, 5xx)
-      const isTransient = message.includes('503') ||
+      const isTransient = message.includes('529') ||
         message.includes('429') ||
         message.includes('ECONNRESET') ||
         message.includes('timeout') ||
-        message.includes('network')
+        message.includes('network') ||
+        message.includes('overloaded')
 
       if (!isTransient || attempt === MAX_RETRIES) break
 
@@ -511,7 +649,7 @@ ${(() => {
     }
   }
 
-  console.error('Gemini API failed after all retries:', {
+  console.error('Claude API failed after all retries:', {
     message: lastError instanceof Error ? lastError.message : String(lastError),
   })
   return failedResult('AI analysis failed - pending retry')

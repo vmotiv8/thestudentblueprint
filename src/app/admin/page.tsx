@@ -1889,52 +1889,201 @@ export default function SuperAdminDashboard() {
             <TabsContent value="questions" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-[#0a192f]">Assessment Questions</h2>
-                <p className="text-sm text-[#5a7a9a]">The 15 sections students complete in the assessment</p>
+                <p className="text-sm text-[#5a7a9a]">The 15 sections students complete in the assessment — click any field to see details</p>
               </div>
 
               <div className="space-y-4">
-                {SECTION_TITLES.map((title, index) => {
-                  const sectionDetails: Record<number, string[]> = {
-                    0: ["Full Name", "Email", "Parent Name & Email", "Parent Phone", "Date of Birth", "Current Grade", "School Name", "Address (City, State, Country)", "Gender", "Ethnicity", "Dream Schools (up to 3)", "Study Abroad Plans & Target Countries", "Curriculum"],
-                    1: ["Curriculum Type", "GPA Scale", "GPA (Unweighted & Weighted)", "Advanced/Honors Courses Taken", "Courses Planned", "Regular Courses Taken & Planned", "Class Rank", "Favorite & Least Favorite Subjects", "Academic Awards"],
-                    2: ["PSAT Score (with section breakdown)", "SAT Score (Math, Reading)", "ACT Score (English, Math, Reading, Science)", "AP/IB Exam Scores", "Testing Timeline", "Preferred Test Format"],
-                    3: ["Activities (up to 10) — Name, Role, Years Involved, Hours/Week, Achievements", "Option: No extracurriculars yet"],
-                    4: ["Leadership Entries — Position, Organization, Awards, Scale of Impact", "Option: No leadership experience"],
-                    5: ["Competition Entries — Competition Name, Recognition/Awards", "Option: No competitions"],
-                    6: ["5 Topics You Love", "3 Industries Curious About", "Hobbies & Skills", "World Problem You Want to Solve"],
-                    7: ["Top 3 Career Fields", "Dream Job Title", "Best-Fit Career Statement"],
-                    8: ["Research/Internship Entries — Type (Research/Shadowing/Internship/Job/Other), Organization, Role, Description, Duration", "Option: No research experience"],
-                    9: ["Summer Program Entries — Name, Organization, Description, Year", "Option: No summer programs"],
-                    10: ["Musical Instruments", "Visual Arts", "Performance Arts", "Athletics"],
-                    11: ["Father's Profession", "Mother's Profession", "Sibling Professions", "Legacy College Connections (College + Relation)", "Financial Aid Needed", "Merit Scholarship Interest"],
-                    12: ["Top 3 Strengths", "Top 3 Weaknesses", "Personality Archetypes (select up to 2)", "Introvert/Extrovert/Ambivert"],
-                    13: ["Life Challenge (essay)", "Leadership Moment (essay)", "Failure Lesson (essay)", "Proudest Moment (essay)"],
-                    14: ["Hours/Week During School Year", "Hours/Week During Summer", "Preferred Pace"],
-                  }
+                {(() => {
+                  const sections: { title: string; fields: { name: string; type: string; details?: string[]; required?: boolean }[] }[] = [
+                    {
+                      title: "Basic Information",
+                      fields: [
+                        { name: "Full Name", type: "Text input", required: true },
+                        { name: "Email", type: "Email input", required: true },
+                        { name: "Parent Name", type: "Text input", required: true },
+                        { name: "Parent Email", type: "Email input", required: true },
+                        { name: "Parent Phone", type: "Phone with country code picker", details: ["60+ country codes with flags (US, UK, India, etc.)"] },
+                        { name: "Date of Birth", type: "Date picker" },
+                        { name: "Current Grade", type: "Dropdown", required: true, details: ["6th Grade", "7th Grade", "8th Grade", "9th Grade (Freshman)", "10th Grade (Sophomore)", "11th Grade (Junior)", "12th Grade (Senior)"] },
+                        { name: "School Name", type: "Text input", required: true },
+                        { name: "Address", type: "Text input", details: ["Street address, City, State, Country"] },
+                        { name: "Country", type: "Dropdown", details: ["United States", "India", "United Kingdom", "Canada", "Australia", "Singapore", "UAE", "China", "South Korea", "Germany", "France", "Brazil", "Japan", "Switzerland", "Netherlands", "Ireland", "Other"] },
+                        { name: "Gender", type: "Dropdown", details: ["Male", "Female", "Non-binary", "Prefer not to say"] },
+                        { name: "Ethnicity", type: "Text input" },
+                        { name: "Dream Schools", type: "Dynamic list (up to 3)", details: ["Students can add/remove dream school entries"] },
+                        { name: "Study Abroad Plans", type: "Checkbox + multi-select", details: ["Yes/No toggle", "If yes: select target countries from country list"] },
+                        { name: "Curriculum", type: "Grouped dropdown", details: ["International: IB, IGCSE, A-Levels, AP", "Indian National: CBSE, ICSE/ISC, NIOS", "European: French Bac, German Abitur, European Bac, Scottish Highers, Swiss/Italian Maturità", "North American: US High School Diploma, OSSD (Ontario), BC Curriculum", "Oceania: Australian State Certs, NCEA (New Zealand)", "Vocational: BTEC, IPC/IMYC, Montessori/Waldorf", "Other: Gaokao (China), Other"] },
+                      ]
+                    },
+                    {
+                      title: "Academic Profile",
+                      fields: [
+                        { name: "Curriculum Type", type: "Grouped dropdown (same as Section 1)" },
+                        { name: "GPA Scale", type: "Dropdown", details: ["4.0 Scale (Unweighted)", "5.0 Scale (Weighted)", "6.0 Scale (Weighted)", "100-Point Scale (Percentage)", "10.0 CGPA (India)", "7.0 Scale (Australia)", "4.33 Scale (Canada)", "4.0 Scale (UK/Singapore)", "5.0 Scale (South Korea)", "20-Point Scale (France)", "15-Point Scale (Germany)", "IB 7-Point Scale", "Other"] },
+                        { name: "GPA Unweighted", type: "Number input" },
+                        { name: "GPA Weighted", type: "Number input" },
+                        { name: "Advanced Courses Taken", type: "Checkbox grid (filtered by curriculum)", details: ["6 categories: Math & CS, Sciences, English & Languages, History & Social Sciences, Arts & Interdisciplinary, Career/Technical", "300+ courses tagged by curriculum (AP, IB, A-Level, IGCSE, CBSE, ICSE, NIOS, etc.)", "Auto-filtered to show relevant courses based on selected curriculum"] },
+                        { name: "Advanced Courses Planned", type: "Same checkbox grid" },
+                        { name: "Regular Courses Taken", type: "Checkbox grid (universal)", details: ["7 categories: Mathematics, Sciences, Language & Literature, Social Sciences, Arts, Technology & Career, PE & Health", "50+ standard courses available to all curriculums"] },
+                        { name: "Regular Courses Planned", type: "Same checkbox grid" },
+                        { name: "Class Rank", type: "Text input" },
+                        { name: "Favorite Subjects", type: "Multi-select", details: ["Mathematics", "Physics", "Chemistry", "Biology", "Computer Science", "English", "History", "Economics", "Psychology", "Art", "Music", "Foreign Languages", "Physical Education"] },
+                        { name: "Least Favorite Subjects", type: "Multi-select (same options)" },
+                        { name: "Academic Awards", type: "Textarea" },
+                      ]
+                    },
+                    {
+                      title: "Standardized Testing",
+                      fields: [
+                        { name: "Haven't Taken Yet", type: "Checkbox", details: ["If checked, all test score fields are hidden"] },
+                        { name: "PSAT Score", type: "Number input", details: ["Expandable breakdown: Math score, Reading score"] },
+                        { name: "SAT Score", type: "Number input", details: ["Expandable breakdown: Math (200-800), Reading (200-800)"] },
+                        { name: "ACT Score", type: "Number input", details: ["Expandable breakdown: English, Math, Reading, Science (each 1-36)"] },
+                        { name: "AP/IB Exam Scores", type: "Textarea", details: ["Free text for listing exam scores, e.g. 'AP Calculus BC: 5, AP Physics: 4'"] },
+                        { name: "Testing Timeline", type: "Textarea", details: ["When they plan to take future tests"] },
+                        { name: "Preferred Test Format", type: "Radio buttons", details: ["SAT", "ACT", "Both / Undecided"] },
+                      ]
+                    },
+                    {
+                      title: "Extracurricular Activities",
+                      fields: [
+                        { name: "No Extracurriculars Checkbox", type: "Checkbox", details: ["If checked, activity cards are hidden"] },
+                        { name: "Activities (up to 10)", type: "Dynamic card list", details: ["Each activity card has:", "• Activity Name (text)", "• Role/Position (text)", "• Years Involved (text)", "• Hours per Week (text)", "• Achievements/Description (textarea)", "Students can add/remove activity cards"] },
+                      ]
+                    },
+                    {
+                      title: "Leadership Experience",
+                      fields: [
+                        { name: "No Leadership Checkbox", type: "Checkbox", details: ["If checked, leadership cards are hidden"] },
+                        { name: "Leadership Entries (up to 10)", type: "Dynamic card list", details: ["Each entry has:", "• Position Title (text)", "• Organization (text)", "• Awards/Recognition (text)", "• Scale of Impact (dropdown): Local, Regional, State, National, International"] },
+                      ]
+                    },
+                    {
+                      title: "Competitions & Recognitions",
+                      fields: [
+                        { name: "No Competitions Checkbox", type: "Checkbox", details: ["If checked, competition cards are hidden"] },
+                        { name: "Competition Entries", type: "Dynamic card list", details: ["Each entry has:", "• Competition Name (text)", "• Recognition/Awards (text)"] },
+                      ]
+                    },
+                    {
+                      title: "Passions & Interests",
+                      fields: [
+                        { name: "Topics You Love (5 fields)", type: "5 text inputs", details: ["Topic 1 through Topic 5 — free text for each"] },
+                        { name: "Industries Curious About (3 fields)", type: "3 text inputs", details: ["Industry 1 through Industry 3 — free text for each"] },
+                        { name: "Hobbies & Skills", type: "Textarea" },
+                        { name: "World Problem to Solve", type: "Textarea", details: ["'If you could solve one problem in the world, what would it be?'"] },
+                      ]
+                    },
+                    {
+                      title: "Career Aspirations",
+                      fields: [
+                        { name: "Top 3 Career Fields", type: "3 text inputs", details: ["Career 1, Career 2, Career 3"] },
+                        { name: "Dream Job Title", type: "Text input" },
+                        { name: "Best-Fit Career Statement", type: "Radio buttons", details: ["'I love solving problems with logic.'", "'I love helping people directly.'", "'I love creating beautiful or powerful things.'", "'I love building businesses and making things grow.'"] },
+                      ]
+                    },
+                    {
+                      title: "Research & Internship Exposure",
+                      fields: [
+                        { name: "No Research Experience Checkbox", type: "Checkbox", details: ["If checked, entry cards are hidden"] },
+                        { name: "Experience Entries", type: "Dynamic card list", details: ["Each entry has:", "• Type (dropdown): Research, Shadowing, Internship, Job, Other", "• Organization (text)", "• Role/Title (text)", "• Description (textarea)", "• Duration (text)"] },
+                      ]
+                    },
+                    {
+                      title: "Summer Programs",
+                      fields: [
+                        { name: "No Summer Programs Checkbox", type: "Checkbox", details: ["If checked, program cards are hidden"] },
+                        { name: "Program Entries", type: "Dynamic card list", details: ["Each entry has:", "• Program Name (text)", "• Organization (text)", "• Description (textarea)", "• Year (text)"] },
+                      ]
+                    },
+                    {
+                      title: "Special Talents",
+                      fields: [
+                        { name: "Musical Instruments", type: "Textarea", details: ["List instruments played and years of experience"] },
+                        { name: "Visual Arts", type: "Textarea", details: ["Drawing, painting, sculpture, photography, etc."] },
+                        { name: "Performance Arts", type: "Textarea", details: ["Theater, dance, spoken word, etc."] },
+                        { name: "Athletics", type: "Textarea", details: ["Sports, competitions, achievements"] },
+                      ]
+                    },
+                    {
+                      title: "Family Context",
+                      fields: [
+                        { name: "Father's Profession", type: "Text input" },
+                        { name: "Mother's Profession", type: "Text input" },
+                        { name: "Sibling Professions", type: "Text input" },
+                        { name: "Legacy College Connections", type: "Dynamic card list", details: ["Each entry has:", "• College Name (text)", "• Relation (dropdown): Parent (Alumnus/Alumna), Grandparent, Sibling, Aunt/Uncle, Cousin, Other Family, Family Donor"] },
+                        { name: "Financial Aid Needed", type: "Checkbox" },
+                        { name: "Merit Scholarship Interest", type: "Checkbox" },
+                      ]
+                    },
+                    {
+                      title: "Personality Insights",
+                      fields: [
+                        { name: "Top 3 Strengths", type: "3 text inputs" },
+                        { name: "Top 3 Weaknesses", type: "3 text inputs" },
+                        { name: "Personality Archetypes (select up to 2)", type: "Multi-select (max 2)", details: ["Visionary — Big-picture thinker", "Builder — Creates and constructs solutions", "Healer — Cares for and supports others", "Analyst — Data-driven and detail-oriented", "Artist — Creative and expressive", "Advocate — Champions causes and people", "Entrepreneur — Innovates and takes risks", "Researcher — Investigates and discovers"] },
+                        { name: "Personality Type", type: "Radio buttons", details: ["Introvert", "Extrovert", "Ambivert"] },
+                      ]
+                    },
+                    {
+                      title: "Personal Storytelling",
+                      fields: [
+                        { name: "Life Challenge", type: "Textarea (essay)", details: ["'Describe a significant challenge you've faced and how you overcame it'", "Word counter shown to student"] },
+                        { name: "Leadership Moment", type: "Textarea (essay)", details: ["'Tell us about a time you demonstrated leadership'", "Word counter shown to student"] },
+                        { name: "Failure Lesson", type: "Textarea (essay)", details: ["'Describe a failure and what you learned from it'", "Word counter shown to student"] },
+                        { name: "Proudest Moment", type: "Textarea (essay)", details: ["'What accomplishment are you most proud of and why?'", "Word counter shown to student"] },
+                      ]
+                    },
+                    {
+                      title: "Time Commitment",
+                      fields: [
+                        { name: "Hours/Week During School Year", type: "Text input", details: ["How many hours per week can you dedicate to extracurricular development?"] },
+                        { name: "Hours/Week During Summer", type: "Text input", details: ["How many hours per week during summer break?"] },
+                        { name: "Preferred Pace", type: "Radio buttons", details: ["Fast-Track (intense, quicker impact)", "Steady Progress (balanced with schoolwork)", "Flexible (depending on other priorities)"] },
+                      ]
+                    },
+                  ]
 
-                  return (
+                  return sections.map((section, index) => (
                     <Card key={index} className="border-[#e5e0d5]">
                       <CardHeader className="pb-2 px-6 pt-5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-[#0a192f] text-white flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
-                          <CardTitle className="text-lg text-[#0a192f]">{title}</CardTitle>
+                          <CardTitle className="text-lg text-[#0a192f]">{section.title}</CardTitle>
+                          <span className="text-xs text-[#5a7a9a] bg-[#faf8f3] px-2 py-0.5 rounded-full">{section.fields.length} fields</span>
                         </div>
                       </CardHeader>
                       <CardContent className="px-6 pb-5">
-                        <ul className="space-y-1.5 ml-11">
-                          {(sectionDetails[index] || []).map((question, qi) => (
-                            <li key={qi} className="flex items-start gap-2 text-sm text-[#5a7a9a]">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#c9a227] mt-1.5 shrink-0" />
-                              {question}
-                            </li>
+                        <div className="space-y-2 ml-11">
+                          {section.fields.map((field, fi) => (
+                            <details key={fi} className="group">
+                              <summary className="flex items-start gap-2 text-sm cursor-pointer list-none hover:bg-[#faf8f3] rounded-lg px-2 py-1.5 -mx-2 transition-colors">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#c9a227] mt-1.5 shrink-0" />
+                                <span className="flex-1">
+                                  <span className="font-medium text-[#0a192f]">{field.name}</span>
+                                  {field.required && <span className="text-red-500 ml-1 text-xs">*required</span>}
+                                  <span className="text-[#5a7a9a] ml-2 text-xs">({field.type})</span>
+                                </span>
+                                {field.details && (
+                                  <span className="text-[#c9a227] text-xs mt-0.5 group-open:rotate-90 transition-transform">▶</span>
+                                )}
+                              </summary>
+                              {field.details && (
+                                <div className="ml-5 mt-1 mb-2 pl-3 border-l-2 border-[#e5e0d5]">
+                                  {field.details.map((detail, di) => (
+                                    <p key={di} className="text-xs text-[#5a7a9a] py-0.5">{detail}</p>
+                                  ))}
+                                </div>
+                              )}
+                            </details>
                           ))}
-                        </ul>
+                        </div>
                       </CardContent>
                     </Card>
-                  )
-                })}
+                  ))
+                })()}
               </div>
             </TabsContent>
 

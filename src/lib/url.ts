@@ -21,7 +21,7 @@ export function getAppUrl(): string {
 
   // Default to localhost in development
   return process.env.NODE_ENV === 'production'
-    ? 'https://app.thestudentblueprint.com'
+    ? 'https://thestudentblueprint.com'
     : 'http://localhost:3000'
 }
 

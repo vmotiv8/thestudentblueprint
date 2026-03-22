@@ -444,7 +444,7 @@ ${khSection}
         if (!student?.email) {
           console.warn("No student email found, skipping email notification. Student data:", student);
         } else {
-          const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://app.thestudentblueprint.com'}/results/${assessmentId}`
+          const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://thestudentblueprint.com'}/results/${assessmentId}`
           
           await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL!,

@@ -124,8 +124,8 @@ export default function APIDocumentation() {
                 <h4 className="font-bold text-sm uppercase tracking-wider">Base URL</h4>
               </div>
               <div className="bg-white/10 p-3 rounded-lg flex items-center justify-between group">
-                <code className="text-xs font-mono text-white/80">https://app.thestudentblueprint.com</code>
-                <button onClick={() => copyToClipboard('https://app.thestudentblueprint.com')} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <code className="text-xs font-mono text-white/80">https://thestudentblueprint.com</code>
+                <button onClick={() => copyToClipboard('https://thestudentblueprint.com')} className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <Copy className="w-4 h-4 text-white/40 hover:text-white" />
                 </button>
               </div>

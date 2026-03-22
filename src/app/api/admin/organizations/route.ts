@@ -159,7 +159,7 @@ export async function POST(req: Request) {
       throw adminError
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.thestudentblueprint.com"
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://thestudentblueprint.com"
     const loginUrl = `${baseUrl}/admin/login`
 
     try {

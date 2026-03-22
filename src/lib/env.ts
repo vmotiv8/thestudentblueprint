@@ -12,7 +12,7 @@ type EnvConfig = {
   // Optional but recommended
   STRIPE_WEBHOOK_SECRET?: string
   RESEND_API_KEY?: string
-  GEMINI_API_KEY?: string
+  ANTHROPIC_API_KEY?: string
 
   // Runtime
   NODE_ENV: 'development' | 'production' | 'test'
@@ -27,7 +27,7 @@ const requiredVars = [
 const optionalVars = [
   'STRIPE_WEBHOOK_SECRET',
   'RESEND_API_KEY',
-  'GEMINI_API_KEY',
+  'ANTHROPIC_API_KEY',
   'VERCEL_API_TOKEN',
   'VERCEL_PROJECT_ID',
   'VERCEL_TEAM_ID',
@@ -78,7 +78,7 @@ export function validateEnv(): EnvConfig {
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY!,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
   }
 
@@ -107,8 +107,8 @@ export function getResendApiKey(): string | undefined {
   return validateEnv().RESEND_API_KEY
 }
 
-export function getGeminiApiKey(): string | undefined {
-  return validateEnv().GEMINI_API_KEY
+export function getAnthropicApiKey(): string | undefined {
+  return validateEnv().ANTHROPIC_API_KEY
 }
 
 export function isProduction(): boolean {

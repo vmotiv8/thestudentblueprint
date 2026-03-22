@@ -211,8 +211,8 @@ localStorage.setItem("studentblueprint_coupon", data.code)
           className="text-center mb-8 sm:mb-12"
         >
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1e3a5f] mb-3 sm:mb-4"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4"
+            style={{ fontFamily: "'Playfair Display', serif", color: tenant?.primary_color || "#1e3a5f" }}
           >
             Complete Your Purchase
           </h1>
@@ -224,24 +224,18 @@ localStorage.setItem("studentblueprint_coupon", data.code)
         <div className="grid lg:grid-cols-2 gap-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
             <Card className="border-[#e5e0d5] shadow-lg overflow-hidden rounded-xl">
-              <div className="bg-[#1e3a5f] text-white p-6">
+              <div className="text-white p-6" style={{ backgroundColor: tenant?.primary_color || "#1e3a5f" }}>
                 <div className="flex items-center gap-3 mb-1">
-                  <Sparkles className="w-5 h-5 text-[#c9a227]" />
+                  <Sparkles className="w-5 h-5" style={{ color: tenant?.secondary_color || "#c9a227" }} />
                   <h3 className="text-xl font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    Student Assessment
+                    {tenant?.name ? `${tenant.name} Assessment` : "Student Assessment"}
                   </h3>
                 </div>
                 <p className="text-white/70 text-sm">One-time payment for full access</p>
               </div>
                 <CardContent className="p-6 pt-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider animate-pulse">
-                      98% OFF - Limited Time
-                    </div>
-                  </div>
                   <div className="mb-8 flex items-baseline gap-2">
-                    <span className="text-2xl line-through text-[#5a7a9a]/60">$27,000</span>
-                    <span className="text-5xl font-bold text-[#1e3a5f]" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
+                    <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
                       ${tenant?.assessment_price || "499"}
                     </span>
                     <span className="text-lg text-[#5a7a9a] ml-1">USD</span>
@@ -291,7 +285,8 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                 <Button
                   onClick={handlePayment}
                   disabled={isProcessing || !email}
-                  className="w-full bg-[#c9a227] hover:bg-[#b8921f] text-[#1e3a5f] font-semibold h-12"
+                  className="w-full font-semibold h-12 text-white"
+                  style={{ backgroundColor: tenant?.primary_color || "#1e3a5f" }}
                 >
                     {isProcessing ? (
                       <>

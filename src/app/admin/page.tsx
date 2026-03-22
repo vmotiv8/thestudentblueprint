@@ -252,6 +252,7 @@ export default function SuperAdminDashboard() {
   const [isCreatingDemo, setIsCreatingDemo] = useState(false)
   const [showDemoDialog, setShowDemoDialog] = useState(false)
   const [demoOrgId, setDemoOrgId] = useState<string>("")
+  const [demoType, setDemoType] = useState<string>("healthcare")
 
   // Co-Super Admin management
   const [superAdmins, setSuperAdmins] = useState<Array<{
@@ -609,7 +610,7 @@ export default function SuperAdminDashboard() {
       const response = await fetch("/api/admin/demo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ organizationId: demoOrgId || undefined }),
+        body: JSON.stringify({ organizationId: demoOrgId || undefined, demoType }),
       })
       const data = await response.json()
       if (response.ok) {
@@ -2043,17 +2044,39 @@ export default function SuperAdminDashboard() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <Label>Demo Profile</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "healthcare", label: "Healthcare", emoji: "🩺", name: "Priya Sharma", grade: "9th", score: 94 },
+                  { id: "finance", label: "Finance", emoji: "📊", name: "Marcus Chen", grade: "10th", score: 91 },
+                  { id: "engineering", label: "Engineering", emoji: "⚙️", name: "Sofia Rodriguez", grade: "11th", score: 89 },
+                ].map((demo) => (
+                  <button
+                    key={demo.id}
+                    type="button"
+                    onClick={() => setDemoType(demo.id)}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${demoType === demo.id ? 'border-[#c9a227] bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className="text-lg mb-1">{demo.emoji}</div>
+                    <div className="font-bold text-sm text-[#0a192f]">{demo.label}</div>
+                    <div className="text-[10px] text-gray-500 mt-1">{demo.name}</div>
+                    <div className="text-[10px] text-gray-400">{demo.grade} grade · Score {demo.score}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm text-amber-700">
               <p className="font-medium flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
                 What the demo includes:
               </p>
               <ul className="list-disc list-inside mt-2 text-amber-600 space-y-1">
-                <li>Sample student profile (Alex Demo)</li>
-                <li>Completed assessment with all sections filled</li>
-                <li>AI-generated analysis and roadmap</li>
-                <li>Competitiveness score of 87</li>
-                <li>Full results page you can share</li>
+                <li>Complete student profile with all sections filled</li>
+                <li>Personalized analysis, roadmap, and recommendations</li>
+                <li>Scholarship matches and college recommendations</li>
+                <li>Full results page you can share with prospects</li>
               </ul>
             </div>
           </div>

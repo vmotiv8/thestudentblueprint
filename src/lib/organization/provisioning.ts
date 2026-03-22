@@ -176,7 +176,7 @@ export async function provisionOrganization(input: CreateOrganizationInput): Pro
         {
           organization_id: organization.id,
           question: 'How long does the assessment take?',
-          answer: 'The assessment typically takes 15-20 minutes to complete. You can save your progress and return later if needed.',
+          answer: 'The assessment typically takes about one hour to complete. You can save your progress and return later if needed.',
           sort_order: 1,
           is_active: true,
         },

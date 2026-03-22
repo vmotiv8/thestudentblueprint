@@ -18,6 +18,7 @@ export async function GET(request: Request) {
       primary_color: organization.primary_color,
       secondary_color: organization.secondary_color,
       assessment_price: organization.assessment_price,
+      free_assessments: organization.free_assessments,
     });
   } catch (error: any) {
     console.error('Error fetching tenant info:', error);

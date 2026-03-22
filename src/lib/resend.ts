@@ -275,7 +275,7 @@ export async function sendStudentInviteEmail(props: {
                 <a href="${assessmentUrl}" style="display: inline-block; background-color: ${safePrimaryColor}; color: #ffffff; padding: 18px 40px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px;">
                   Start My Assessment →
                 </a>
-                <p style="margin: 16px 0 0; color: #5a7a9a; font-size: 13px;">Takes about 15-20 minutes. You can save and resume later.</p>
+                <p style="margin: 16px 0 0; color: #5a7a9a; font-size: 13px;">Takes about one hour to complete. You can save and resume later.</p>
               </div>
             </td>
           </tr>

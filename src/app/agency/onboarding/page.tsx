@@ -624,7 +624,7 @@ export default function OnboardingPage() {
                         {[
                           'Student receives a branded email invitation',
                           'They click through to your assessment portal',
-                          'Complete the assessment (15-20 minutes)',
+                          'Complete the assessment (about one hour)',
                           'You\'ll see their results in your dashboard',
                         ].map((item, i) => (
                           <li key={i} className="flex items-center gap-2.5 text-sm text-[#5a7a9a]">

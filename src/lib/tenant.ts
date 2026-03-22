@@ -64,9 +64,17 @@ export async function resolveOrganization(request: Request): Promise<Organizatio
   const url = new URL(request.url);
   const hostname = request.headers.get('host') || '';
   
+  // Check /org/{slug} path
   const pathMatch = url.pathname.match(/^\/org\/([^/]+)/);
   if (pathMatch) {
     const org = await getOrganizationBySlug(pathMatch[1]);
+    if (org) return org;
+  }
+
+  // Check /{slug}/checkout or /{slug}/assessment path patterns (used in invite links)
+  const slugPathMatch = url.pathname.match(/^\/([^/]+)\/(checkout|assessment)/);
+  if (slugPathMatch) {
+    const org = await getOrganizationBySlug(slugPathMatch[1]);
     if (org) return org;
   }
   

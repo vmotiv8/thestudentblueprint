@@ -16,6 +16,8 @@ export interface CreateOrganizationInput {
   logoUrl?: string
   assessmentPrice?: number
   trialDays?: number
+  maxStudents?: number
+  billingType?: 'subscription' | 'one_time'
 }
 
 export interface ProvisioningResult {
@@ -103,8 +105,9 @@ export async function provisionOrganization(input: CreateOrganizationInput): Pro
         slug,
         billing_email: input.billingEmail || input.ownerEmail,
         plan_type: planType,
-        subscription_status: 'trial',
-        max_students: planConfig.maxStudents,
+        subscription_status: input.billingType === 'one_time' ? 'active' : 'trial',
+        billing_type: input.billingType || 'subscription',
+        max_students: input.maxStudents ?? planConfig.maxStudents,
         max_admins: planConfig.maxAdmins,
         current_students_count: 0,
         assessment_price: input.assessmentPrice ?? 47,

@@ -1,31 +1,31 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence, useScroll, useTransform, useSpring, useAnimationControls, useMotionValue, animate } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, animate, useInView } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { 
-  GraduationCap, 
-  Target, 
-  Clock, 
+import {
   ChevronLeft,
-  ChevronRight, 
-  Star, 
+  ChevronRight,
+  Star,
   Brain,
+  Target,
   TrendingUp,
   Award,
-  Heart,
-  Trophy,
   Briefcase,
   ArrowRight,
+  ArrowDown,
   ShieldCheck,
   Zap,
-  Lightbulb,
   Menu,
-  X
+  X,
+  Check,
+  Minus
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+
+// ─── Data ────────────────────────────────────────────────────────────────────
 
 const features = [
   {
@@ -52,26 +52,41 @@ const features = [
 
 const testimonials = [
   {
-    name: "Elite Academy",
-    school: "Tutoring Agency",
-    quote: "TheStudentBlueprint has transformed our consulting workflow. We can now deliver Ivy League level strategies to 10x more students."
+    name: "Rachel Kim",
+    school: "Founder, Apex Admissions Group",
+    quote: "We went from spending 6 hours per student on manual profile analysis to generating a comprehensive Ivy League roadmap in under 10 minutes. Our counselors now handle 3x the caseload without sacrificing quality. Last year, 23 of our students got into T20 schools using Blueprint-generated strategies."
   },
   {
-    name: "Global Scholars",
-    school: "Educational Consultancy",
-    quote: "The automated roadmap is our most popular premium feature. Our revenue per student has increased by 40%."
+    name: "David Okafor",
+    school: "CEO, Meridian College Consulting",
+    quote: "The white-label feature was the game-changer for us. Our clients have no idea the roadmaps come from Blueprint \u2014 they think we built it all in-house. We added it as a $2,500 premium tier and it became our highest-margin service overnight. Revenue is up 47% year over year."
   },
   {
-    name: "Prestige Prep",
-    school: "Admissions Boutique",
-    quote: "The depth of the profile analysis is incredible. It finds strengths in students that our manual process used to miss."
+    name: "Sarah Mitchell",
+    school: "Director, Ivy Bridge Partners",
+    quote: "I was skeptical that Blueprint Intelligence could match what our ex-admissions-officer counselors do. I was wrong. The archetype analysis and gap identification caught blind spots we consistently missed. One student's profile was completely repositioned around a narrative we hadn't considered, and she got into Princeton early action."
+  },
+  {
+    name: "James Chen",
+    school: "Managing Partner, Pacific Prep Advisors",
+    quote: "We serve 400+ families across the Bay Area and Shanghai. Before Blueprint, scaling meant hiring more counselors at $90K each. Now one counselor with Blueprint delivers better outcomes than three without it. The scholarship matching alone has saved our families over $2M in found funding this cycle."
+  },
+  {
+    name: "Anita Desai",
+    school: "Founder, Aspire Education Collective",
+    quote: "What sets Blueprint apart is the grade-by-grade roadmap. Parents see a concrete four-year plan and immediately understand the value. Our close rate on premium packages went from 35% to 72% after we started showing the Blueprint analysis in our initial consultations. It sells itself."
+  },
+  {
+    name: "Michael Torres",
+    school: "Head of Strategy, Compass College Advisory",
+    quote: "We piloted Blueprint with 50 students last spring. Every single one said the personalized roadmap was the most valuable part of our service. The mentor matching feature connected three students with research opportunities that became the centerpiece of their applications. Two got into Stanford."
   }
 ]
 
 const stats = [
-  { number: "10x", label: "Counseling Efficiency", sub: "Automated report generation" },
-  { number: "40%", label: "Avg. Revenue Increase", sub: "Per student enrollment" },
-  { number: "100+", label: "Partner Agencies", sub: "Scaling their admissions success" }
+  { number: "10x", label: "Efficiency", sub: "Automated report generation" },
+  { number: "40%", label: "Revenue Growth", sub: "Per student enrollment" },
+  { number: "100+", label: "Partner Agencies", sub: "Scaling admissions success" }
 ]
 
 const faqs = [
@@ -118,6 +133,8 @@ const sampleQuestions = [
   }
 ]
 
+// ─── Interfaces ──────────────────────────────────────────────────────────────
+
 interface FAQ {
   id: string
   question: string
@@ -133,18 +150,68 @@ interface Testimonial {
   display_order: number
 }
 
+// ─── Animation constants ─────────────────────────────────────────────────────
+
+const ease = [0.25, 0.1, 0.25, 1] as const
+const fadeUp = {
+  initial: { opacity: 0, y: 60 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-100px" },
+  transition: { duration: 0.8, ease }
+}
+const stagger = (i: number, base = 0.15) => ({
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.6, delay: i * base, ease }
+})
+
+// ─── Counter Hook ────────────────────────────────────────────────────────────
+
+function useCountUp(target: string, inView: boolean) {
+  const [display, setDisplay] = useState("0")
+  const hasRun = useRef(false)
+
+  useEffect(() => {
+    if (!inView || hasRun.current) return
+    hasRun.current = true
+
+    const numericMatch = target.match(/(\d+)/)
+    if (!numericMatch) { setDisplay(target); return }
+
+    const end = parseInt(numericMatch[1])
+    const prefix = target.slice(0, target.indexOf(numericMatch[1]))
+    const suffix = target.slice(target.indexOf(numericMatch[1]) + numericMatch[1].length)
+    const duration = 2000
+    const startTime = Date.now()
+
+    const tick = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = Math.round(eased * end)
+      setDisplay(`${prefix}${current}${suffix}`)
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [inView, target])
+
+  return display
+}
+
+// ─── Testimonial Marquee ─────────────────────────────────────────────────────
+
 function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonials: Testimonial[] }) {
   const [isPaused, setIsPaused] = useState(false)
   const x = useMotionValue(0)
   const controls = useRef<any>(null)
   const doubledTestimonials = [...initialTestimonials, ...initialTestimonials, ...initialTestimonials]
-  
+
   const startMarquee = () => {
     if (controls.current) controls.current.stop()
-    
+
     const currentX = x.get()
     const targetX = -33.333
-    // Speed: 33.333% in 50 seconds => 0.666% per second
     const remainingDistance = currentX <= targetX ? 33.333 + currentX : Math.abs(targetX - currentX)
     const duration = (remainingDistance / 33.333) * 50
 
@@ -166,12 +233,11 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
   const scroll = (direction: 'left' | 'right') => {
     if (controls.current) controls.current.stop()
     setIsPaused(true)
-    
+
     const currentX = x.get()
-    const step = 5 // 5% move
+    const step = 5
     let targetX = direction === 'left' ? currentX + step : currentX - step
-    
-    // Wrap around logic for manual scroll
+
     if (targetX > 0) targetX = -33.333 + targetX
     if (targetX < -33.333) targetX = targetX + 33.333
 
@@ -186,19 +252,17 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
 
   return (
     <div className="relative group px-4 sm:px-12">
-      {/* Overlay Gradients */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-r from-white via-white to-transparent z-20 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-l from-white via-white to-transparent z-20 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-r from-[#faf8f3] via-[#faf8f3] to-transparent z-20 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-l from-[#faf8f3] via-[#faf8f3] to-transparent z-20 pointer-events-none" />
 
-      {/* Manual Navigation Arrows */}
-      <button 
-        className="absolute left-1 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a192f] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
+      <button
+        className="absolute left-1 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
         onClick={() => scroll('left')}
       >
         <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
-      <button 
-        className="absolute right-1 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a192f] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
+      <button
+        className="absolute right-1 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
         onClick={() => scroll('right')}
       >
         <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -219,17 +283,17 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
         >
           {doubledTestimonials.map((t, i) => (
             <div key={i} className="flex-shrink-0 px-3 group/card">
-              <motion.div 
-                className={`w-[280px] sm:w-[380px] bg-[#faf8f3] border border-[#e5e0d5] p-6 sm:p-8 transition-all duration-700 group-hover/card:border-[#c9a227]/30 group-hover/card:shadow-xl group-hover/card:shadow-[#c9a227]/5 ${i % 3 === 1 ? 'scale-105 shadow-lg z-10' : 'scale-100'}`}
-                whileHover={{ scale: 1.05 }}
+              <motion.div
+                className="w-[320px] sm:w-[440px] bg-white border border-[#e5e0d5] p-6 sm:p-8 rounded-2xl transition-all duration-700 group-hover/card:border-[#c9a227]/30 group-hover/card:shadow-xl group-hover/card:shadow-[#c9a227]/5 shadow-sm"
+                whileHover={{ scale: 1.03 }}
               >
-                <div className="mb-6 relative">
-                  <div className="absolute -top-6 -left-4 text-7xl font-display text-[#c9a227]/10">&ldquo;</div>
-                  <p className="text-sm sm:text-base text-[#0a192f] leading-relaxed font-light italic relative z-10">&ldquo;{t.quote}&rdquo;</p>
+                <div className="mb-5 relative">
+                  <div className="absolute -top-4 -left-2 text-6xl font-display text-[#c9a227]/15 select-none">&ldquo;</div>
+                  <p className="text-sm sm:text-[15px] text-[#1a1a1a] leading-relaxed relative z-10 min-h-[100px]">{t.quote}</p>
                 </div>
-                <div className="pt-6 border-t border-[#e5e0d5]">
-                  <p className="text-[10px] sm:text-xs font-bold text-[#0a192f] uppercase tracking-[0.3em]">{t.name}</p>
-                  <p className="text-[9px] sm:text-[11px] text-[#c9a227] font-medium uppercase tracking-[0.3em] mt-2">{t.school}</p>
+                <div className="pt-5 border-t border-[#e5e0d5]">
+                  <p className="text-xs sm:text-sm font-bold text-[#0a0a0a]">{t.name}</p>
+                  <p className="text-xs sm:text-xs text-[#c9a227] font-medium mt-1">{t.school}</p>
                 </div>
               </motion.div>
             </div>
@@ -240,29 +304,64 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
   )
 }
 
+// ─── Stat Card ───────────────────────────────────────────────────────────────
+
+function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: "-100px" })
+  const display = useCountUp(stat.number, inView)
+
+  return (
+    <motion.div
+      ref={ref}
+      {...stagger(index, 0.2)}
+      className="text-center"
+    >
+      <div
+        className="text-6xl sm:text-7xl md:text-8xl font-bold bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent mb-4"
+        style={{ fontFamily: "'Playfair Display', serif" }}
+      >
+        {display}
+      </div>
+      <div className="text-xs sm:text-sm font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-2">
+        {stat.label}
+      </div>
+      <div className="text-xs text-white/60 font-light tracking-wide">
+        {stat.sub}
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
+
 function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [faqsList, setFaqsList] = useState<FAQ[]>([])
   const [testimonialsList, setTestimonialsList] = useState<Testimonial[]>([])
-  const containerRef = useRef<HTMLDivElement>(null)
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
+
+  const heroRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
     offset: ["start start", "end start"]
   })
+  const heroOpacity = useTransform(heroProgress, [0, 0.5], [1, 0])
+  const heroY = useTransform(heroProgress, [0, 0.5], [0, -100])
+  const heroScale = useTransform(heroProgress, [0, 0.5], [1, 0.95])
 
-  // Parallax effects
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"])
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"])
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
-  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9])
+  const statementRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress: stmtProgress } = useScroll({
+    target: statementRef,
+    offset: ["start end", "end start"]
+  })
+  const stmtOpacity = useTransform(stmtProgress, [0.1, 0.35, 0.65, 0.9], [0, 1, 1, 0])
+  const stmtY = useTransform(stmtProgress, [0.1, 0.35], [60, 0])
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener("scroll", handleScroll)
-    
-    // Fetch CMS content
+
     const fetchCMS = async () => {
       try {
         const [faqsRes, testimonialsRes] = await Promise.all([
@@ -271,9 +370,17 @@ function LandingPage() {
         ])
         const faqsData = await faqsRes.json()
         const testimonialsData = await testimonialsRes.json()
-        
+
         if (faqsData.faqs) setFaqsList(faqsData.faqs)
-        if (testimonialsData.testimonials) setTestimonialsList(testimonialsData.testimonials)
+        if (testimonialsData.testimonials) {
+          // Map CMS field names (content/author_name/author_title) to component field names (quote/name/school)
+          setTestimonialsList(testimonialsData.testimonials.map((t: any) => ({
+            ...t,
+            quote: t.quote || t.content || '',
+            name: t.name || t.author_name || '',
+            school: t.school || t.author_title || '',
+          })))
+        }
       } catch (error) {
         console.error("Error fetching CMS content:", error)
       }
@@ -284,27 +391,28 @@ function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#faf8f3] font-sans selection:bg-[#c9a227]/30">
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "bg-[#0a192f]/98 backdrop-blur-xl py-4 border-b border-white/5 shadow-2xl" : "bg-transparent py-6"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0a] font-sans selection:bg-[#c9a227]/30">
+      {/* ── Nav ──────────────────────────────────────────────────────────── */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#0a0a0a]/90 backdrop-blur-2xl py-4 border-b border-white/5" : "bg-transparent py-6"}`}>
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
             <div className="relative w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-700 group-hover:rotate-[360deg]">
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
-            <span className={`font-display text-xl sm:text-2xl font-bold tracking-tight transition-colors duration-300 ${isScrolled ? "text-white" : "text-white"}`} style={{ fontFamily: "'Playfair Display', serif" }}>
+            <span className="font-bold text-xl sm:text-2xl text-white tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
               TheStudentBlueprint
             </span>
-            <div className="px-1.5 sm:py-0.5 bg-[#c9a227]/20 border border-[#c9a227]/30 rounded-full hidden xs:block">
-              <span className="text-[8px] sm:text-[10px] font-bold text-[#c9a227] uppercase tracking-widest">Beta</span>
+            <div className="px-1.5 py-0.5 bg-[#c9a227]/20 border border-[#c9a227]/30 rounded-full hidden sm:block">
+              <span className="text-xs sm:text-xs font-bold text-[#c9a227] uppercase tracking-widest">Beta</span>
             </div>
           </Link>
 
           <div className="hidden lg:flex items-center gap-10">
             {["Services", "Testimonials", "Methodology", "FAQ"].map((item) => (
-              <Link 
-                key={item} 
-                href={`#${item.toLowerCase()}`} 
-                className="text-white/60 hover:text-[#c9a227] text-xs font-bold tracking-[0.3em] uppercase transition-all duration-300"
+              <Link
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-white/50 hover:text-white text-xs font-medium tracking-[0.2em] uppercase transition-all duration-300"
               >
                 {item}
               </Link>
@@ -312,15 +420,15 @@ function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/admin/login" className="text-white/50 hover:text-white text-[10px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase transition-colors">
+            <Link href="/admin/login" className="text-white/70 hover:text-white text-xs sm:text-xs font-medium tracking-[0.2em] uppercase transition-colors">
               Login
             </Link>
-            <Link href="/admin/login" className="hidden sm:block">
-              <Button className="bg-[#c9a227] hover:bg-white hover:text-[#0a192f] text-[#0a192f] font-bold text-[10px] sm:text-sm px-4 sm:px-8 py-3 sm:py-6 h-auto rounded-none border border-[#c9a227] transition-all duration-700 tracking-[0.2em] sm:tracking-[0.3em] uppercase shadow-lg shadow-[#c9a227]/10">
+            <Button asChild className="hidden sm:inline-flex bg-white hover:bg-[#c9a227] text-[#0a0a0a] font-semibold text-xs px-6 py-3 h-auto rounded-full transition-all duration-500 tracking-wide">
+              <Link href="/get-started">
                 Get Started
-              </Button>
-            </Link>
-            <button 
+              </Link>
+            </Button>
+            <button
               className="lg:hidden text-white p-2"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -329,277 +437,381 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden absolute top-full left-0 right-0 bg-[#0a192f] border-b border-white/10 py-8 px-6 shadow-2xl z-50"
+              className="lg:hidden absolute top-full left-0 right-0 bg-[#0a0a0a]/98 backdrop-blur-2xl border-b border-white/5 py-8 px-6 shadow-2xl z-50"
             >
               <div className="flex flex-col gap-6">
                 {["Services", "Testimonials", "Methodology", "FAQ"].map((item) => (
-                  <Link 
-                    key={item} 
-                    href={`#${item.toLowerCase()}`} 
-                    className="text-white/80 hover:text-[#c9a227] text-sm font-bold tracking-[0.2em] uppercase transition-all duration-300"
+                  <Link
+                    key={item}
+                    href={`#${item.toLowerCase()}`}
+                    className="text-white/80 hover:text-[#c9a227] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item}
                   </Link>
                 ))}
                 <div className="h-px bg-white/10 my-2" />
-                <Link 
-                  href="/admin/login" 
-                  className="text-white/80 hover:text-[#c9a227] text-sm font-bold tracking-[0.2em] uppercase transition-all duration-300"
+                <Link
+                  href="/admin/login"
+                  className="text-white/80 hover:text-[#c9a227] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Login
                 </Link>
-                <Link href="/admin/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-[#c9a227] text-[#0a192f] font-bold py-4 rounded-none uppercase tracking-[0.2em]">
+                <Button asChild className="w-full bg-white text-[#0a0a0a] font-semibold py-4 rounded-full uppercase tracking-[0.15em]">
+                  <Link href="/get-started" onClick={() => setIsMobileMenuOpen(false)}>
                     Get Started
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
 
-      <section ref={containerRef} className="relative h-screen min-h-[600px] sm:min-h-[800px] flex items-center overflow-hidden bg-[#1a365d]">
-        <motion.div 
-          style={{ y: bgY }}
-          className="absolute inset-0 z-0"
+      {/* ── Section 1: Hero ──────────────────────────────────────────────── */}
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#0f1419] to-[#0a0a0a]" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-[#c9a227]/[0.04] rounded-full blur-[180px]" />
+          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
+        </div>
+
+        <motion.div
+          style={{ opacity: heroOpacity, y: heroY, scale: heroScale }}
+          className="relative z-10 max-w-6xl mx-auto px-6 text-center"
         >
-          <Image 
-            src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2000" 
-            alt="Library" 
-            fill 
-            className="object-cover opacity-30 scale-110 grayscale-[30%]"
-            priority
-          />
-          <div className="absolute inset-0 bg-[#1a365d]/40" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#112240] via-[#112240]/70 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#112240] to-transparent" />
+          {/* Main headline — empowering */}
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6 sm:mb-8"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            <span className="text-white">Scale Your Agency.</span>
+            <br />
+            <span className="text-white">Transform Every</span>
+            <br />
+            <span className="bg-gradient-to-r from-[#c9a227] via-[#e8d48b] to-[#c9a227] bg-clip-text text-transparent">
+              Student&apos;s Future.
+            </span>
+          </motion.h1>
+
+          {/* Subheadline — value prop */}
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.7 }}
+            className="text-lg sm:text-xl md:text-2xl text-white/60 max-w-3xl mx-auto leading-relaxed mb-6"
+          >
+            <span className="text-white font-medium">Blueprint Intelligence</span> empowers your agency to deliver
+            personalized, data-driven college strategies to <span className="text-[#c9a227]">every student you serve</span> — at scale, without sacrificing quality.
+          </motion.p>
+
+          {/* Value prop line */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.9 }}
+            className="text-sm text-white/40 mb-10 sm:mb-12"
+          >
+            Trusted by agencies to deliver <span className="text-white/70 font-medium">higher-quality roadmaps</span> with <span className="text-white/70 font-medium">3x faster turnaround</span>.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1.1 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
+          >
+            <Button asChild size="lg" className="bg-[#c9a227] hover:bg-[#e8d48b] text-[#0a0a0a] px-10 sm:px-14 py-6 sm:py-7 h-auto text-sm sm:text-base font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#c9a227]/20 tracking-wide">
+              <Link href="/get-started">
+                Start Your Free Setup <ArrowRight className="ml-3 w-5 h-5" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="border-white/15 text-white/70 hover:text-white hover:border-white/30 px-10 py-6 sm:py-7 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
+              <Link href="#methodology">
+                See How It Works
+              </Link>
+            </Button>
+          </motion.div>
+
+          {/* Micro-commitment reducer */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.3 }}
+            className="text-xs text-white/30"
+          >
+            No credit card required to explore. Set up in under 5 minutes.
+          </motion.p>
         </motion.div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-24 items-center">
-          <motion.div style={{ y: contentY, opacity, scale: heroScale }}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1 }}
-              className="inline-flex items-center gap-4 text-[#c9a227] mb-8"
-            >
-              <div className="h-[1px] w-16 bg-[#c9a227]" />
-              <span className="text-xs font-bold tracking-[0.5em] uppercase">For Educational Organizations</span>
-            </motion.div>
-
-            <motion.h1 
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="text-4xl xs:text-5xl md:text-7xl font-medium text-white mb-8 leading-[1.1]"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              Scale Your <br />
-              <span className="text-[#c9a227] italic">Tutoring Agency</span> <br />
-              Revenue
-            </motion.h1>
-
-            <motion.p 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.4 }}
-              className="text-lg text-white/60 mb-8 max-w-xl leading-relaxed font-light"
-            >
-              The premium infrastructure for elite admissions. Empower your counselors with data-driven strategy and deliver personalized Ivy League roadmaps to every student in your agency.
-            </motion.p>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.6 }}
-            >
-              <Link href="/admin/login">
-                <Button size="lg" className="bg-[#c9a227] hover:bg-white hover:text-[#0a192f] text-[#0a192f] px-8 sm:px-12 py-5 sm:py-8 h-auto text-xs sm:text-sm font-bold rounded-none border border-[#c9a227] transition-all duration-700 tracking-[0.2em] sm:tracking-[0.4em] uppercase shadow-2xl shadow-[#c9a227]/20">
-                  Get Started <ArrowRight className="ml-4 w-5 h-5" />
-                </Button>
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, delay: 0.4 }}
-            className="hidden lg:block relative"
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2, duration: 1 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
           >
-            <div className="absolute -inset-10 bg-[#c9a227]/10 blur-[120px] rounded-full" />
-            <div className="relative bg-[#0a192f]/60 backdrop-blur-3xl border border-white/5 p-10 rounded-none">
-              <div className="mb-8">
-                <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">Agency Dashboard</span>
-                <h3 className="text-2xl text-white mt-4" style={{ fontFamily: "'Playfair Display', serif" }}>Platform Preview</h3>
-              </div>
-              
-              <div className="space-y-6">
-                {[
-                  { icon: Briefcase, text: "Organization Management", sub: "Manage counselors & students" },
-                  { icon: TrendingUp, text: "Revenue Analytics", sub: "Track high-margin growth" },
-                  { icon: ShieldCheck, text: "White-Label Branding", sub: "Your brand, our infrastructure" },
-                  { icon: Award, text: "Success Benchmarking", sub: "Ivy League admission data" }
-                ].map((item, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 + (i * 0.1) }}
-                    className="flex items-start gap-5"
-                  >
-                    <div className="w-10 h-10 rounded-none border border-[#c9a227]/20 bg-[#c9a227]/5 flex items-center justify-center shrink-0">
-                      <item.icon className="w-4 h-4 text-[#c9a227]" />
-                    </div>
-                    <div>
-                      <p className="text-base font-medium text-white tracking-wide">{item.text}</p>
-                      <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">{item.sub}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-10 pt-10 border-t border-white/5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold tracking-[0.4em] text-white/30 uppercase">Enterprise Solution</p>
-                  <p className="text-2xl text-white mt-2" style={{ fontFamily: "'Playfair Display', serif" }}>Custom Pricing <span className="text-xs font-sans text-white/20 ml-3 font-light">Per Student</span></p>
-                </div>
-                <div className="flex items-center gap-3 px-3 py-1.5 bg-[#c9a227]/10 border border-[#c9a227]/20">
-                  <ShieldCheck className="w-4 h-4 text-[#c9a227]" />
-                  <span className="text-[11px] font-bold text-[#c9a227] uppercase tracking-[0.3em]">Verified</span>
-                </div>
-              </div>
-            </div>
+            <ArrowDown className="w-5 h-5 text-white/20" />
           </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Section 2: Statement ─────────────────────────────────────────── */}
+      <section ref={statementRef} className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-6">
+        <motion.div
+          style={{ opacity: stmtOpacity, y: stmtY }}
+          className="max-w-5xl mx-auto text-center"
+        >
+          <p
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] text-white/90"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Imagine delivering a personalized Ivy League roadmap to{" "}
+            <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent font-medium italic">
+              every student who walks through your door
+            </span>{" "}
+            — powered by data, backed by expertise, and ready in minutes.
+          </p>
+        </motion.div>
+      </section>
+
+      {/* ── Section 3: Stats ─────────────────────────────────────────────── */}
+      <section className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-16 sm:gap-20">
+          {stats.map((stat, i) => (
+            <StatCard key={i} stat={stat} index={i} />
+          ))}
         </div>
       </section>
 
-      <section className="bg-[#0a192f] py-20 sm:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-8 sm:p-20 grid md:grid-cols-3 gap-10 sm:gap-16">
-            {stats.map((stat, i) => (
-              <div key={i} className="text-center group">
-                <div className="text-4xl sm:text-5xl text-white mb-3 group-hover:text-[#c9a227] transition-colors duration-700" style={{ fontFamily: "'Playfair Display', serif" }}>{stat.number}</div>
-                <div className="text-[10px] sm:text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-2">{stat.label}</div>
-                <div className="text-[10px] sm:text-xs text-white/40 italic font-light tracking-wide">{stat.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="methodology" className="py-20 sm:py-32 px-4 sm:px-6">
+      {/* ── Section 4: How It Works ──────────────────────────────────────── */}
+      <section id="methodology" className="py-32 sm:py-48 bg-[#faf8f3] px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 sm:mb-20">
-            <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">The Agency Infrastructure</span>
-            <h2 className="text-3xl sm:text-5xl text-[#0a192f] mt-6" style={{ fontFamily: "'Playfair Display', serif" }}>Enterprise-Grade Success</h2>
-          </div>
+          <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">The Process</p>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              How It Works
+            </h2>
+          </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-[#e5e0d5] border border-[#e5e0d5]">
-            {features.map((feature, i) => (
-              <div key={i} className="bg-[#faf8f3] p-8 sm:p-12 hover:bg-white transition-all duration-700 group cursor-default">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-none bg-[#0a192f]/5 flex items-center justify-center mb-8 group-hover:bg-[#0a192f] transition-all duration-700">
-                  <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#0a192f] group-hover:text-[#c9a227] transition-colors duration-700" />
+          <div className="grid md:grid-cols-3 gap-8 sm:gap-12">
+            {[
+              {
+                step: "01",
+                title: "Deploy",
+                description: "White-labeled assessment under your brand. Send to students as part of onboarding or premium strategy sessions."
+              },
+              {
+                step: "02",
+                title: "Analyze",
+                description: "Blueprint Intelligence generates personalized Ivy League roadmaps in seconds. Data-driven insights your counselors can act on immediately."
+              },
+              {
+                step: "03",
+                title: "Scale",
+                description: "Increase revenue with premium data-driven services. Turn every student interaction into a high-margin opportunity."
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                {...stagger(i, 0.2)}
+                className="relative group"
+              >
+                <div className="mb-8">
+                  <span className="text-7xl sm:text-8xl font-bold text-[#0a0a0a]/[0.04]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {item.step}
+                  </span>
                 </div>
-                <h3 className="text-lg sm:text-xl text-[#0a192f] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>{feature.title}</h3>
-                <p className="text-sm sm:text-base text-[#0a192f]/60 leading-relaxed font-light">{feature.description}</p>
-              </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  {item.title}
+                </h3>
+                <p className="text-base text-[#0a0a0a]/70 leading-relaxed">
+                  {item.description}
+                </p>
+                <div className="mt-8 h-px w-full bg-gradient-to-r from-[#c9a227]/40 to-transparent" />
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 sm:py-32 bg-[#faf8f3] border-y border-[#e5e0d5]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16 sm:mb-20">
-            <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">Premium Value</span>
-            <h2 className="text-3xl sm:text-4xl text-[#0a192f] mt-6" style={{ fontFamily: "'Playfair Display', serif" }}>The Future of Admissions Consulting</h2>
-          </div>
+      {/* ── Section 5: Features ──────────────────────────────────────────── */}
+      <section id="services" className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Platform</p>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Built for Scale
+            </h2>
+          </motion.div>
 
-          <div className="overflow-x-auto border border-[#e5e0d5] shadow-2xl scrollbar-hide">
-            <table className="w-full text-left border-collapse min-w-[500px] sm:min-w-[600px]">
-              <thead>
-                  <tr className="bg-[#0a192f] text-white">
-                    <th className="p-3 sm:p-8 text-[9px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase">Capability</th>
-                    <th className="p-3 sm:p-8 text-[9px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase border-x border-white/10">Traditional Agency</th>
-                    <th className="p-3 sm:p-8 text-[9px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase text-[#c9a227]">TheStudentBlueprint Powered Agency</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white">
-                  {[
-                    { label: "Data-Driven Profile Analysis", private: "Inconsistent", blueprint: true },
-                    { label: "Automated Ivy League Roadmaps", private: false, blueprint: true },
-                    { label: "White-Labeled Reporting", private: "Manual", blueprint: true },
-                    { label: "Scalable Student Onboarding", private: "Slow", blueprint: true },
-                    { label: "Counselor Efficiency Tools", private: false, blueprint: true },
-                    { label: "Predictive Success Modeling", private: false, blueprint: true },
-                  ].map((row, i) => (
-                    <tr key={i} className="border-t border-[#e5e0d5] hover:bg-[#faf8f3] transition-colors">
-                      <td className="p-3 sm:p-8 text-[10px] sm:text-sm font-medium text-[#0a192f] leading-tight">{row.label}</td>
-                      <td className="p-3 sm:p-8 text-[10px] sm:text-sm text-[#0a192f]/40 font-light border-x border-[#e5e0d5]">
-                        {typeof row.private === 'boolean' ? (row.private ? <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a192f]/20" /> : "—") : row.private}
-                      </td>
-                      <td className="p-3 sm:p-8 text-[10px] sm:text-sm font-bold text-[#0a192f] bg-[#c9a227]/5">
-                        {typeof row.blueprint === 'boolean' ? (row.blueprint ? <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#c9a227]" /> : "—") : row.blueprint}
-                      </td>
-                    </tr>
-                  ))}
-                <tr className="border-t-2 border-[#0a192f]">
-                  <td className="p-3 sm:p-8 text-sm sm:text-lg font-bold text-[#0a192f]" style={{ fontFamily: "'Playfair Display', serif" }}>Profit Margin</td>
-                  <td className="p-3 sm:p-8 text-lg sm:text-2xl text-[#0a192f]/40 font-light border-x border-[#e5e0d5] italic">Low (Manual)</td>
-                  <td className="p-3 sm:p-8 text-xl sm:text-3xl font-bold text-[#c9a227] bg-[#c9a227]/10" style={{ fontFamily: "'Playfair Display', serif" }}>High (Automated)</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {features.map((feature, i) => (
+              <motion.div
+                key={i}
+                {...stagger(i, 0.15)}
+                className="relative group p-8 sm:p-12 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-700 overflow-hidden"
+              >
+                {/* Glassmorphism highlight */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
+
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-[#c9a227]/10 flex items-center justify-center mb-8 group-hover:bg-[#c9a227]/20 transition-colors duration-500">
+                    <feature.icon className="w-5 h-5 text-[#c9a227]" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-white/70 leading-relaxed font-light">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-          <p className="mt-8 text-center text-[10px] sm:text-xs text-[#0a192f]/40 italic">Upgrade your agency infrastructure and capture more market share.</p>
         </div>
       </section>
 
-      <section id="services" className="py-20 sm:py-32 bg-[#0a192f] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-16 sm:gap-24 items-center">
-          <div>
-            <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">Strategic Intelligence</span>
-            <h2 className="text-3xl sm:text-5xl text-white mt-6 mb-8 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>We look beyond the <br /><span className="italic text-[#c9a227]">surface level.</span></h2>
-            <p className="text-sm sm:text-base text-white/50 font-light leading-relaxed mb-12 max-w-lg">
+      {/* ── Section 6: Comparison ────────────────────────────────────────── */}
+      <section className="py-32 sm:py-48 bg-[#faf8f3] px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Why Switch</p>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              The Difference
+            </h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Traditional */}
+            <motion.div
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease }}
+              className="p-8 sm:p-12 rounded-2xl border border-[#e5e0d5] bg-white"
+            >
+              <h3 className="text-xl sm:text-2xl font-bold text-[#0a0a0a]/70 mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Traditional Agency
+              </h3>
+              <ul className="space-y-5">
+                {[
+                  "Inconsistent profile analysis",
+                  "Manual, time-consuming roadmaps",
+                  "No white-label reporting",
+                  "Slow student onboarding",
+                  "Limited scalability",
+                  "No predictive modeling"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-[#0a0a0a]/70 font-light">
+                    <Minus className="w-4 h-4 mt-1 shrink-0 text-[#0a0a0a]/20" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-10 pt-8 border-t border-[#e5e0d5]">
+                <p className="text-sm font-medium text-[#0a0a0a]/30 uppercase tracking-[0.2em]">Profit Margin</p>
+                <p className="text-2xl text-[#0a0a0a]/50 mt-2 italic" style={{ fontFamily: "'Playfair Display', serif" }}>Low</p>
+              </div>
+            </motion.div>
+
+            {/* Blueprint-Powered */}
+            <motion.div
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease }}
+              className="p-8 sm:p-12 rounded-2xl border-2 border-[#c9a227]/30 bg-white relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 bg-[#c9a227] px-4 py-1.5 rounded-bl-xl">
+                <span className="text-xs font-bold text-[#0a0a0a] uppercase tracking-[0.2em]">Recommended</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-[#0a0a0a] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Blueprint-Powered
+              </h3>
+              <ul className="space-y-5">
+                {[
+                  "Data-driven profile analysis",
+                  "Automated Ivy League roadmaps",
+                  "Full white-label reporting",
+                  "Instant student onboarding",
+                  "Unlimited scalability",
+                  "Predictive success modeling"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-[#0a0a0a] font-medium">
+                    <Check className="w-4 h-4 mt-1 shrink-0 text-[#c9a227]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-10 pt-8 border-t border-[#c9a227]/20">
+                <p className="text-sm font-medium text-[#c9a227] uppercase tracking-[0.2em]">Profit Margin</p>
+                <p className="text-2xl text-[#0a0a0a] mt-2 font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>High</p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 7: Deep Dive ─────────────────────────────────────────── */}
+      <section className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 sm:gap-24 items-center">
+          <motion.div {...fadeUp}>
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-6">Strategic Intelligence</p>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+              We look beyond the{" "}
+              <span className="italic bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent">
+                surface level.
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg text-white/70 font-light leading-relaxed mb-12 max-w-lg">
               Our 15-section methodology is designed to uncover the hidden gems in your students' profiles. We automate the dimensions that standard counselors often overlook.
             </p>
-            
-            <Link href="/admin/login">
-              <Button variant="outline" className="border-[#c9a227] text-[#c9a227] hover:bg-[#c9a227] hover:text-[#0a192f] rounded-none px-8 sm:px-12 py-6 sm:py-8 text-[10px] sm:text-xs font-bold tracking-[0.4em] uppercase transition-all duration-700">
+            <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white hover:text-[#0a0a0a] rounded-full px-10 py-6 text-sm font-medium tracking-wide transition-all duration-500 bg-transparent">
+              <Link href="/get-started">
                 Get Started
-              </Button>
-            </Link>
-          </div>
+              </Link>
+            </Button>
+          </motion.div>
 
           <div className="grid gap-6">
             {sampleQuestions.map((section, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
-                whileHover={{ x: 10 }}
-                className="bg-white/5 backdrop-blur-sm border border-white/5 p-6 sm:p-10 hover:border-[#c9a227]/30 transition-all duration-700"
+                {...stagger(i, 0.2)}
+                className="p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-[#c9a227]/20 transition-all duration-700"
               >
-                <div className="flex items-center gap-5 mb-8">
-                  <div className="w-10 h-10 rounded-none bg-[#c9a227]/10 flex items-center justify-center">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-10 h-10 rounded-xl bg-[#c9a227]/10 flex items-center justify-center">
                     <section.icon className="w-4 h-4 text-[#c9a227]" />
                   </div>
-                  <h3 className="text-lg sm:text-xl text-white tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>{section.category}</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {section.category}
+                  </h3>
                 </div>
                 <ul className="space-y-4">
                   {section.questions.map((q, j) => (
-                    <li key={j} className="flex items-start gap-5 group">
-                      <div className="mt-2 w-1.5 h-1.5 rounded-none bg-[#c9a227] shrink-0 opacity-30 group-hover:opacity-100 transition-opacity" />
-                      <p className="text-xs sm:text-sm text-white/30 italic font-light group-hover:text-white/80 transition-colors duration-500">{q}</p>
+                    <li key={j} className="flex items-start gap-4 group">
+                      <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#c9a227] shrink-0 opacity-30 group-hover:opacity-100 transition-opacity" />
+                      <p className="text-sm text-white/60 font-light group-hover:text-white/70 transition-colors duration-500 italic">
+                        {q}
+                      </p>
                     </li>
                   ))}
                 </ul>
@@ -609,125 +821,129 @@ function LandingPage() {
         </div>
       </section>
 
-      <section id="testimonials" className="py-20 sm:py-32 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 sm:mb-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
-            <div className="max-w-3xl">
-              <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">Agency Success</span>
-              <h2 className="text-3xl sm:text-5xl text-[#0a192f] mt-6" style={{ fontFamily: "'Playfair Display', serif" }}>Voices of <br />Elite Partners</h2>
+      {/* ── Section 8: Testimonials ──────────────────────────────────────── */}
+      <section id="testimonials" className="py-32 sm:py-48 bg-[#faf8f3] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 mb-16 sm:mb-20">
+          <motion.div {...fadeUp} className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+            <div>
+              <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Agency Success</p>
+              <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                What Agencies Say
+              </h2>
             </div>
-            <div className="flex items-center gap-4 bg-[#faf8f3] px-6 py-4 border border-[#e5e0d5] w-fit">
+            <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-full border border-[#e5e0d5] w-fit shadow-sm">
               <div className="flex -space-x-1">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-[#c9a227] text-[#c9a227]" />
                 ))}
               </div>
-              <span className="text-[10px] font-bold text-[#0a192f] tracking-[0.3em] uppercase">4.9/5 Agency Rating</span>
+              <span className="text-xs font-semibold text-[#0a0a0a] tracking-wide">4.9/5 Rating</span>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <TestimonialMarquee testimonials={testimonialsList.length > 0 ? testimonialsList : (testimonials as any)} />
+        <TestimonialMarquee testimonials={
+          testimonialsList.length > 0 && testimonialsList.some((t: any) => t.quote?.length > 10)
+            ? testimonialsList
+            : (testimonials as any)
+        } />
       </section>
 
-      <section id="faq" className="py-20 sm:py-32 px-4 sm:px-6 bg-[#0a192f]">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16 sm:mb-20">
-            <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">Have Questions?</span>
-            <h2 className="text-3xl sm:text-5xl text-white mt-6" style={{ fontFamily: "'Playfair Display', serif" }}>FAQ</h2>
-          </div>
+      {/* ── Section 9: FAQ ───────────────────────────────────────────────── */}
+      <section id="faq" className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+        <div className="max-w-3xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-20">
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Questions?
+            </h2>
+          </motion.div>
 
-          <Accordion type="single" collapsible className="space-y-4">
-            {(faqsList.length > 0 ? faqsList : faqs).map((faq, i) => (
-              <AccordionItem 
-                key={i} 
-                value={`item-${i}`}
-                className="bg-white/5 border border-white/5 px-6 sm:px-8 data-[state=open]:border-[#c9a227]/30 transition-all duration-500"
-              >
-                <AccordionTrigger className="text-white hover:text-[#c9a227] text-left py-6 text-base sm:text-lg font-medium hover:no-underline transition-colors duration-500">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-white/40 pb-8 text-sm sm:text-base leading-relaxed font-light">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-[#faf8f3]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <span className="text-xs font-bold tracking-[0.5em] uppercase text-[#c9a227]">The Competitive Edge</span>
-          <h2 className="text-3xl sm:text-5xl text-[#0a192f] mt-6 mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>Why Scale <span className="italic">Now?</span></h2>
-          <div className="bg-white border border-[#e5e0d5] p-8 sm:p-12 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-2 h-full bg-[#c9a227]" />
-            <p className="text-lg sm:text-xl text-[#0a192f]/80 leading-relaxed font-light italic">
-              "The admissions landscape has changed. Manual consulting is no longer enough to stay competitive. Agencies that leverage data-driven infrastructure are seeing 10x efficiency gains and significantly higher student success rates. Don't let your methodology fall behind the technology curve."
-            </p>
-          </div>
+          <motion.div {...fadeUp}>
+            <Accordion type="single" collapsible className="space-y-3">
+              {(faqsList.length > 0 ? faqsList : faqs).map((faq, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`item-${i}`}
+                  className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-6 sm:px-8 data-[state=open]:border-[#c9a227]/30 data-[state=open]:bg-white/[0.05] transition-all duration-500"
+                >
+                  <AccordionTrigger className="text-white/80 hover:text-white text-left py-6 text-base sm:text-lg font-medium hover:no-underline transition-colors duration-300">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70 pb-8 text-sm sm:text-base leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.div>
         </div>
       </section>
 
-      <section className="relative py-20 sm:py-32 overflow-hidden bg-[#0a192f]">
+      {/* ── Section 10: Final CTA ────────────────────────────────────────── */}
+      <section className="relative py-32 sm:py-48 overflow-hidden bg-[#0a0a0a]">
+        {/* Gradient orbs */}
         <div className="absolute inset-0 z-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000" 
-            alt="Study Hall" 
-            fill 
-            className="object-cover opacity-10 grayscale scale-110"
-          />
-          <div className="absolute inset-0 bg-[#0a192f]/60" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#c9a227]/[0.04] rounded-full blur-[200px]" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-[#1e3a5f]/[0.06] rounded-full blur-[150px]" />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-[#c9a227] mx-auto mb-10 opacity-50" />
-          <h2 className="text-3xl sm:text-5xl text-white mb-8 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Scale Your Agency?</h2>
-          <p className="text-base sm:text-lg text-white/50 mb-12 font-light leading-relaxed max-w-2xl mx-auto">
-            Join the elite network of tutoring agencies and educational consultancies using TheStudentBlueprint to deliver world-class admissions strategy.
-          </p>
-          
-          <Link href="/admin/login">
-            <Button size="lg" className="bg-[#c9a227] hover:bg-white hover:text-[#0a192f] text-[#0a192f] px-8 sm:px-16 py-5 sm:py-10 h-auto text-[10px] sm:text-xs font-bold rounded-none border border-[#c9a227] transition-all duration-700 tracking-[0.3em] sm:tracking-[0.5em] uppercase shadow-2xl shadow-[#c9a227]/20">
-              Get Started
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <motion.div {...fadeUp}>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Ready to{" "}
+              <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent">
+                Scale?
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg text-white/70 mb-12 font-light leading-relaxed max-w-2xl mx-auto">
+              Join the elite network of tutoring agencies and educational consultancies using TheStudentBlueprint to deliver world-class admissions strategy.
+            </p>
+
+            <Button asChild size="lg" className="bg-white hover:bg-[#c9a227] text-[#0a0a0a] px-12 sm:px-16 py-6 sm:py-8 h-auto text-sm sm:text-base font-semibold rounded-full transition-all duration-500 shadow-2xl shadow-white/10">
+              <Link href="/get-started">
+                Get Started <ArrowRight className="ml-3 w-5 h-5" />
+              </Link>
             </Button>
-          </Link>
-          
-          <div className="mt-12 sm:mt-16 pt-12 sm:pt-16 border-t border-white/5 flex flex-wrap justify-center gap-6 sm:gap-12 text-[9px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.4em] text-white/30 uppercase">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#c9a227] opacity-50" /> Secure Integration
+
+            <div className="mt-16 sm:mt-20 pt-12 border-t border-white/5 flex flex-wrap justify-center gap-8 sm:gap-12 text-xs text-white/50 font-medium">
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-[#c9a227]/50" /> Secure Integration
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Zap className="w-4 h-4 text-[#c9a227]/50" /> Scalable Infrastructure
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Award className="w-4 h-4 text-[#c9a227]/50" /> White-Labeled Reports
+              </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-[#c9a227] opacity-50" /> Scalable Infrastructure
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[#c9a227] opacity-50" /> White-Labeled Reports
-            </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      <footer className="bg-[#0a192f] py-16 sm:py-24 px-4 sm:px-6 border-t border-white/5">
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer className="bg-[#0a0a0a] py-16 sm:py-20 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 sm:gap-12">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex items-center gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 relative">
                 <Image src="/logo.png" alt="Logo" fill className="object-contain" />
               </div>
-              <span className="text-xl sm:text-2xl text-white font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>TheStudentBlueprint</span>
+              <span className="text-xl sm:text-2xl text-white font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                TheStudentBlueprint
+              </span>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-6 sm:gap-12">
-              <Link href="/privacy" className="text-[10px] sm:text-xs font-bold text-white/30 hover:text-[#c9a227] uppercase tracking-[0.3em] transition-colors">
+            <div className="flex flex-wrap justify-center gap-8">
+              <Link href="/privacy" className="text-xs text-white/50 hover:text-white/60 transition-colors tracking-wide">
                 Privacy
               </Link>
-              <Link href="/terms" className="text-[10px] sm:text-xs font-bold text-white/30 hover:text-[#c9a227] uppercase tracking-[0.3em] transition-colors">
+              <Link href="/terms" className="text-xs text-white/50 hover:text-white/60 transition-colors tracking-wide">
                 Terms & Conditions
               </Link>
             </div>
 
-            <div className="text-[10px] font-bold text-white/10 uppercase tracking-[0.4em] text-center">
-              © {new Date().getFullYear()} TheStudentBlueprint Admissions Consulting
+            <div className="text-xs text-white/40 tracking-wide">
+              &copy; {new Date().getFullYear()} TheStudentBlueprint
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ export async function logAction({
   action: string
   entityType?: string
   entityId?: string
-  details?: any
+  details?: Record<string, unknown>
   ipAddress?: string
 }) {
   const supabase = createServerSupabaseClient()

@@ -954,7 +954,7 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
                   <div className="flex items-center justify-between p-4 bg-[#faf8f3] rounded-xl border border-[#e5e0d5]">
                     <div className="space-y-1">
                       <p className="font-bold text-[#0a192f]">Remove Student Blueprint Branding</p>
-                      <p className="text-sm text-[#5a7a9a]">Hide "Powered by Student Blueprint" from the platform</p>
+                      <p className="text-sm text-[#5a7a9a]">Hide &quot;Powered by Student Blueprint&quot; from the platform</p>
                     </div>
                     {org.plan_type === 'enterprise' ? (
                       <Switch 

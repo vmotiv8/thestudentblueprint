@@ -2562,8 +2562,6 @@ export async function POST(request: Request) {
     demoData.formData.basicInfo.email = demoStudentEmail
 
     // Create demo student
-    console.log("[DEMO] Creating demo for org:", { orgId: org.id, orgName: org.name, orgSlug: org.slug, demoType })
-    console.log("[DEMO] Creating student with email:", demoStudentEmail)
     const { data: studentRecord, error: studentError } = await supabase
       .from("students")
       .insert({
@@ -2582,8 +2580,6 @@ export async function POST(request: Request) {
       console.error("[DEMO] Error creating demo student:", studentError)
       return NextResponse.json({ error: "Failed to create demo student" }, { status: 500 })
     }
-    console.log("[DEMO] Student created:", studentRecord.id)
-
     // Create the demo assessment with ALL fields populated
     const { data: assessment, error: assessmentError } = await supabase
       .from("assessments")
@@ -2634,8 +2630,6 @@ export async function POST(request: Request) {
       await supabase.from("students").delete().eq("id", studentRecord.id)
       return NextResponse.json({ error: "Failed to create demo assessment" }, { status: 500 })
     }
-    console.log("[DEMO] Assessment created:", assessment.id)
-
     // Log the demo creation
     await supabase.from("audit_logs").insert({
       admin_id: admin.id,
@@ -2652,9 +2646,6 @@ export async function POST(request: Request) {
 
     // Build the results URL (relative so it works on any origin — localhost or production)
     const resultsUrl = `/results/${assessment.id}`
-    console.log("[DEMO] Results URL:", resultsUrl)
-    console.log("[DEMO] Assessment org_id:", assessment.organization_id, "Admin org_id:", admin.organization_id)
-
     return NextResponse.json({
       success: true,
       assessment: {

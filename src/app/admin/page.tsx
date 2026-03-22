@@ -81,6 +81,7 @@ import {
   Play,
   ExternalLink,
   UserPlus,
+  ClipboardList,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -91,6 +92,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
+import { SECTION_TITLES } from "@/lib/assessment-types"
 import { toast } from "sonner"
 import Link from "next/link"
 import Image from "next/image"
@@ -269,6 +271,11 @@ export default function SuperAdminDashboard() {
   const [superAdminInvite, setSuperAdminInvite] = useState({ email: "", fullName: "" })
   const [isDeletingSuperAdmin, setIsDeletingSuperAdmin] = useState<string | null>(null)
 
+  // All Students tab state
+  const [allStudents, setAllStudents] = useState<any[]>([])
+  const [studentsLoading, setStudentsLoading] = useState(false)
+  const [studentSearch, setStudentSearch] = useState("")
+
   const isSuperAdmin = admin?.role === 'super_admin'
 
   useEffect(() => {
@@ -342,6 +349,23 @@ export default function SuperAdminDashboard() {
     // Also fetch super admins in parallel
     fetchSuperAdmins()
   }
+
+  const fetchAllStudents = async () => {
+    setStudentsLoading(true)
+    try {
+      const response = await fetch("/api/admin/assessments?limit=100&include_demos=true")
+      const data = await response.json()
+      if (data.assessments) setAllStudents(data.assessments)
+    } catch (error) {
+      console.error("Error fetching students:", error)
+    } finally {
+      setStudentsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === "all-students" && allStudents.length === 0) fetchAllStudents()
+  }, [activeTab])
 
   const handleLogout = async () => {
     try {
@@ -929,25 +953,37 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-white border border-[#e5e0d5] p-1 flex-wrap h-auto gap-1">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="!flex !flex-row gap-6">
+            {/* Sidebar */}
+            <TabsList className="!flex !flex-col !w-56 !h-auto items-stretch gap-1 bg-white border border-[#e5e0d5] p-2 rounded-2xl shadow-sm shrink-0 sticky top-24 self-start">
+              <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="agencies" className="data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="agencies" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Building2 className="w-4 h-4 mr-2" />
                 Agencies
               </TabsTrigger>
-              <TabsTrigger value="team" className="data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="all-students" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+                <Users className="w-4 h-4 mr-2" />
+                All Students
+              </TabsTrigger>
+              <TabsTrigger value="questions" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+                <ClipboardList className="w-4 h-4 mr-2" />
+                Assessment Questions
+              </TabsTrigger>
+              <TabsTrigger value="team" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Shield className="w-4 h-4 mr-2" />
                 Team
               </TabsTrigger>
-              <TabsTrigger value="changelog" className="data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="changelog" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <History className="w-4 h-4 mr-2" />
                 Changelog
               </TabsTrigger>
             </TabsList>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
 
             <TabsContent value="overview">
               {/* Quick Actions Bar */}
@@ -1729,6 +1765,180 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
             </TabsContent>
+
+            <TabsContent value="all-students" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#0a192f]">All Students</h2>
+                  <p className="text-sm text-[#5a7a9a]">Students across all agencies with their assessment results</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={fetchAllStudents} disabled={studentsLoading}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${studentsLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a7a9a]" />
+                <Input
+                  placeholder="Search by student name, email, or school..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className="pl-10 h-11 border-[#e5e0d5]"
+                />
+              </div>
+
+              {studentsLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#0a192f]" />
+                </div>
+              ) : (
+                <Card className="border-[#e5e0d5]">
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
+                          <TableHead className="font-bold text-[#0a192f] px-6">Student</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Agency</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Score</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Archetype</TableHead>
+                          <TableHead className="font-bold text-[#0a192f] text-right px-6">Results</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {allStudents
+                          .filter(a => {
+                            if (!studentSearch) return true
+                            const search = studentSearch.toLowerCase()
+                            const name = `${a.student?.first_name || ''} ${a.student?.last_name || ''}`.toLowerCase()
+                            const email = (a.student?.email || '').toLowerCase()
+                            const school = (a.student?.school_name || '').toLowerCase()
+                            return name.includes(search) || email.includes(search) || school.includes(search)
+                          })
+                          .map((assessment) => (
+                          <TableRow key={assessment.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
+                            <TableCell className="px-6 py-4">
+                              <div>
+                                <p className="font-bold text-[#0a192f]">
+                                  {assessment.student?.full_name || `${assessment.student?.first_name || ''} ${assessment.student?.last_name || ''}`.trim() || 'Unknown'}
+                                </p>
+                                <p className="text-xs text-[#5a7a9a]">{assessment.student?.email}</p>
+                                {assessment.student?.school_name && (
+                                  <p className="text-xs text-[#5a7a9a]">{assessment.student?.school_name}</p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-[#5a7a9a]">
+                                {assessment.organization?.name || 'Direct'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
+                                assessment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                assessment.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-600'
+                              }`}>
+                                {assessment.status}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {assessment.competitiveness_score ? (
+                                <span className="font-bold text-[#0a192f]">{assessment.competitiveness_score}/100</span>
+                              ) : (
+                                <span className="text-[#5a7a9a]">&mdash;</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {assessment.student_archetype ? (
+                                <span className="text-sm font-medium text-[#0a192f]">{assessment.student_archetype}</span>
+                              ) : (
+                                <span className="text-[#5a7a9a]">&mdash;</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="px-6 text-right">
+                              {assessment.status === 'completed' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                                >
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  View Results
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {allStudents.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="h-40 text-center text-[#5a7a9a]">
+                              No student assessments found.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="questions" className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-[#0a192f]">Assessment Questions</h2>
+                <p className="text-sm text-[#5a7a9a]">The 15 sections students complete in the assessment</p>
+              </div>
+
+              <div className="space-y-4">
+                {SECTION_TITLES.map((title, index) => {
+                  const sectionDetails: Record<number, string[]> = {
+                    0: ["Full Name", "Email", "Parent Name & Email", "Parent Phone", "Date of Birth", "Current Grade", "School Name", "Address (City, State, Country)", "Gender", "Ethnicity", "Dream Schools (up to 3)", "Study Abroad Plans & Target Countries", "Curriculum"],
+                    1: ["Curriculum Type", "GPA Scale", "GPA (Unweighted & Weighted)", "Advanced/Honors Courses Taken", "Courses Planned", "Regular Courses Taken & Planned", "Class Rank", "Favorite & Least Favorite Subjects", "Academic Awards"],
+                    2: ["PSAT Score (with section breakdown)", "SAT Score (Math, Reading)", "ACT Score (English, Math, Reading, Science)", "AP/IB Exam Scores", "Testing Timeline", "Preferred Test Format"],
+                    3: ["Activities (up to 10) — Name, Role, Years Involved, Hours/Week, Achievements", "Option: No extracurriculars yet"],
+                    4: ["Leadership Entries — Position, Organization, Awards, Scale of Impact", "Option: No leadership experience"],
+                    5: ["Competition Entries — Competition Name, Recognition/Awards", "Option: No competitions"],
+                    6: ["5 Topics You Love", "3 Industries Curious About", "Hobbies & Skills", "World Problem You Want to Solve"],
+                    7: ["Top 3 Career Fields", "Dream Job Title", "Best-Fit Career Statement"],
+                    8: ["Research/Internship Entries — Type (Research/Shadowing/Internship/Job/Other), Organization, Role, Description, Duration", "Option: No research experience"],
+                    9: ["Summer Program Entries — Name, Organization, Description, Year", "Option: No summer programs"],
+                    10: ["Musical Instruments", "Visual Arts", "Performance Arts", "Athletics"],
+                    11: ["Father's Profession", "Mother's Profession", "Sibling Professions", "Legacy College Connections (College + Relation)", "Financial Aid Needed", "Merit Scholarship Interest"],
+                    12: ["Top 3 Strengths", "Top 3 Weaknesses", "Personality Archetypes (select up to 2)", "Introvert/Extrovert/Ambivert"],
+                    13: ["Life Challenge (essay)", "Leadership Moment (essay)", "Failure Lesson (essay)", "Proudest Moment (essay)"],
+                    14: ["Hours/Week During School Year", "Hours/Week During Summer", "Preferred Pace"],
+                  }
+
+                  return (
+                    <Card key={index} className="border-[#e5e0d5]">
+                      <CardHeader className="pb-2 px-6 pt-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#0a192f] text-white flex items-center justify-center text-sm font-bold">
+                            {index + 1}
+                          </div>
+                          <CardTitle className="text-lg text-[#0a192f]">{title}</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="px-6 pb-5">
+                        <ul className="space-y-1.5 ml-11">
+                          {(sectionDetails[index] || []).map((question, qi) => (
+                            <li key={qi} className="flex items-start gap-2 text-sm text-[#5a7a9a]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#c9a227] mt-1.5 shrink-0" />
+                              {question}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </TabsContent>
+
+            </div>
           </Tabs>
         </motion.div>
       </main>

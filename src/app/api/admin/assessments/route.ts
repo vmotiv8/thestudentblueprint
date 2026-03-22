@@ -26,9 +26,12 @@ export async function GET(request: Request) {
         started_at,
         completed_at,
         expires_at,
-        responses,
         scores,
         report_data,
+        student_archetype,
+        competitiveness_score,
+        archetype_scores,
+        is_demo,
         created_at,
         updated_at,
         student:students (
@@ -36,6 +39,7 @@ export async function GET(request: Request) {
           email,
           first_name,
           last_name,
+          full_name,
           phone,
           grade_level,
           school_name,
@@ -43,6 +47,11 @@ export async function GET(request: Request) {
           parent_phone,
           metadata,
           created_at
+        ),
+        organization:organizations (
+          id,
+          name,
+          slug
         )
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
@@ -52,8 +61,11 @@ export async function GET(request: Request) {
       query = query.eq('organization_id', context.organization.id)
     }
 
-    // Exclude demo assessments from dashboard listings
-    query = query.or('is_demo.is.null,is_demo.eq.false')
+    // Optionally exclude demo assessments (default: exclude)
+    const includeDemos = searchParams.get('include_demos') === 'true'
+    if (!includeDemos) {
+      query = query.or('is_demo.is.null,is_demo.eq.false')
+    }
 
     const { data: assessments, error, count } = await query
 

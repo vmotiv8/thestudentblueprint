@@ -19,6 +19,7 @@ export interface Organization {
   max_admins: number;
   current_students_count: number;
   assessment_price: number;
+  plan_price?: number | null;
   free_assessments: boolean;
   settings: OrganizationSettings;
   custom_email_from?: string;
@@ -27,6 +28,8 @@ export interface Organization {
   webhook_url?: string;
   api_key?: string;
   features?: Record<string, boolean>;
+  onboarding_completed?: boolean;
+  enabled_sections?: number[];
   trial_ends_at?: string;
   created_at: string;
   updated_at: string;
@@ -57,6 +60,10 @@ export interface Student {
   email: string;
   first_name?: string;
   last_name?: string;
+  full_name?: string;
+  unique_code?: string;
+  current_grade?: string;
+  target_college_year?: string;
   phone?: string;
   grade_level?: string;
   school_name?: string;

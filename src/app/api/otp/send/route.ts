@@ -33,10 +33,11 @@ export async function POST(request: Request) {
       .single()
 
     if (studentError || !student) {
-      return NextResponse.json(
-        { error: 'No assessment found with this email' },
-        { status: 404 }
-      )
+      // Return a generic response to prevent email enumeration
+      return NextResponse.json({
+        success: true,
+        message: 'If an account exists, an OTP has been sent'
+      })
     }
 
     const otpCode = generateOTP()

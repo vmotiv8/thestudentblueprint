@@ -72,7 +72,7 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const allowedRoles = ["agency_admin", "agency_owner", "owner", "admin", "super_admin", "god"]
+    const allowedRoles = ["agency_owner", "owner", "super_admin", "god"]
     if (!allowedRoles.includes(admin.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }

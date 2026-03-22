@@ -71,6 +71,7 @@ export default function CheckoutPage() {
         try {
           const orgParam = tenant?.slug ? `&organization_slug=${encodeURIComponent(tenant.slug)}` : ''
           const response = await fetch(`/api/payment/verify?email=${encodeURIComponent(emailToCheck)}${orgParam}`)
+          if (!response.ok) { setIsCheckingPayment(false); return; }
           const data = await response.json()
 
           if (data.paid) {

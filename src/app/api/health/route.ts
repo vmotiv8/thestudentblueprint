@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { createServerSupabaseClient } from "@/lib/supabase"
 
 export const dynamic = "force-dynamic"
@@ -7,6 +8,26 @@ export async function GET() {
   try {
     const supabase = createServerSupabaseClient()
 
+    // Check for admin authentication
+    const cookieStore = await cookies()
+    const adminId = cookieStore.get("admin_session")?.value
+
+    if (!adminId) {
+      // Unauthenticated: return minimal health status only
+      return NextResponse.json({ status: "ok" })
+    }
+
+    // Verify admin exists
+    const { data: admin } = await supabase
+      .from("admins")
+      .select("id")
+      .eq("id", adminId)
+      .single()
+
+    if (!admin) {
+      return NextResponse.json({ status: "ok" })
+    }
+
     // Check Supabase connectivity
     const { data: orgs, error: supabaseError } = await supabase
       .from("organizations")
@@ -14,10 +35,10 @@ export async function GET() {
 
     if (supabaseError) {
       return NextResponse.json(
-        { 
-          status: "down", 
+        {
+          status: "down",
           message: "Database connection failed",
-          details: supabaseError.message 
+          details: supabaseError.message
         },
         { status: 503 }
       )

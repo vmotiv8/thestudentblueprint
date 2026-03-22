@@ -58,6 +58,14 @@ async function lookupDomainSlug(hostname: string): Promise<string | null> {
   return null;
 }
 
+function addSecurityHeaders(response: NextResponse): NextResponse {
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
@@ -71,7 +79,7 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set('org', slug);
     url.pathname = rest;
 
-    return NextResponse.rewrite(url);
+    return addSecurityHeaders(NextResponse.rewrite(url));
   }
 
   // 2. Check for slug-prefixed paths: /[slug] or /[slug]/checkout etc.
@@ -81,7 +89,7 @@ export async function middleware(request: NextRequest) {
     if (!RESERVED_PATHS.has(maybeSlug)) {
       url.searchParams.set('org', maybeSlug);
       url.pathname = slugPrefixMatch[2] || '/';
-      return NextResponse.rewrite(url);
+      return addSecurityHeaders(NextResponse.rewrite(url));
     }
   }
 
@@ -100,7 +108,7 @@ export async function middleware(request: NextRequest) {
     hostname.includes(rootDomainBase)
   ) {
     url.searchParams.set('org', subdomain);
-    return NextResponse.rewrite(url);
+    return addSecurityHeaders(NextResponse.rewrite(url));
   }
 
   // 4. Check for custom domain: assessments.agency.com → org slug via DB lookup
@@ -117,10 +125,10 @@ export async function middleware(request: NextRequest) {
     if (cached && cached.expires > now) {
       if (cached.slug) {
         url.searchParams.set('org', cached.slug);
-        return NextResponse.rewrite(url);
+        return addSecurityHeaders(NextResponse.rewrite(url));
       }
       // Negative cache hit — domain not found
-      return NextResponse.next();
+      return addSecurityHeaders(NextResponse.next());
     }
 
     // Cache miss — query Supabase
@@ -128,12 +136,12 @@ export async function middleware(request: NextRequest) {
     if (slug) {
       domainCache.set(hostname, { slug, expires: now + CACHE_TTL });
       url.searchParams.set('org', slug);
-      return NextResponse.rewrite(url);
+      return addSecurityHeaders(NextResponse.rewrite(url));
     } else {
       // Negative cache — avoid hitting DB on every request for unknown domains
       domainCache.set(hostname, { slug: '', expires: now + NEG_CACHE_TTL });
     }
   }
 
-  return NextResponse.next();
+  return addSecurityHeaders(NextResponse.next());
 }

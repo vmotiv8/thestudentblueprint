@@ -304,7 +304,9 @@ export default function AgencyDashboard() {
       const res = await fetch("/api/agency/knowledge-hub")
       const data = await res.json()
       setKhResources(data || [])
-    } catch { /* ignore */ }
+    } catch (error) {
+      console.error("Failed to fetch knowledge hub resources:", error)
+    }
   }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { stripe } from '@/lib/stripe'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
+import { applyRateLimit } from '@/lib/rate-limit'
 
 export async function GET(request: Request) {
+  const rateLimitResponse = applyRateLimit(request, 'standard', 'payment-verify')
+  if (rateLimitResponse) {
+    return rateLimitResponse
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const sessionId = searchParams.get('session_id')

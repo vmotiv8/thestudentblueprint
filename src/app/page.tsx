@@ -149,6 +149,42 @@ const faqs = [
   {
     question: "How do I contact support?",
     answer: "You can reach our support team by emailing hello@thestudentblueprint.com. For agency partners, priority support is available through your admin dashboard. We typically respond within 24 hours on business days."
+  },
+  {
+    question: "What kind of questions are on the assessment?",
+    answer: "The assessment is divided into 15 detailed sections. You'll answer questions about your basic information (name, grade, location, curriculum), academic profile (GPA, courses taken, class rank, awards), standardized testing (PSAT, SAT, ACT, AP scores), extracurricular activities and leadership roles, competition history, passions and interests, career aspirations, research and internship experience, summer programs, special talents, family context (parent professions, legacy connections, financial aid needs), personality traits and strengths, personal stories (challenges, proud moments, leadership experiences), and your available time commitment. Every answer helps the AI build a more precise and actionable roadmap."
+  },
+  {
+    question: "What exactly is included in my results report?",
+    answer: "Your report includes over 20 personalized sections: a student archetype and personality profile with scores across 8 dimensions, a competitiveness score out of 100, a detailed strengths analysis with competitive advantages and differentiators, a gap analysis highlighting what's missing from your profile, a phased roadmap (immediate, short-term, medium-term, and long-term actions), a grade-by-grade plan through 12th grade, academic course recommendations (AP, IB, Honors, electives), SAT/ACT target scores and prep strategy, research and publication opportunities, leadership development recommendations, community service suggestions, summer program picks including Ivy League pre-college programs, sports and competition strategies, student government pathways, internship opportunities, culture and arts recommendations, passion project ideas with implementation steps, career recommendations with salary potential, college match analysis with Reach/Target/Safety tiers and match scores, mentor suggestions, and a list of activities to deprioritize."
+  },
+  {
+    question: "How do payments work?",
+    answer: "Payments are processed securely through Stripe. After entering your email and starting the assessment flow, you'll be prompted to complete payment before your responses are submitted for analysis. We accept all major credit and debit cards. If your agency or school has set up free assessments or provided a coupon code, you can bypass payment entirely. Once payment is confirmed, your assessment is analyzed and your report is generated automatically."
+  },
+  {
+    question: "How do agencies collect payments from their students?",
+    answer: "Agencies have two options. First, you can set your own assessment price through your admin dashboard — when students go through your white-labeled assessment link, they pay the price you've configured, and funds go directly to your connected Stripe account via Stripe Connect. Second, you can mark assessments as free for your organization and handle billing separately through your own invoicing process. Either way, you have full control over your pricing and revenue."
+  },
+  {
+    question: "What is the grade-by-grade roadmap?",
+    answer: "The grade-by-grade roadmap is a year-by-year action plan that starts from your current grade and extends through 12th grade graduation. For each year, it provides specific goals across five areas: academics (courses to take and GPA targets), extracurriculars (activities to pursue and deepen), testing (when to take the PSAT, SAT, ACT, and AP exams), leadership (age-appropriate roles and responsibilities), and a summer plan (programs, internships, or projects to pursue). Each year builds on the previous one, ensuring a cohesive narrative for your college applications."
+  },
+  {
+    question: "Can my parents see my results?",
+    answer: "Yes. If you provide a parent or guardian email address during the assessment, they will automatically receive an email notification when your report is ready, along with a link to view your results. This makes it easy for families to review the roadmap together and plan next steps."
+  },
+  {
+    question: "What if I haven't taken the SAT or ACT yet?",
+    answer: "That's completely fine. The assessment asks about your testing history, but it's not required. If you haven't taken standardized tests yet, the report will include target scores tailored to your college goals, a recommended testing timeline, and a prep strategy so you know exactly when and how to prepare."
+  },
+  {
+    question: "How does the mentor matching work?",
+    answer: "Based on your academic interests, career aspirations, and target schools, the report suggests specific professors and researchers at top universities who align with your goals. Each recommendation includes their name, university, department, and an explanation of why they'd be a strong mentor match. You can use these suggestions to reach out for research opportunities, informational interviews, or mentorship."
+  },
+  {
+    question: "What are passion projects and how are they recommended?",
+    answer: "Passion projects are self-directed initiatives that demonstrate your genuine interests and ability to create impact outside the classroom. Your report recommends two or more specific project ideas tailored to your profile, each with a title, detailed description, estimated time commitment, skills you'll develop, the impact it will have on your college application, resources to get started, and step-by-step implementation instructions. These projects are designed to become standout elements of your application narrative."
   }
 ]
 
@@ -411,16 +447,27 @@ function LandingPage() {
         const faqsData = await faqsRes.json()
         const testimonialsData = await testimonialsRes.json()
 
-        if (faqsData.faqs) {
-          // Deduplicate FAQs by question text
+        if (faqsData.faqs && faqsData.faqs.length > 0) {
+          // Merge CMS FAQs with hardcoded ones: CMS takes priority, then append
+          // any hardcoded FAQs whose questions aren't already covered by CMS
+          const cmsFaqs = faqsData.faqs as FAQ[]
+          const cmsKeys = new Set(cmsFaqs.map((f: FAQ) => f.question.toLowerCase().trim()))
+
+          // Deduplicate CMS FAQs themselves
           const seen = new Set<string>()
-          const uniqueFaqs = faqsData.faqs.filter((faq: FAQ) => {
+          const uniqueCms = cmsFaqs.filter((faq: FAQ) => {
             const key = faq.question.toLowerCase().trim()
             if (seen.has(key)) return false
             seen.add(key)
             return true
           })
-          setFaqsList(uniqueFaqs)
+
+          // Append hardcoded FAQs not already in CMS
+          const extras = faqs
+            .filter(f => !cmsKeys.has(f.question.toLowerCase().trim()))
+            .map((f, i) => ({ ...f, id: `fallback-${i}`, display_order: 1000 + i }))
+
+          setFaqsList([...uniqueCms, ...extras])
         }
         if (testimonialsData.testimonials) {
           // Map CMS field names (content/author_name/author_title) to component field names (quote/name/school)

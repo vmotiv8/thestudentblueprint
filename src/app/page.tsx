@@ -571,9 +571,6 @@ function LandingPage() {
             <span className="font-bold text-xl sm:text-2xl text-white tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
               TheStudentBlueprint
             </span>
-            <div className="px-1.5 py-0.5 bg-[#c9a227]/20 border border-[#c9a227]/30 rounded-full hidden sm:block">
-              <span className="text-xs sm:text-xs font-bold text-[#c9a227] uppercase tracking-widest">Beta</span>
-            </div>
           </Link>
 
           <div className="hidden lg:flex items-center gap-10">
@@ -756,7 +753,7 @@ function LandingPage() {
             <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent font-medium italic">
               Every roadmap as personal as a one-on-one session.
             </span>{" "}
-            That&apos;s not a dream — it&apos;s what Blueprint agencies deliver every day.
+            That&apos;s not a dream — it&apos;s what our agencies deliver every day to their students.
           </p>
         </motion.div>
       </section>

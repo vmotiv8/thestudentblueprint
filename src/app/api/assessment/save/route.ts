@@ -92,11 +92,21 @@ export async function POST(request: Request) {
             email: formData.basicInfo.email,
             phone: formData.basicInfo.phone || null,
             grade_level: formData.basicInfo.currentGrade || formData.basicInfo.gradeLevel || null,
+            current_grade: formData.basicInfo.currentGrade || null,
             school_name: formData.basicInfo.schoolName || null,
             parent_email: formData.basicInfo.parentEmail || null,
             parent_phone: formData.basicInfo.parentPhone || null,
             metadata: {
+              parentName: formData.basicInfo.parentName,
+              dateOfBirth: formData.basicInfo.dateOfBirth,
+              address: formData.basicInfo.address,
+              city: formData.basicInfo.city,
+              state: formData.basicInfo.state,
               country: formData.basicInfo.country,
+              gender: formData.basicInfo.gender,
+              ethnicity: formData.basicInfo.ethnicity,
+              targetCollegeYear: formData.basicInfo.targetCollegeYear,
+              dreamSchools: formData.basicInfo.dreamSchools,
               curriculum: formData.basicInfo.curriculum,
               studyAbroad: formData.basicInfo.studyAbroad,
               targetCountries: formData.basicInfo.targetCountries
@@ -121,19 +131,41 @@ export async function POST(request: Request) {
       )
     }
 
+    // Extract name parts from fullName if firstName/lastName not provided
+    const fullName = String(formData.basicInfo?.fullName || '')
+    const nameParts = fullName.trim().split(/\s+/)
+    const firstName = formData.basicInfo?.firstName || nameParts[0] || null
+    const lastName = formData.basicInfo?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : null)
+
     const { data: student, error: studentError } = await supabase
       .from('students')
       .insert({
         organization_id: organization.id,
         email: formData.basicInfo?.email || '',
-        first_name: formData.basicInfo?.firstName || null,
-        last_name: formData.basicInfo?.lastName || null,
+        first_name: firstName,
+        last_name: lastName,
+        full_name: fullName || null,
         phone: formData.basicInfo?.phone || null,
-        grade_level: formData.basicInfo?.gradeLevel || null,
+        grade_level: formData.basicInfo?.currentGrade || formData.basicInfo?.gradeLevel || null,
+        current_grade: formData.basicInfo?.currentGrade || null,
         school_name: formData.basicInfo?.schoolName || null,
         parent_email: formData.basicInfo?.parentEmail || null,
         parent_phone: formData.basicInfo?.parentPhone || null,
-        metadata: {}
+        metadata: {
+          parentName: formData.basicInfo?.parentName,
+          dateOfBirth: formData.basicInfo?.dateOfBirth,
+          address: formData.basicInfo?.address,
+          city: formData.basicInfo?.city,
+          state: formData.basicInfo?.state,
+          country: formData.basicInfo?.country,
+          gender: formData.basicInfo?.gender,
+          ethnicity: formData.basicInfo?.ethnicity,
+          targetCollegeYear: formData.basicInfo?.targetCollegeYear,
+          dreamSchools: formData.basicInfo?.dreamSchools,
+          curriculum: formData.basicInfo?.curriculum,
+          studyAbroad: formData.basicInfo?.studyAbroad,
+          targetCountries: formData.basicInfo?.targetCountries
+        }
       })
       .select()
       .single()

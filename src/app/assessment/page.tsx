@@ -1035,6 +1035,58 @@ function AssessmentContent() {
                   </p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="studentPhone" className="flex items-center gap-1">
+                  Student Phone Number <span className="text-[#5a7a9a] text-xs font-normal">(Optional)</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={(() => {
+                      const phone = formData.basicInfo.phone || ""
+                      const isoMatch = phone.match(/^\[([A-Z]{2})\]/)
+                      if (isoMatch) return isoMatch[1]
+                      const prefix = phone.split(" ")[0] || ""
+                      const match = PHONE_COUNTRY_CODES.find(c => prefix === c.code)
+                      return match ? match.country : "US"
+                    })()}
+                    onValueChange={(countryIso) => {
+                      const entry = PHONE_COUNTRY_CODES.find(c => c.country === countryIso)
+                      if (!entry) return
+                      const phone = formData.basicInfo.phone || ""
+                      const currentNum = phone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "")
+                      updateFormData("basicInfo", "phone", `[${entry.country}]${entry.code} ${currentNum}`)
+                    }}
+                  >
+                    <SelectTrigger className="w-[140px] shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {PHONE_COUNTRY_CODES.map((item) => (
+                        <SelectItem key={`student-${item.country}`} value={item.country}>
+                          {item.flag} {item.code}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="studentPhone"
+                    type="tel"
+                    value={(() => {
+                      const phone = formData.basicInfo.phone || ""
+                      return phone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "")
+                    })()}
+                    onChange={(e) => {
+                      const phone = formData.basicInfo.phone || ""
+                      const isoMatch = phone.match(/^\[([A-Z]{2})\]/)
+                      const iso = isoMatch ? isoMatch[1] : "US"
+                      const entry = PHONE_COUNTRY_CODES.find(c => c.country === iso) || PHONE_COUNTRY_CODES[0]
+                      updateFormData("basicInfo", "phone", `[${entry.country}]${entry.code} ${e.target.value}`)
+                    }}
+                    placeholder="Phone number"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
             </div>
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">

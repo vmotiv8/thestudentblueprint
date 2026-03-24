@@ -1,6 +1,7 @@
 export interface BasicInfo {
   fullName: string
   email: string
+  phone?: string
   parentName: string
   parentEmail: string
   parentPhone: string
@@ -217,6 +218,7 @@ export const initialFormData: AssessmentData = {
   basicInfo: {
     fullName: "",
     email: "",
+    phone: "",
     parentName: "",
     parentEmail: "",
     parentPhone: "",

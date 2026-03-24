@@ -1,18 +1,30 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
-import { validateRequest, assessmentSaveSchema } from '@/lib/validations'
 import { canAddStudent } from '@/lib/plan-enforcement'
 
 export async function POST(request: Request) {
   try {
-    const validation = await validateRequest(request, assessmentSaveSchema)
-    if (!validation.success) {
-      return validation.error
+    let body: Record<string, unknown>
+    try {
+      body = await request.json()
+    } catch (e) {
+      console.error('[AssessmentSave] Invalid JSON body:', e)
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
     }
 
-    const { assessmentId, formData: rawFormData, couponCode, organization_slug } = validation.data
-    const formData = rawFormData as Record<string, Record<string, unknown>>
+    // Extract fields manually to be more permissive than strict Zod validation
+    const assessmentId = body.assessmentId as string | undefined
+    const rawFormData = body.formData as Record<string, Record<string, unknown>> | undefined
+    const couponCode = body.couponCode as string | undefined
+    const organization_slug = body.organization_slug as string | undefined
+
+    if (!rawFormData || typeof rawFormData !== 'object') {
+      console.error('[AssessmentSave] Missing or invalid formData:', { hasFormData: !!rawFormData, type: typeof rawFormData })
+      return NextResponse.json({ error: 'formData is required' }, { status: 400 })
+    }
+
+    const formData = rawFormData
     const supabase = createServerSupabaseClient()
 
     const organization = organization_slug 
@@ -200,7 +212,11 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('Error saving assessment:', error)
+    console.error('[AssessmentSave] Error:', {
+      message: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    })
     return NextResponse.json(
       { error: 'Failed to save assessment' },
       { status: 500 }

@@ -7,6 +7,9 @@ import { buildResultsUrl } from '@/lib/url'
 import { sendStudentResultsEmail, sendParentEmail } from '@/lib/resend'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 
+// Allow up to 5 minutes for AI analysis
+export const maxDuration = 300
+
 // Sanitize free-text input before sending to the AI prompt.
 // Strips prompt-injection patterns, truncates long strings, and escapes
 // characters that could break the prompt template.

@@ -3,6 +3,9 @@ import { createServerSupabaseClient } from "@/lib/supabase"
 import { resend } from "@/lib/resend"
 import Anthropic from '@anthropic-ai/sdk'
 
+// Allow up to 5 minutes for AI analysis
+export const maxDuration = 300
+
 // Sanitize free-text input before sending to the AI prompt.
 function sanitizeForPrompt(value: unknown, maxLength = 1000): string {
   if (value === null || value === undefined) return ''

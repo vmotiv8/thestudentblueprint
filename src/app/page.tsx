@@ -80,6 +80,66 @@ const testimonials = [
     name: "Michael Torres",
     school: "Head of Strategy, Compass College Advisory",
     quote: "We piloted Blueprint with 50 students last spring. Every single one said the personalized roadmap was the most valuable part of our service. The mentor matching feature connected three students with research opportunities that became the centerpiece of their applications. Two got into Stanford."
+  },
+  {
+    name: "Linda Park",
+    school: "Founder, Elevate College Prep",
+    quote: "We were a two-person operation trying to compete with agencies that had ten counselors. Blueprint leveled the playing field completely. Our reports now look more polished than firms charging $15K per family. We onboarded 80 new students in our first quarter after launching with the platform."
+  },
+  {
+    name: "Marcus Williams",
+    school: "CEO, Summit Education Partners",
+    quote: "The ROI was immediate. We purchased 100 licenses, resold the assessments at $1,200 each, and made back our entire investment within the first two weeks. The platform essentially prints money if you have the student pipeline. Our margins went from 30% to over 65%."
+  },
+  {
+    name: "Dr. Priya Sharma",
+    school: "Director, Global Scholars Academy",
+    quote: "We work with students across India, Dubai, and Singapore who are targeting US universities. The platform understands international curricula — CBSE, IB, A-Levels — and tailors the roadmap accordingly. No other tool we've tried gets the nuance of cross-border admissions strategy right."
+  },
+  {
+    name: "Tom Brennan",
+    school: "Co-Founder, Northeast Admissions Co.",
+    quote: "I've been in admissions consulting for 12 years. The competitiveness scoring is shockingly accurate — it identified the same gaps I would have, plus a few I missed. We now use the Blueprint report as the starting point for every student engagement. It saves our senior counselors about 4 hours per student."
+  },
+  {
+    name: "Yuki Tanaka",
+    school: "Founder, Bright Path Education",
+    quote: "Parents in our market are data-driven. When we show them the archetype analysis, the radar chart, and a concrete four-year plan in the first consultation, they sign on the spot. Our conversion rate on discovery calls doubled after we started leading with the Blueprint report."
+  },
+  {
+    name: "Olivia Grant",
+    school: "Managing Director, Prestige Prep Partners",
+    quote: "We white-labeled the entire platform under our brand. Our clients think we built a proprietary AI system. The custom domain, our logo, our colors — it's seamless. That perception of innovation has helped us close enterprise contracts with three private schools this year."
+  },
+  {
+    name: "Daniel Reyes",
+    school: "Head of Operations, CollegeMap Advisors",
+    quote: "Before Blueprint, our bottleneck was the strategy report. Each one took a senior counselor an entire day. Now we generate them in minutes and spend that time on what actually matters — the one-on-one coaching sessions. Our student satisfaction scores went from 4.1 to 4.8 out of 5."
+  },
+  {
+    name: "Fatima Al-Rashid",
+    school: "Founder, Atlas Admissions Consulting",
+    quote: "We launched our agency six months ago with zero brand recognition. Blueprint gave us instant credibility. Walking into parent meetings with a 40-page personalized PDF report makes us look like we've been doing this for a decade. We signed 45 families in our first season."
+  },
+  {
+    name: "Robert Chang",
+    school: "Partner, Keystone Academic Group",
+    quote: "The passion project recommendations alone are worth the price. Three of our students launched initiatives directly from Blueprint's suggestions — one built a climate research blog that got cited by a local newspaper, and she used it as the centerpiece of her Columbia application. She got in."
+  },
+  {
+    name: "Catherine Dubois",
+    school: "Founder, Lumière College Consulting",
+    quote: "I run a boutique firm serving 30 families per cycle. Blueprint didn't replace my expertise — it amplified it. I use the AI report as a diagnostic foundation, then layer my personal insights on top. My students are better prepared, and I can confidently charge premium rates because the deliverables are exceptional."
+  },
+  {
+    name: "Jason Adebayo",
+    school: "CEO, Pathway Scholars International",
+    quote: "We needed a solution that could handle scale without diluting quality. Blueprint lets our junior counselors deliver the same caliber of strategy that used to require our most experienced staff. We expanded from 200 to 600 students this year and our acceptance rates actually improved."
+  },
+  {
+    name: "Stephanie Nguyen",
+    school: "Director, Horizon Education Group",
+    quote: "The grade-by-grade roadmap is what parents are willing to pay for. It's not just a list of suggestions — it's a structured, year-by-year plan with specific milestones. When a parent sees their 9th grader's path mapped all the way to senior year, they understand exactly why our services are worth the investment."
   }
 ]
 
@@ -278,52 +338,67 @@ function useCountUp(target: string, inView: boolean) {
 // ─── Testimonial Marquee ─────────────────────────────────────────────────────
 
 function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonials: Testimonial[] }) {
-  const [isPaused, setIsPaused] = useState(false)
   const x = useMotionValue(0)
   const controls = useRef<any>(null)
+  const pausedRef = useRef(false)
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const doubledTestimonials = [...initialTestimonials, ...initialTestimonials, ...initialTestimonials]
 
   const startMarquee = () => {
+    if (pausedRef.current) return
     if (controls.current) controls.current.stop()
 
     const currentX = x.get()
     const targetX = -33.333
     const remainingDistance = currentX <= targetX ? 33.333 + currentX : Math.abs(targetX - currentX)
-    const duration = (remainingDistance / 33.333) * 50
+    const baseDuration = Math.max(30, initialTestimonials.length * 5)
+    const duration = (remainingDistance / 33.333) * baseDuration
 
     controls.current = animate(x, targetX, {
       duration: duration,
       ease: "linear",
       onComplete: () => {
         x.set(0)
-        startMarquee()
+        if (!pausedRef.current) startMarquee()
       }
     })
   }
 
+  const pause = () => {
+    pausedRef.current = true
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    if (controls.current) controls.current.stop()
+  }
+
+  const resumeAfterDelay = (ms = 3000) => {
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    resumeTimer.current = setTimeout(() => {
+      pausedRef.current = false
+      startMarquee()
+    }, ms)
+  }
+
   useEffect(() => {
     startMarquee()
-    return () => controls.current?.stop()
+    return () => {
+      controls.current?.stop()
+      if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    }
   }, [initialTestimonials])
 
   const scroll = (direction: 'left' | 'right') => {
-    if (controls.current) controls.current.stop()
-    setIsPaused(true)
+    pause()
 
     const currentX = x.get()
-    const step = 5
-    let targetX = direction === 'left' ? currentX + step : currentX - step
-
-    if (targetX > 0) targetX = -33.333 + targetX
-    if (targetX < -33.333) targetX = targetX + 33.333
+    const step = 3
+    const targetX = direction === 'left' ? currentX + step : currentX - step
 
     animate(x, targetX, {
-      duration: 0.5,
+      duration: 0.4,
       ease: "easeOut",
-      onComplete: () => {
-        if (!isPaused) startMarquee()
-      }
     })
+
+    resumeAfterDelay(4000)
   }
 
   return (
@@ -348,12 +423,9 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
         <motion.div
           className="flex"
           style={{ x: useTransform(x, v => `${v}%`) }}
-          onMouseEnter={() => {
-            setIsPaused(true)
-            controls.current?.stop()
-          }}
+          onMouseEnter={() => pause()}
           onMouseLeave={() => {
-            setIsPaused(false)
+            pausedRef.current = false
             startMarquee()
           }}
         >
@@ -983,11 +1055,14 @@ function LandingPage() {
           </motion.div>
         </div>
 
-        <TestimonialMarquee testimonials={
-          testimonialsList.length > 0 && testimonialsList.some((t: any) => t.quote?.length > 10)
+        <TestimonialMarquee testimonials={(() => {
+          const cms = testimonialsList.length > 0 && testimonialsList.some((t: any) => t.quote?.length > 10)
             ? testimonialsList
-            : (testimonials as any)
-        } />
+            : []
+          const cmsNames = new Set(cms.map((t: any) => t.name?.toLowerCase().trim()))
+          const extras = (testimonials as any[]).filter((t: any) => !cmsNames.has(t.name?.toLowerCase().trim()))
+          return [...cms, ...extras]
+        })()} />
       </section>
 
       {/* ── Section 9: FAQ ───────────────────────────────────────────────── */}

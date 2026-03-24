@@ -15,7 +15,6 @@ import {
   EyeOff,
   Loader2,
   Users,
-  Sparkles,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -62,34 +61,31 @@ function formatCurrency(amount: number): string {
 
 const pageVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 80 : -80,
+    x: direction > 0 ? 40 : -40,
     opacity: 0,
-    scale: 0.98,
   }),
   center: {
     x: 0,
     opacity: 1,
-    scale: 1,
   },
   exit: (direction: number) => ({
-    x: direction < 0 ? 80 : -80,
+    x: direction < 0 ? 40 : -40,
     opacity: 0,
-    scale: 0.98,
   }),
 }
 
 const pageTransition = {
   type: "spring" as const,
-  stiffness: 300,
-  damping: 30,
+  stiffness: 400,
+  damping: 35,
 }
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: any) => ({
+const fadeIn = {
+  hidden: { opacity: 0, y: 12 },
+  visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: (i || 0) * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { delay: (i || 0) * 0.06, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const },
   }),
 } as const
 
@@ -248,51 +244,45 @@ export default function GetStartedPage() {
 
   const passwordStrength = getPasswordStrength(formData.password)
 
-  // ─── Quantity Slider ────────────────────────────────────────────────────
-
   function handleSliderChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = parseInt(e.target.value)
-    // Non-linear mapping for better UX: slider 0-100 maps to quantity 1-1500
     const qty = Math.round(1 + (raw / 100) ** 2 * 1499)
     setQuantity(Math.max(1, Math.min(1500, qty)))
   }
 
   function sliderValue(): number {
-    // Inverse of the mapping above
     return Math.round(Math.sqrt((quantity - 1) / 1499) * 100)
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────
+  const stepLabels = ["Plan", "Account", "Payment"]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Top Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0a] text-white antialiased">
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-2xl">
+        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="Logo" width={28} height={28} className="rounded-md" />
-            <span
-              className="font-bold text-lg text-white tracking-tight"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              The Student Blueprint
+            <Image src="/logo.png" alt="Logo" width={24} height={24} className="rounded-md" />
+            <span className="font-semibold text-[15px] text-white/90 tracking-tight">
+              Student Blueprint
             </span>
           </Link>
           <Link
             href="/admin/login"
-            className="text-sm text-white/50 hover:text-white transition-colors"
+            className="text-[13px] text-white/60 hover:text-white/70 transition-colors"
           >
-            Already have an account? <span className="text-[#c9a227]">Login</span>
+            Sign in
           </Link>
         </div>
+        <div className="h-px bg-white/[0.06]" />
       </nav>
 
-      <div className="pt-28 pb-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-center gap-3 mb-12">
+      <div className="pt-32 pb-24 px-6">
+        <div className="max-w-xl mx-auto">
+          {/* Progress */}
+          <div className="flex items-center justify-center gap-0 mb-16">
             {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center gap-3">
+              <div key={s} className="flex items-center">
                 <button
                   onClick={() => {
                     if (s < step) {
@@ -301,25 +291,27 @@ export default function GetStartedPage() {
                     }
                   }}
                   className={`
-                    w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300
-                    ${
-                      s === step
-                        ? "bg-[#c9a227] text-[#0a0a0a] shadow-lg shadow-[#c9a227]/25"
-                        : s < step
-                          ? "bg-[#c9a227]/20 text-[#c9a227] cursor-pointer hover:bg-[#c9a227]/30"
-                          : "bg-white/[0.06] text-white/30"
+                    relative flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium transition-all duration-500
+                    ${s === step
+                      ? "bg-white text-[#0a0a0a]"
+                      : s < step
+                        ? "bg-white/90 text-[#0a0a0a] cursor-pointer"
+                        : "bg-white/[0.08] text-white/60"
                     }
                   `}
                 >
-                  {s < step ? <Check className="w-4 h-4" /> : s}
+                  {s < step ? <Check className="w-3.5 h-3.5" /> : s}
                 </button>
+                <span className={`ml-2 text-xs font-medium tracking-wide ${s === step ? "text-white/70" : s < step ? "text-white/60" : "text-white/60"} ${s < 3 ? "mr-8" : ""}`}>
+                  {stepLabels[s - 1]}
+                </span>
                 {s < 3 && (
-                  <div className="w-16 sm:w-24 h-px bg-white/[0.08] relative overflow-hidden">
+                  <div className="w-12 h-px bg-white/[0.08] mr-4">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-[#c9a227]"
+                      className="h-full bg-white/40"
                       initial={{ width: "0%" }}
                       animate={{ width: s < step ? "100%" : "0%" }}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 0.4 }}
                     />
                   </div>
                 )}
@@ -327,22 +319,10 @@ export default function GetStartedPage() {
             ))}
           </div>
 
-          <p className="text-center text-sm text-white/40 mb-10">
-            Step {step} of 3
-          </p>
-
-          {/* Step Content */}
+          {/* Steps */}
           <AnimatePresence mode="wait" custom={direction}>
             {step === 1 && (
-              <motion.div
-                key="step1"
-                custom={direction}
-                variants={pageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={pageTransition}
-              >
+              <motion.div key="step1" custom={direction} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={pageTransition}>
                 <Step1
                   quantity={quantity}
                   setQuantity={setQuantity}
@@ -357,17 +337,8 @@ export default function GetStartedPage() {
                 />
               </motion.div>
             )}
-
             {step === 2 && (
-              <motion.div
-                key="step2"
-                custom={direction}
-                variants={pageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={pageTransition}
-              >
+              <motion.div key="step2" custom={direction} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={pageTransition}>
                 <Step2
                   formData={formData}
                   errors={errors}
@@ -383,17 +354,8 @@ export default function GetStartedPage() {
                 />
               </motion.div>
             )}
-
             {step === 3 && (
-              <motion.div
-                key="step3"
-                custom={direction}
-                variants={pageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={pageTransition}
-              >
+              <motion.div key="step3" custom={direction} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={pageTransition}>
                 <Step3
                   quantity={quantity}
                   pricePerStudent={pricePerStudent}
@@ -414,7 +376,7 @@ export default function GetStartedPage() {
   )
 }
 
-// ─── Step 1: Choose Your Plan ───────────────────────────────────────────────
+// ─── Step 1 ─────────────────────────────────────────────────────────────────
 
 function Step1({
   quantity,
@@ -440,54 +402,27 @@ function Step1({
   onNext: () => void
 }) {
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <motion.div className="text-center" variants={fadeUp} initial="hidden" animate="visible" custom={0}>
-        <h1
-          className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4"
-          style={{ fontFamily: "'Playfair Display', serif" }}
-        >
-          Choose Your Plan
+    <div className="space-y-12">
+      <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+          Choose your plan
         </h1>
-        <p className="text-lg text-white/50 max-w-xl mx-auto">
-          Purchase student assessment licenses. The more you buy, the more you save.
+        <p className="text-[15px] text-white/60 leading-relaxed">
+          Select the number of student licenses for your agency.<br />
+          Resell to your clients at any price you set — you keep the margin.
         </p>
       </motion.div>
 
-      {/* Quantity Selector */}
-      <motion.div
-        className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 sm:p-10"
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={1}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium text-white/60 uppercase tracking-wider">
-            Number of Licenses
-          </label>
-          {savingsPercent > 0 && (
-            <motion.span
-              key={savingsPercent}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold"
-            >
-              <Sparkles className="w-3 h-3" />
-              Save {savingsPercent}%
-            </motion.span>
-          )}
-        </div>
-
-        {/* Quantity Input with +/- */}
-        <div className="flex items-center justify-center gap-4 my-8">
+      {/* Quantity */}
+      <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={1}>
+        <div className="flex items-center justify-center gap-6 mb-8">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all active:scale-95"
+            className="w-11 h-11 rounded-full bg-white/[0.06] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all active:scale-95"
           >
-            <Minus className="w-5 h-5" />
+            <Minus className="w-4 h-4" />
           </button>
-          <div className="relative">
+          <div className="text-center">
             <input
               type="number"
               min={1}
@@ -497,161 +432,140 @@ function Step1({
                 const v = parseInt(e.target.value)
                 if (!isNaN(v) && v >= 1) setQuantity(Math.min(2000, v))
               }}
-              className="w-32 sm:w-40 text-center text-5xl sm:text-6xl font-bold bg-transparent border-none outline-none text-white appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+              className="w-24 text-center text-5xl font-semibold bg-transparent border-none outline-none text-white appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] tracking-tight"
             />
-            <div className="text-center text-sm text-white/40 mt-1">licenses</div>
+            <div className="text-[13px] text-white/60 mt-0.5">licenses</div>
           </div>
           <button
             onClick={() => setQuantity(Math.min(2000, quantity + 1))}
-            className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all active:scale-95"
+            className="w-11 h-11 rounded-full bg-white/[0.06] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all active:scale-95"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
           </button>
         </div>
 
         {/* Slider */}
-        <div className="px-2">
+        <div className="px-1">
           <input
             type="range"
             min={0}
             max={100}
             value={sliderValue()}
             onChange={handleSliderChange}
-            className="w-full h-2 rounded-full appearance-none cursor-pointer
-              bg-white/[0.08]
+            className="w-full h-1 rounded-full appearance-none cursor-pointer
               [&::-webkit-slider-thumb]:appearance-none
-              [&::-webkit-slider-thumb]:w-6
-              [&::-webkit-slider-thumb]:h-6
+              [&::-webkit-slider-thumb]:w-5
+              [&::-webkit-slider-thumb]:h-5
               [&::-webkit-slider-thumb]:rounded-full
-              [&::-webkit-slider-thumb]:bg-[#c9a227]
-              [&::-webkit-slider-thumb]:shadow-lg
-              [&::-webkit-slider-thumb]:shadow-[#c9a227]/30
+              [&::-webkit-slider-thumb]:bg-white
+              [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(255,255,255,0.1)]
               [&::-webkit-slider-thumb]:cursor-pointer
-              [&::-webkit-slider-thumb]:transition-transform
-              [&::-webkit-slider-thumb]:hover:scale-110
-              [&::-moz-range-thumb]:w-6
-              [&::-moz-range-thumb]:h-6
+              [&::-webkit-slider-thumb]:transition-shadow
+              [&::-webkit-slider-thumb]:hover:shadow-[0_0_0_6px_rgba(255,255,255,0.15)]
+              [&::-moz-range-thumb]:w-5
+              [&::-moz-range-thumb]:h-5
               [&::-moz-range-thumb]:rounded-full
-              [&::-moz-range-thumb]:bg-[#c9a227]
+              [&::-moz-range-thumb]:bg-white
               [&::-moz-range-thumb]:border-none
               [&::-moz-range-thumb]:cursor-pointer
             "
             style={{
-              background: `linear-gradient(to right, #c9a227 0%, #c9a227 ${sliderValue()}%, rgba(255,255,255,0.08) ${sliderValue()}%, rgba(255,255,255,0.08) 100%)`,
+              background: `linear-gradient(to right, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.5) ${sliderValue()}%, rgba(255,255,255,0.06) ${sliderValue()}%, rgba(255,255,255,0.06) 100%)`,
             }}
           />
-          <div className="flex justify-between text-xs text-white/30 mt-2">
-            <span>1</span>
-            <span>250</span>
-            <span>500</span>
-            <span>1000+</span>
-          </div>
         </div>
-
-        {/* Live Pricing Summary */}
-        <motion.div
-          className="mt-8 pt-8 border-t border-white/[0.06]"
-          layout
-        >
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-sm text-white/40 mb-1">Per Student</div>
-              <motion.div
-                key={pricePerStudent}
-                initial={{ scale: 1.1, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-2xl sm:text-3xl font-bold text-[#c9a227]"
-              >
-                {formatCurrency(pricePerStudent)}
-              </motion.div>
-            </div>
-            <div>
-              <div className="text-sm text-white/40 mb-1">Quantity</div>
-              <div className="text-2xl sm:text-3xl font-bold text-white">{quantity}</div>
-            </div>
-            <div>
-              <div className="text-sm text-white/40 mb-1">Total</div>
-              <motion.div
-                key={total}
-                initial={{ scale: 1.05, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-2xl sm:text-3xl font-bold text-white"
-              >
-                {formatCurrency(total)}
-              </motion.div>
-            </div>
-          </div>
-          {savings > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center mt-4"
-            >
-              <span className="text-emerald-400 font-medium">
-                You save {formatCurrency(savings)} ({savingsPercent}%)
-              </span>
-              <span className="text-white/30 ml-2">vs. individual pricing</span>
-            </motion.div>
-          )}
-        </motion.div>
       </motion.div>
 
-      {/* Pricing Tiers */}
-      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={2}>
-        <h3 className="text-sm font-medium text-white/40 uppercase tracking-wider text-center mb-5">
-          Volume Pricing Tiers
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* Pricing Summary */}
+      <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={2}>
+        <div className="grid grid-cols-3 text-center">
+          <div>
+            <div className="text-[13px] text-white/60 mb-1">Per student</div>
+            <motion.div
+              key={pricePerStudent}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xl font-semibold tracking-tight"
+            >
+              {formatCurrency(pricePerStudent)}
+            </motion.div>
+          </div>
+          <div>
+            <div className="text-[13px] text-white/60 mb-1">Quantity</div>
+            <div className="text-2xl font-semibold tracking-tight">{quantity}</div>
+          </div>
+          <div>
+            <div className="text-[13px] text-white/60 mb-1">Total</div>
+            <motion.div
+              key={total}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xl font-semibold tracking-tight"
+            >
+              {formatCurrency(total)}
+            </motion.div>
+          </div>
+        </div>
+        {savings > 0 && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-[13px] text-emerald-400/80 mt-4"
+          >
+            You save {formatCurrency(savings)} ({savingsPercent}%)
+          </motion.p>
+        )}
+      </motion.div>
+
+      {/* Tiers */}
+      <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={3}>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {PRICING_TIERS.map((tier, i) => {
             const isActive = i === activeTier
             return (
-              <motion.button
+              <button
                 key={tier.label}
                 onClick={() => setQuantity(tier.min)}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
                 className={`
-                  relative p-4 rounded-xl border text-center transition-all duration-300 cursor-pointer
-                  ${
-                    isActive
-                      ? "bg-[#c9a227]/10 border-[#c9a227]/60 shadow-lg shadow-[#c9a227]/10"
-                      : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]"
+                  relative py-3 px-2 rounded-lg text-center transition-all duration-300
+                  ${isActive
+                    ? "bg-white/[0.1] ring-1 ring-white/20"
+                    : "bg-white/[0.03] hover:bg-white/[0.06]"
                   }
                 `}
               >
                 {tier.popular && (
-                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-[#c9a227] text-[#0a0a0a] text-[10px] font-bold uppercase tracking-wider rounded-full whitespace-nowrap">
-                    Most Popular
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-px text-[9px] font-semibold uppercase tracking-wider bg-white text-[#0a0a0a] rounded-full whitespace-nowrap">
+                    Popular
                   </div>
                 )}
-                <div className={`text-xs mb-1 ${isActive ? "text-[#c9a227]" : "text-white/40"}`}>
-                  {tier.label} licenses
+                <div className={`text-[11px] mb-0.5 ${isActive ? "text-white/60" : "text-white/60"}`}>
+                  {tier.label}
                 </div>
-                <div className={`text-xl font-bold ${isActive ? "text-[#c9a227]" : "text-white"}`}>
+                <div className={`text-base font-semibold ${isActive ? "text-white" : "text-white/60"}`}>
                   ${tier.price}
                 </div>
-                <div className="text-xs text-white/30">/student</div>
-              </motion.button>
+              </button>
             )
           })}
         </div>
       </motion.div>
 
-      {/* Continue Button */}
-      <motion.div className="flex justify-center" variants={fadeUp} initial="hidden" animate="visible" custom={3}>
+      {/* Continue */}
+      <motion.div className="flex justify-center pt-2" variants={fadeIn} initial="hidden" animate="visible" custom={4}>
         <button
           onClick={onNext}
-          className="group flex items-center gap-3 px-10 py-4 bg-[#c9a227] hover:bg-[#d4ad2e] text-[#0a0a0a] font-semibold text-lg rounded-xl transition-all hover:shadow-lg hover:shadow-[#c9a227]/20 active:scale-[0.98]"
+          className="group flex items-center gap-2.5 px-8 py-3.5 bg-white text-[#0a0a0a] font-medium text-[15px] rounded-full transition-all hover:bg-white/90 active:scale-[0.97]"
         >
           Continue
-          <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
         </button>
       </motion.div>
     </div>
   )
 }
 
-// ─── Reusable InputField (must be outside Step2 to avoid remount on every keystroke) ──
+// ─── Reusable Input ─────────────────────────────────────────────────────────
 
 function InputField({
   label,
@@ -680,37 +594,46 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-white/60 mb-2">{label}</label>
-      <div className="relative">
-        {prefix && (
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-sm">{prefix}</span>
-        )}
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(field, e.target.value)}
-          onBlur={() => onBlur(field)}
-          placeholder={placeholder}
-          className={`
-            w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border text-white placeholder-white/20 outline-none transition-all
-            ${prefix ? "pl-[140px]" : ""}
-            ${
-              error
-                ? "border-red-500/50 focus:border-red-500"
-                : "border-white/[0.08] focus:border-[#c9a227]/50 focus:bg-white/[0.06]"
-            }
-          `}
-        />
-        {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2">{suffix}</span>
-        )}
-      </div>
-      {note && !error && <p className="text-xs text-white/30 mt-1.5">{note}</p>}
+      <label className="block text-[13px] font-medium text-white/60 mb-2">{label}</label>
+      {prefix ? (
+        <div className={`flex items-center rounded-lg bg-white/[0.05] transition-all ${error ? "ring-1 ring-red-500/40 focus-within:ring-red-500/60" : "ring-1 ring-white/[0.06] focus-within:ring-white/20"}`}>
+          <span className="shrink-0 pl-3.5 pr-1 text-white/60 text-[13px] select-none">{prefix}</span>
+          <input
+            type={type}
+            value={value}
+            onChange={(e) => onChange(field, e.target.value)}
+            onBlur={() => onBlur(field)}
+            placeholder={placeholder}
+            className="flex-1 px-1 py-3 bg-transparent text-[15px] text-white placeholder-white/20 outline-none"
+          />
+        </div>
+      ) : (
+        <div className="relative">
+          <input
+            type={type}
+            value={value}
+            onChange={(e) => onChange(field, e.target.value)}
+            onBlur={() => onBlur(field)}
+            placeholder={placeholder}
+            className={`
+              w-full px-3.5 py-3 rounded-lg bg-white/[0.05] text-[15px] text-white placeholder-white/20 outline-none transition-all
+              ${error
+                ? "ring-1 ring-red-500/40 focus:ring-red-500/60"
+                : "ring-1 ring-white/[0.06] focus:ring-white/20"
+              }
+            `}
+          />
+          {suffix && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2">{suffix}</span>
+          )}
+        </div>
+      )}
+      {note && !error && <p className="text-[12px] text-white/60 mt-1.5">{note}</p>}
       {error && (
         <motion.p
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-red-400 mt-1.5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-[12px] text-red-400/80 mt-1.5"
         >
           {error}
         </motion.p>
@@ -719,7 +642,7 @@ function InputField({
   )
 }
 
-// ─── Step 2: Create Your Account ────────────────────────────────────────────
+// ─── Step 2 ─────────────────────────────────────────────────────────────────
 
 function Step2({
   formData,
@@ -748,75 +671,63 @@ function Step2({
 }) {
   return (
     <div className="space-y-10">
-      {/* Header */}
-      <motion.div className="text-center" variants={fadeUp} initial="hidden" animate="visible" custom={0}>
-        <h1
-          className="text-4xl sm:text-5xl font-bold mb-4"
-          style={{ fontFamily: "'Playfair Display', serif" }}
-        >
-          Create Your Account
+      <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+          Create your account
         </h1>
-        <p className="text-lg text-white/50">
-          Set up your agency profile to get started.
+        <p className="text-[15px] text-white/60">
+          Set up your agency to get started.
         </p>
       </motion.div>
 
-      {/* Form */}
-      <motion.div
-        className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 sm:p-10 space-y-6 max-w-lg mx-auto"
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={1}
-      >
-        <InputField label="Agency Name" field="agencyName" placeholder="e.g. Apex Admissions Group" value={formData.agencyName} error={errors.agencyName} onChange={onFieldChange} onBlur={onBlur} />
+      <motion.div className="space-y-5" variants={fadeIn} initial="hidden" animate="visible" custom={1}>
+        <InputField label="Agency name" field="agencyName" placeholder="Apex Admissions Group" value={formData.agencyName} error={errors.agencyName} onChange={onFieldChange} onBlur={onBlur} />
         <InputField
-          label="URL Slug"
+          label="URL"
           field="slug"
-          placeholder="apex-admissions-group"
+          placeholder="apex-admissions"
           prefix="thestudentblueprint.com/"
-          note="This will be your agency's unique URL."
+          note="You can later connect your own custom domain and fully brand the site with your logo and colors."
           value={formData.slug}
           error={errors.slug}
           onChange={onFieldChange}
           onBlur={onBlur}
         />
 
-        <div className="pt-2 border-t border-white/[0.06]" />
+        <div className="h-px bg-white/[0.04] my-2" />
 
-        <InputField label="Your Name" field="name" placeholder="e.g. Sarah Mitchell" value={formData.name} error={errors.name} onChange={onFieldChange} onBlur={onBlur} />
-        <InputField label="Email Address" field="email" type="email" placeholder="you@agency.com" value={formData.email} error={errors.email} onChange={onFieldChange} onBlur={onBlur} />
+        <InputField label="Full name" field="name" placeholder="Sarah Mitchell" value={formData.name} error={errors.name} onChange={onFieldChange} onBlur={onBlur} />
+        <InputField label="Email" field="email" type="email" placeholder="you@agency.com" value={formData.email} error={errors.email} onChange={onFieldChange} onBlur={onBlur} />
 
         {/* Password */}
         <div>
-          <label className="block text-sm font-medium text-white/60 mb-2">Password</label>
+          <label className="block text-[13px] font-medium text-white/60 mb-2">Password</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={(e) => onFieldChange("password", e.target.value)}
               onBlur={() => onBlur("password")}
-              placeholder="Minimum 8 characters"
+              placeholder="8+ characters"
               className={`
-                w-full px-4 py-3.5 pr-12 rounded-xl bg-white/[0.04] border text-white placeholder-white/20 outline-none transition-all
-                ${
-                  errors.password
-                    ? "border-red-500/50 focus:border-red-500"
-                    : "border-white/[0.08] focus:border-[#c9a227]/50 focus:bg-white/[0.06]"
+                w-full px-3.5 py-3 pr-11 rounded-lg bg-white/[0.05] text-[15px] text-white placeholder-white/20 outline-none transition-all
+                ${errors.password
+                  ? "ring-1 ring-red-500/40 focus:ring-red-500/60"
+                  : "ring-1 ring-white/[0.06] focus:ring-white/20"
                 }
               `}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/60 transition-colors"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           {formData.password && (
-            <div className="mt-2">
-              <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex-1 h-0.5 bg-white/[0.06] rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${passwordStrength.color}`}
                   initial={{ width: "0%" }}
@@ -824,81 +735,72 @@ function Step2({
                   transition={{ duration: 0.3 }}
                 />
               </div>
-              <p className="text-xs text-white/40 mt-1">{passwordStrength.label}</p>
+              <span className="text-[11px] text-white/60">{passwordStrength.label}</span>
             </div>
           )}
           {errors.password && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-xs text-red-400 mt-1.5"
-            >
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[12px] text-red-400/80 mt-1.5">
               {errors.password}
             </motion.p>
           )}
         </div>
 
-        {/* Confirm Password */}
+        {/* Confirm */}
         <div>
-          <label className="block text-sm font-medium text-white/60 mb-2">Confirm Password</label>
+          <label className="block text-[13px] font-medium text-white/60 mb-2">Confirm password</label>
           <div className="relative">
             <input
               type={showConfirm ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={(e) => onFieldChange("confirmPassword", e.target.value)}
               onBlur={() => onBlur("confirmPassword")}
-              placeholder="Re-enter your password"
+              placeholder="Re-enter password"
               className={`
-                w-full px-4 py-3.5 pr-12 rounded-xl bg-white/[0.04] border text-white placeholder-white/20 outline-none transition-all
-                ${
-                  errors.confirmPassword
-                    ? "border-red-500/50 focus:border-red-500"
-                    : "border-white/[0.08] focus:border-[#c9a227]/50 focus:bg-white/[0.06]"
+                w-full px-3.5 py-3 pr-11 rounded-lg bg-white/[0.05] text-[15px] text-white placeholder-white/20 outline-none transition-all
+                ${errors.confirmPassword
+                  ? "ring-1 ring-red-500/40 focus:ring-red-500/60"
+                  : "ring-1 ring-white/[0.06] focus:ring-white/20"
                 }
               `}
             />
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/60 transition-colors"
             >
               {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           {errors.confirmPassword && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-xs text-red-400 mt-1.5"
-            >
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[12px] text-red-400/80 mt-1.5">
               {errors.confirmPassword}
             </motion.p>
           )}
         </div>
       </motion.div>
 
-      {/* Navigation */}
-      <motion.div className="flex items-center justify-center gap-4" variants={fadeUp} initial="hidden" animate="visible" custom={2}>
+      {/* Nav */}
+      <motion.div className="flex items-center justify-center gap-3" variants={fadeIn} initial="hidden" animate="visible" custom={2}>
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/[0.08] text-white/60 hover:text-white hover:border-white/[0.2] transition-all active:scale-[0.98]"
+          className="flex items-center gap-2 px-6 py-3 rounded-full text-[15px] text-white/60 hover:text-white transition-all active:scale-[0.97]"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         <button
           onClick={onNext}
-          className="group flex items-center gap-3 px-10 py-3.5 bg-[#c9a227] hover:bg-[#d4ad2e] text-[#0a0a0a] font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-[#c9a227]/20 active:scale-[0.98]"
+          className="group flex items-center gap-2.5 px-8 py-3 bg-white text-[#0a0a0a] font-medium text-[15px] rounded-full transition-all hover:bg-white/90 active:scale-[0.97]"
         >
           Continue
-          <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
         </button>
       </motion.div>
     </div>
   )
 }
 
-// ─── Step 3: Payment ────────────────────────────────────────────────────────
+// ─── Step 3 ─────────────────────────────────────────────────────────────────
 
 function Step3({
   quantity,
@@ -923,112 +825,95 @@ function Step3({
 }) {
   return (
     <div className="space-y-10">
-      {/* Header */}
-      <motion.div className="text-center" variants={fadeUp} initial="hidden" animate="visible" custom={0}>
-        <h1
-          className="text-4xl sm:text-5xl font-bold mb-4"
-          style={{ fontFamily: "'Playfair Display', serif" }}
-        >
-          Complete Your Purchase
+      <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+          Review & pay
         </h1>
-        <p className="text-lg text-white/50">
-          Review your order and proceed to secure checkout.
+        <p className="text-[15px] text-white/60">
+          Confirm your order details.
         </p>
       </motion.div>
 
-      {/* Order Summary */}
-      <motion.div
-        className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 sm:p-10 max-w-lg mx-auto"
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={1}
-      >
-        <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-          <Users className="w-5 h-5 text-[#c9a227]" />
-          Order Summary
-        </h3>
-
-        <div className="space-y-4">
-          <div className="flex justify-between items-center py-3 border-b border-white/[0.06]">
-            <span className="text-white/50">Agency</span>
-            <span className="font-medium">{agencyName}</span>
+      <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={1}>
+        <div className="space-y-0">
+          <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
+            <span className="text-[15px] text-white/60">Agency</span>
+            <span className="text-[15px] font-medium">{agencyName}</span>
           </div>
-          <div className="flex justify-between items-center py-3 border-b border-white/[0.06]">
-            <span className="text-white/50">Student Licenses</span>
-            <span className="font-medium">{quantity}</span>
+          <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
+            <span className="text-[15px] text-white/60">Licenses</span>
+            <span className="text-[15px] font-medium">{quantity}</span>
           </div>
-          <div className="flex justify-between items-center py-3 border-b border-white/[0.06]">
-            <span className="text-white/50">Price per Student</span>
-            <span className="font-medium text-[#c9a227]">{formatCurrency(pricePerStudent)}</span>
+          <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
+            <span className="text-[15px] text-white/60">Per student</span>
+            <span className="text-[15px] font-medium">{formatCurrency(pricePerStudent)}</span>
           </div>
           {savings > 0 && (
-            <div className="flex justify-between items-center py-3 border-b border-white/[0.06]">
-              <span className="text-white/50">Volume Discount</span>
-              <span className="font-medium text-emerald-400">
+            <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
+              <span className="text-[15px] text-white/60">Discount</span>
+              <span className="text-[15px] font-medium text-emerald-400">
                 -{formatCurrency(savings)} ({savingsPercent}%)
               </span>
             </div>
           )}
-          <div className="flex justify-between items-center pt-4">
-            <span className="text-lg font-semibold">Total</span>
+          <div className="flex justify-between items-center py-5">
+            <span className="text-[17px] font-medium">Total</span>
             <motion.span
               key={total}
-              initial={{ scale: 1.05, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-3xl font-bold text-white"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xl font-semibold tracking-tight"
             >
               {formatCurrency(total)}
             </motion.span>
           </div>
         </div>
 
-        {/* Checkout Button */}
+        {/* Checkout */}
         <button
           onClick={onCheckout}
           disabled={isProcessing}
-          className="w-full mt-8 flex items-center justify-center gap-3 px-8 py-4 bg-[#c9a227] hover:bg-[#d4ad2e] disabled:opacity-60 disabled:cursor-not-allowed text-[#0a0a0a] font-bold text-lg rounded-xl transition-all hover:shadow-lg hover:shadow-[#c9a227]/20 active:scale-[0.98]"
+          className="w-full mt-6 flex items-center justify-center gap-2.5 py-3.5 bg-white hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-[#0a0a0a] font-medium text-[15px] rounded-full transition-all active:scale-[0.98]"
         >
           {isProcessing ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
               Processing...
             </>
           ) : (
             <>
-              <CreditCard className="w-5 h-5" />
-              Complete Purchase — {formatCurrency(total)}
+              Pay {formatCurrency(total)}
             </>
           )}
         </button>
 
-        {/* Trust Badges */}
-        <div className="mt-6 flex items-center justify-center gap-6 text-xs text-white/30">
+        {/* Trust */}
+        <div className="mt-5 flex items-center justify-center gap-5 text-[12px] text-white/60">
           <span className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5" />
-            SSL Encrypted
+            <Lock className="w-3 h-3" />
+            Encrypted
           </span>
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Secure Checkout
+            <ShieldCheck className="w-3 h-3" />
+            Secure
           </span>
           <span className="flex items-center gap-1.5">
-            <CreditCard className="w-3.5 h-3.5" />
-            Powered by Stripe
+            <CreditCard className="w-3 h-3" />
+            Stripe
           </span>
         </div>
 
-        <p className="text-center text-xs text-white/20 mt-4">
-          30-day money-back guarantee. Cancel anytime within the first 30 days for a full refund.
+        <p className="text-center text-[12px] text-white/60 mt-3">
+          30-day money-back guarantee
         </p>
       </motion.div>
 
-      {/* Back Button */}
-      <motion.div className="flex justify-center" variants={fadeUp} initial="hidden" animate="visible" custom={2}>
+      {/* Back */}
+      <motion.div className="flex justify-center" variants={fadeIn} initial="hidden" animate="visible" custom={2}>
         <button
           onClick={onBack}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/[0.08] text-white/60 hover:text-white hover:border-white/[0.2] transition-all active:scale-[0.98] disabled:opacity-40"
+          className="flex items-center gap-2 px-6 py-3 rounded-full text-[15px] text-white/60 hover:text-white transition-all active:scale-[0.97] disabled:opacity-30"
         >
           <ArrowLeft className="w-4 h-4" />
           Back

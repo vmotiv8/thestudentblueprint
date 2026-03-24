@@ -32,6 +32,7 @@ export async function GET(request: Request) {
         competitiveness_score,
         archetype_scores,
         is_demo,
+        current_section,
         created_at,
         updated_at,
         student:students (

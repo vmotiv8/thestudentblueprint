@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     // Extract fields manually to be more permissive than strict Zod validation
     const assessmentId = body.assessmentId as string | undefined
     const rawFormData = body.formData as Record<string, Record<string, unknown>> | undefined
+    const currentSection = typeof body.currentSection === 'number' ? body.currentSection : null
     const couponCode = body.couponCode as string | undefined
     const organization_slug = body.organization_slug as string | undefined
 
@@ -63,7 +64,8 @@ export async function POST(request: Request) {
     if (assessmentId) {
       const updateData: Record<string, unknown> = {
         responses: formData,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        ...(currentSection !== null && { current_section: currentSection }),
       }
 
       if (organization.free_assessments) {
@@ -222,6 +224,7 @@ export async function POST(request: Request) {
         student_id: student.id,
         status: 'in_progress',
         responses: formData,
+        current_section: currentSection || 1,
         coupon_code: validatedCoupon ? couponCode!.toUpperCase() : null,
         payment_status: organization.free_assessments
           ? 'free'

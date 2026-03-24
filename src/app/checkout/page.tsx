@@ -35,7 +35,15 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        const response = await fetch('/api/platform/organizations/me')
+        // Extract org slug from URL search params (set by middleware rewrite)
+        // or from the referrer path (e.g., /agency-slug/checkout)
+        const urlParams = new URLSearchParams(window.location.search)
+        const orgSlug = urlParams.get('org')
+        const apiUrl = orgSlug
+          ? `/api/platform/organizations/me?org=${encodeURIComponent(orgSlug)}`
+          : '/api/platform/organizations/me'
+
+        const response = await fetch(apiUrl)
         if (response.ok) {
           const data = await response.json()
           setTenant(data)
@@ -54,7 +62,8 @@ export default function CheckoutPage() {
 
     // If org has free assessments, redirect to assessment directly
     if (tenant?.free_assessments) {
-      router.push('/assessment')
+      const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}` : ''
+      router.push(`/assessment${orgParam}`)
       return
     }
 
@@ -245,8 +254,8 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                 <div className="space-y-4">
                   {features.map((feature, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-[#c9a227] flex-shrink-0 mt-0.5" />
-                      <span className="text-[#1e3a5f] text-[15px]">{feature}</span>
+                      <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: tenant?.secondary_color || "#c9a227" }} />
+                      <span className="text-[15px]" style={{ color: tenant?.primary_color || "#1e3a5f" }}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -262,14 +271,14 @@ localStorage.setItem("studentblueprint_coupon", data.code)
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
             <Card className="border-[#e5e0d5] shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-[#1e3a5f]">
+                <CardTitle className="flex items-center gap-2" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
                   <CreditCard className="w-5 h-5" />
                   Payment Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[#1e3a5f]">
+                  <Label htmlFor="email" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
                     Email Address
                   </Label>
                   <Input
@@ -311,7 +320,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-[#1e3a5f] flex items-center gap-2">
+                  <Label className="flex items-center gap-2" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
                     <Tag className="w-4 h-4" />
                     Have a coupon code?
                   </Label>
@@ -326,7 +335,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                       variant="outline"
                       onClick={handleCouponSubmit}
                       disabled={isValidatingCoupon}
-                      className="border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white"
+                      style={{ borderColor: tenant?.primary_color || "#1e3a5f", color: tenant?.primary_color || "#1e3a5f" }}
                     >
                       {isValidatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
                     </Button>

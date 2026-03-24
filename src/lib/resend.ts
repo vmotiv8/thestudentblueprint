@@ -296,6 +296,8 @@ export async function sendStudentInviteEmail(props: {
   `
 
   try {
+    console.log(`[Email:invite] Sending to ${to} from "${fromEmail}" for org "${orgName}"`)
+
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],
@@ -305,15 +307,26 @@ export async function sendStudentInviteEmail(props: {
     })
 
     if (error) {
-      console.error('Resend error:', error)
+      console.error(`[Email:invite] Resend API error for ${to}:`, {
+        error,
+        from: fromEmail,
+        orgName,
+        timestamp: new Date().toISOString(),
+      })
       await logEmailSend('student_invite', to, false, error)
       return { success: false, error }
     }
 
+    console.log(`[Email:invite] Successfully sent to ${to}, id: ${data?.id}`)
     await logEmailSend('student_invite', to, true)
     return { success: true, data }
   } catch (error) {
-    console.error('Failed to send student invite email:', error)
+    console.error(`[Email:invite] Exception sending to ${to}:`, {
+      error: error instanceof Error ? error.message : error,
+      from: fromEmail,
+      orgName,
+      timestamp: new Date().toISOString(),
+    })
     await logEmailSend('student_invite', to, false, error)
     return { success: false, error }
   }

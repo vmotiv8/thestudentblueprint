@@ -111,7 +111,12 @@ function AssessmentContent() {
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        const response = await fetch('/api/platform/organizations/me')
+        const urlParams = new URLSearchParams(window.location.search)
+        const orgSlug = urlParams.get('org')
+        const apiUrl = orgSlug
+          ? `/api/platform/organizations/me?org=${encodeURIComponent(orgSlug)}`
+          : '/api/platform/organizations/me'
+        const response = await fetch(apiUrl)
         if (response.ok) {
           const data = await response.json()
           setTenant(data)

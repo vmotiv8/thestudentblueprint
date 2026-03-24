@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     const fromName = org.custom_email_from || org.name
 
     try {
-      await sendStudentInviteEmail({
+      const emailResult = await sendStudentInviteEmail({
         to: email,
         assessmentUrl,
         couponCode: couponCode || null,
@@ -75,6 +75,22 @@ export async function POST(request: Request) {
         fromName,
         replyTo: org.custom_email_reply_to || null
       })
+
+      if (!emailResult.success) {
+        console.error(`[Invite] Email failed for ${email}:`, {
+          error: emailResult.error,
+          orgId: org.id,
+          orgName: org.name,
+          assessmentUrl,
+          timestamp: new Date().toISOString(),
+        })
+        return NextResponse.json(
+          { error: 'Failed to send invitation email. Please check the email address and try again.' },
+          { status: 500 }
+        )
+      }
+
+      console.log(`[Invite] Email sent successfully to ${email} for org ${org.slug}`)
 
       // 3. Atomically increment student count to prevent race conditions
       await supabase.rpc('increment_students_count', { org_id: org.id, amount: 1 })
@@ -90,7 +106,12 @@ export async function POST(request: Request) {
 
       return NextResponse.json({ success: true })
     } catch (error) {
-      console.error(`Failed to send invite to ${email}:`, error)
+      console.error(`[Invite] Exception sending to ${email}:`, {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        orgId: org.id,
+        timestamp: new Date().toISOString(),
+      })
       return NextResponse.json({ error: 'Failed to send invitation email' }, { status: 500 })
     }
   } catch (error) {

@@ -1,14 +1,24 @@
 import { NextResponse } from 'next/server';
-import { resolveOrganization } from '@/lib/tenant';
+import { resolveOrganization, getOrganizationBySlug } from '@/lib/tenant';
 
 export async function GET(request: Request) {
   try {
-    const organization = await resolveOrganization(request);
-    
+    // Check for explicit org slug in query params (set by middleware rewrite or client)
+    const { searchParams } = new URL(request.url);
+    const orgSlug = searchParams.get('org');
+
+    let organization = null;
+    if (orgSlug) {
+      organization = await getOrganizationBySlug(orgSlug);
+    }
+    if (!organization) {
+      organization = await resolveOrganization(request);
+    }
+
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
-    
+
     // Return only public branding info
     return NextResponse.json({
       id: organization.id,

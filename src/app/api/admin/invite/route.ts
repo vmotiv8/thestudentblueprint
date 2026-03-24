@@ -37,13 +37,6 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    // 2. License Enforcement Check
-    if (org.max_students !== -1 && org.current_students_count >= org.max_students) {
-      return NextResponse.json({ 
-        error: 'License limit reached. Please upgrade your plan to invite more students.' 
-      }, { status: 403 })
-    }
-
     const { email, couponCode, message } = await request.json()
 
     if (!email) {
@@ -91,18 +84,6 @@ export async function POST(request: Request) {
       }
 
       console.log(`[Invite] Email sent successfully to ${email} for org ${org.slug}`)
-
-      // 3. Atomically increment student count to prevent race conditions
-      await supabase.rpc('increment_students_count', { org_id: org.id, amount: 1 })
-
-      // 4. Log the usage
-      await supabase.from('usage_logs').insert({
-        organization_id: org.id,
-        metric: 'assessment_invite',
-        count: 1,
-        period_start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-        period_end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString()
-      })
 
       return NextResponse.json({ success: true })
     } catch (error) {

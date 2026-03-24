@@ -60,10 +60,10 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import {
-    SECTION_TITLES,
-    GRADE_OPTIONS,
-    SUBJECT_OPTIONS,
+import { 
+    SECTION_TITLES, 
+    GRADE_OPTIONS, 
+    SUBJECT_OPTIONS, 
       ARCHETYPE_OPTIONS,
       CAREER_STATEMENT_OPTIONS,
       PACE_OPTIONS,
@@ -106,8 +106,6 @@ function AssessmentContent() {
   const [showLoadingScreen, setShowLoadingScreen] = useState(false)
   const [tenant, setTenant] = useState<any>(null)
 
-  const progress = (currentSection / 15) * 100
-
   // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
   const getOrgSlug = () => {
     const params = new URLSearchParams(window.location.search)
@@ -136,6 +134,8 @@ function AssessmentContent() {
     fetchTenant()
   }, [])
 
+  const progress = (currentSection / 15) * 100
+
   const countWords = (text: string) => {
     return text.trim().split(/\s+/).filter(word => word.length > 0).length
   }
@@ -159,43 +159,6 @@ function AssessmentContent() {
     if (formData.timeCommitment.hoursSchoolYear || formData.timeCommitment.preferredPace) completed.add(15)
     return completed
   }, [formData])
-
-  const filteredCourseCategories = useMemo(() => {
-    const curriculum = formData.academicProfile.curriculum || formData.basicInfo.curriculum
-
-    const getCurriculumTags = (curr: string): string[] => {
-      if (!curr || curr === "Other") return []
-      if (curr.includes("IB")) return ["IB"]
-      if (curr.includes("AP") || curr === "US High School Diploma") return ["AP", "US", "Honors"]
-      if (curr.includes("A-Levels")) return ["A-Level"]
-      if (curr.includes("IGCSE")) return ["IGCSE"]
-      if (curr === "CBSE") return ["CBSE"]
-      if (curr.includes("ICSE")) return ["ICSE"]
-      if (curr === "NIOS") return ["NIOS"]
-      if (curr.includes("French")) return ["French_Bac"]
-      if (curr.includes("German")) return ["German_Abitur"]
-      if (curr.includes("European")) return ["European_Bac"]
-      if (curr.includes("Scottish")) return ["Scottish"]
-      if (curr.includes("Swiss") || curr.includes("Italian") || curr.includes("Maturit")) return ["Swiss_Matura", "Italian_Matura"]
-      if (curr.includes("OSSD")) return ["OSSD"]
-      if (curr.includes("BC Curriculum")) return ["BC"]
-      if (curr.includes("Australian")) return ["Australian"]
-      if (curr.includes("NCEA")) return ["NCEA"]
-      if (curr.includes("BTEC")) return ["BTEC"]
-      if (curr.includes("Gaokao")) return ["Gaokao"]
-      return []
-    }
-
-    const activeTags = getCurriculumTags(curriculum || "")
-    const showAll = activeTags.length === 0
-
-    return COURSE_CATEGORIES.map(category => ({
-      ...category,
-      courses: category.courses
-        .filter(course => showAll || course.tags.some(tag => activeTags.includes(tag)) || course.tags.includes("Universal"))
-        .map(course => course.name)
-    })).filter(cat => cat.courses.length > 0)
-  }, [formData.academicProfile.curriculum, formData.basicInfo.curriculum])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -246,7 +209,7 @@ function AssessmentContent() {
       const couponUsed = localStorage.getItem("studentblueprint_coupon")
 
       let verified = false
-
+      
       if (sessionId) {
         const response = await fetch(`/api/payment/verify?session_id=${sessionId}`)
         const data = await response.json()
@@ -345,7 +308,7 @@ function AssessmentContent() {
     
     const mergeWithDefaults = <T extends object>(data: unknown, defaults: T): T => {
       if (!data || typeof data !== 'object') return defaults
-      return { ...defaults, ...(data as Partial<T>) }
+      return { ...defaults, ...(data as T) }
     }
     
     const academicProfileData = mergeWithDefaults(assessment.academic_profile, initialFormData.academicProfile)
@@ -405,18 +368,15 @@ function AssessmentContent() {
     setFormData({
       basicInfo: {
         ...basicInfoData,
-        dreamSchools: dreamSchools.length > 0 ? dreamSchools : ["", "", ""],
-        parentPhone: basicInfoData.parentPhone || ""
-      } as typeof initialFormData.basicInfo,
+        dreamSchools: dreamSchools.length > 0 ? dreamSchools : ["", "", ""]
+      },
       academicProfile: {
         ...academicProfileData,
         coursesTaken,
         coursesPlanned,
         regularCoursesTaken: Array.isArray(academicProfileData.regularCoursesTaken) ? academicProfileData.regularCoursesTaken : [],
         regularCoursesPlanned: Array.isArray(academicProfileData.regularCoursesPlanned) ? academicProfileData.regularCoursesPlanned : [],
-        gpaScale: academicProfileData.gpaScale || "",
-        curriculum: academicProfileData.curriculum || ""
-      } as typeof initialFormData.academicProfile,
+      },
       testingInfo: mergeWithDefaults(assessment.testing_info, initialFormData.testingInfo),
       extracurriculars: {
         activities: Array.isArray((assessment.extracurriculars as Record<string, unknown>)?.activities)
@@ -426,21 +386,21 @@ function AssessmentContent() {
       leadership: {
         ...leadershipData,
         entries: leadershipEntries
-      } as typeof initialFormData.leadership,
+      },
       competitions: {
         ...competitionsData,
         entries: competitionEntries
-      } as typeof initialFormData.competitions,
+      },
       passions: mergeWithDefaults(assessment.passions, initialFormData.passions),
       careerAspirations: mergeWithDefaults(assessment.career_aspirations, initialFormData.careerAspirations),
       researchExperience: {
         ...researchData,
         entries: researchEntries
-      } as typeof initialFormData.researchExperience,
+      },
       summerPrograms: {
         ...summerProgramsData,
         entries: summerProgramEntries
-      } as typeof initialFormData.summerPrograms,
+      },
       specialTalents: mergeWithDefaults(assessment.special_talents, initialFormData.specialTalents),
       familyContext: mergeWithDefaults(assessment.family_context, initialFormData.familyContext),
       personality: mergeWithDefaults(assessment.personality, initialFormData.personality),
@@ -466,12 +426,7 @@ function AssessmentContent() {
           organization_slug: tenant?.slug
         })
       })
-      
-      if (!response.ok) {
-        console.error("Auto-save failed:", response.status)
-        toast.error("Auto-save failed. Your progress may not be saved.", { id: "auto-save-error" })
-        return
-      }
+
       const data = await response.json()
       if (data.assessmentId) {
         setAssessmentId(data.assessmentId)
@@ -479,7 +434,6 @@ function AssessmentContent() {
       }
     } catch (error) {
       console.error("Auto-save failed:", error)
-      toast.error("Auto-save failed. Check your connection.", { id: "auto-save-error" })
     } finally {
       setIsSaving(false)
     }
@@ -510,6 +464,14 @@ function AssessmentContent() {
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.basicInfo.parentEmail)) {
         errors.parentEmail = "Please enter a valid email address"
       }
+      if (!formData.basicInfo.parentPhone?.trim()) {
+        errors.parentPhone = "Parent phone number is required"
+      } else {
+        const phoneDigits = formData.basicInfo.parentPhone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "").replace(/[\s\-().]/g, "")
+        if (!phoneDigits || phoneDigits.length < 5 || phoneDigits.length > 15 || !/^\d+$/.test(phoneDigits)) {
+          errors.parentPhone = "Please enter a valid phone number"
+        }
+      }
       if (!formData.basicInfo.dateOfBirth) {
         errors.dateOfBirth = "Date of birth is required"
       }
@@ -534,15 +496,22 @@ function AssessmentContent() {
         if (!formData.basicInfo.targetCollegeYear) {
           errors.targetCollegeYear = "Target entry year is required"
         }
-        if (!formData.basicInfo.curriculum) {
-          errors.curriculum = "Curriculum is required"
+        if (!formData.basicInfo.gender) {
+          errors.gender = "Gender is required"
+        }
+        if (!formData.basicInfo.ethnicity) {
+          errors.ethnicity = "Ethnicity is required"
         }
       }
-
-    
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+      if (section === 2) {
+        if (!formData.academicProfile.curriculum) {
+          errors.curriculum = "Please select your curriculum"
+        }
+      }
+      
+      setValidationErrors(errors)
+      return Object.keys(errors).length === 0
+    }
 
   const handleSaveProgress = async () => {
     if (!formData.basicInfo.fullName || !formData.basicInfo.email) {
@@ -569,7 +538,7 @@ function AssessmentContent() {
           organization_slug: tenant?.slug
         })
       })
-      
+
       const data = await response.json()
       if (data.assessmentId) {
         setAssessmentId(data.assessmentId)
@@ -627,7 +596,7 @@ function AssessmentContent() {
     }
   }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (retryCount = 0) => {
       setIsSubmitting(true)
       setShowLoadingScreen(true)
       try {
@@ -648,11 +617,26 @@ function AssessmentContent() {
         if (data.success) {
           router.push(`/results/${data.assessmentId}`)
         } else {
-          toast.error(data.error || "Failed to submit assessment")
+          // Auto-retry once on server errors before showing the error
+          if (retryCount < 1 && response.status >= 500) {
+            console.log("Submission failed, retrying once...")
+            setIsSubmitting(false)
+            await new Promise(resolve => setTimeout(resolve, 3000))
+            return handleSubmit(retryCount + 1)
+          }
+          const errorMsg = data.error || "Our AI is under heavy load. Please wait a moment and try submitting again."
+          console.error("Submit error:", errorMsg)
+          toast.error(errorMsg, { duration: 8000 })
           setShowLoadingScreen(false)
         }
       } catch (error) {
-        toast.error("Failed to submit assessment")
+        if (retryCount < 1) {
+          console.log("Submission network error, retrying...")
+          setIsSubmitting(false)
+          await new Promise(resolve => setTimeout(resolve, 3000))
+          return handleSubmit(retryCount + 1)
+        }
+        toast.error("Our AI is under heavy load. Please wait a moment and try submitting again.", { duration: 8000 })
         setShowLoadingScreen(false)
       } finally {
         setIsSubmitting(false)
@@ -836,38 +820,33 @@ function AssessmentContent() {
   }
 
   const addLegacyEntry = () => {
-    const current = formData.familyContext.legacyEntries || []
-    if (current.length < 5) {
-      setFormData(prev => ({
-        ...prev,
-        familyContext: {
-          ...prev.familyContext,
-          legacyEntries: [...current, { college: "", relation: "" }]
-        }
-      }))
-    }
-  }
-
-  const removeLegacyEntry = (index: number) => {
-    const current = formData.familyContext.legacyEntries || []
     setFormData(prev => ({
       ...prev,
       familyContext: {
         ...prev.familyContext,
-        legacyEntries: current.filter((_, i) => i !== index)
+        legacyEntries: [...(prev.familyContext.legacyEntries || []), { college: "", relation: "" }]
+      }
+    }))
+  }
+
+  const removeLegacyEntry = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      familyContext: {
+        ...prev.familyContext,
+        legacyEntries: (prev.familyContext.legacyEntries || []).filter((_, i) => i !== index)
       }
     }))
   }
 
   const updateLegacyEntry = (index: number, field: keyof LegacyEntry, value: string) => {
-    const current = formData.familyContext.legacyEntries || []
-    const updated = [...current]
-    updated[index] = { ...updated[index], [field]: value }
     setFormData(prev => ({
       ...prev,
       familyContext: {
         ...prev.familyContext,
-        legacyEntries: updated
+        legacyEntries: (prev.familyContext.legacyEntries || []).map((entry, i) =>
+          i === index ? { ...entry, [field]: value } : entry
+        )
       }
     }))
   }
@@ -990,39 +969,71 @@ function AssessmentContent() {
                   </p>
                 )}
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="parentPhone">Parent Phone Number</Label>
-              <div className="flex gap-2">
-                <Select
-                  value={formData.basicInfo.parentPhone?.split(' ')[0] || "+1"}
-                  onValueChange={(code) => {
-                    const currentNumber = formData.basicInfo.parentPhone?.split(' ').slice(1).join(' ') || ''
-                    updateFormData("basicInfo", "parentPhone", `${code} ${currentNumber}`)
-                  }}
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PHONE_COUNTRY_CODES.map((item) => (
-                      <SelectItem key={`${item.country}-${item.code}`} value={item.code}>
-                        {item.flag} {item.code}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  id="parentPhone"
-                  type="tel"
-                  placeholder="Phone number"
-                  value={formData.basicInfo.parentPhone?.split(' ').slice(1).join(' ') || ''}
-                  onChange={(e) => {
-                    const code = formData.basicInfo.parentPhone?.split(' ')[0] || "+1"
-                    updateFormData("basicInfo", "parentPhone", `${code} ${e.target.value}`)
-                  }}
-                  className="flex-1"
-                />
+              <div className="space-y-2">
+                <Label htmlFor="parentPhone" className="flex items-center gap-1">
+                  Parent Phone Number <span className="text-red-500">*</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={(() => {
+                      const phone = formData.basicInfo.parentPhone || ""
+                      // Extract country ISO from stored format "[ISO]+code number"
+                      const isoMatch = phone.match(/^\[([A-Z]{2})\]/)
+                      if (isoMatch) return isoMatch[1]
+                      // Fallback for legacy format "+code number"
+                      const prefix = phone.split(" ")[0] || ""
+                      const match = PHONE_COUNTRY_CODES.find(c => prefix === c.code)
+                      return match ? match.country : "US"
+                    })()}
+                    onValueChange={(countryIso) => {
+                      const entry = PHONE_COUNTRY_CODES.find(c => c.country === countryIso)
+                      if (!entry) return
+                      const phone = formData.basicInfo.parentPhone || ""
+                      const currentNum = phone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "")
+                      updateFormData("basicInfo", "parentPhone", `[${entry.country}]${entry.code} ${currentNum}`)
+                      if (validationErrors.parentPhone) {
+                        setValidationErrors(prev => ({ ...prev, parentPhone: "" }))
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={`w-[140px] shrink-0 ${validationErrors.parentPhone ? "border-red-500" : ""}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {PHONE_COUNTRY_CODES.map((item) => (
+                        <SelectItem key={item.country} value={item.country}>
+                          {item.flag} {item.code}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="parentPhone"
+                    type="tel"
+                    value={(() => {
+                      const phone = formData.basicInfo.parentPhone || ""
+                      return phone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "")
+                    })()}
+                    onChange={(e) => {
+                      const phone = formData.basicInfo.parentPhone || ""
+                      const isoMatch = phone.match(/^\[([A-Z]{2})\]/)
+                      const iso = isoMatch ? isoMatch[1] : "US"
+                      const entry = PHONE_COUNTRY_CODES.find(c => c.country === iso) || PHONE_COUNTRY_CODES[0]
+                      updateFormData("basicInfo", "parentPhone", `[${entry.country}]${entry.code} ${e.target.value}`)
+                      if (validationErrors.parentPhone) {
+                        setValidationErrors(prev => ({ ...prev, parentPhone: "" }))
+                      }
+                    }}
+                    placeholder="Phone number"
+                    className={`flex-1 ${validationErrors.parentPhone ? "border-red-500" : ""}`}
+                  />
+                </div>
+                {validationErrors.parentPhone && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {validationErrors.parentPhone}
+                  </p>
+                )}
               </div>
             </div>
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
@@ -1137,9 +1148,12 @@ function AssessmentContent() {
                   <div className="space-y-4">
                     <Label htmlFor="address" className="flex items-center gap-1">
                       Home Address <span className="text-red-500">*</span>
+                      <InfoTooltip content="We only use your home address location to find opportunities, programs, competitions, and mentors in your local area. Your address is never shared externally." wide />
                     </Label>
                     <Input
                       id="address"
+                      name="street-address"
+                      autoComplete="street-address"
                       value={formData.basicInfo.address || ""}
                       onChange={(e) => {
                         updateFormData("basicInfo", "address", e.target.value)
@@ -1147,7 +1161,7 @@ function AssessmentContent() {
                           setValidationErrors(prev => ({ ...prev, address: "" }))
                         }
                       }}
-                      placeholder="Enter your home address"
+                      placeholder="Start typing your address..."
                       className={validationErrors.address ? "border-red-500" : ""}
                     />
                     {validationErrors.address && (
@@ -1166,6 +1180,8 @@ function AssessmentContent() {
                   </Label>
                   <Input
                     id="city"
+                    name="address-level2"
+                    autoComplete="address-level2"
                     value={formData.basicInfo.city}
                     onChange={(e) => {
                       updateFormData("basicInfo", "city", e.target.value)
@@ -1260,12 +1276,15 @@ function AssessmentContent() {
               </div>
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender (Optional)</Label>
+                <Label htmlFor="gender" className="flex items-center gap-1">Gender <span className="text-red-500">*</span></Label>
                 <Select
                   value={formData.basicInfo.gender}
-                  onValueChange={(value) => updateFormData("basicInfo", "gender", value)}
+                  onValueChange={(value) => {
+                    updateFormData("basicInfo", "gender", value)
+                    if (validationErrors.gender) setValidationErrors(prev => ({ ...prev, gender: "" }))
+                  }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.gender ? "border-red-500" : ""}>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1275,15 +1294,50 @@ function AssessmentContent() {
                     <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
+                {validationErrors.gender && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {validationErrors.gender}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ethnicity">Ethnicity (Optional)</Label>
-                <Input
-                  id="ethnicity"
+                <Label className="flex items-center gap-1">Ethnicity <span className="text-red-500">*</span></Label>
+                <Select
                   value={formData.basicInfo.ethnicity}
-                  onChange={(e) => updateFormData("basicInfo", "ethnicity", e.target.value)}
-                  placeholder="e.g., Asian, Hispanic, African American, etc."
-                />
+                  onValueChange={(value) => {
+                    updateFormData("basicInfo", "ethnicity", value)
+                    if (validationErrors.ethnicity) setValidationErrors(prev => ({ ...prev, ethnicity: "" }))
+                  }}
+                >
+                  <SelectTrigger className={validationErrors.ethnicity ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Select ethnicity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="American Indian or Alaska Native">American Indian or Alaska Native</SelectItem>
+                    <SelectItem value="Asian - Chinese">Asian - Chinese</SelectItem>
+                    <SelectItem value="Asian - Indian">Asian - Indian</SelectItem>
+                    <SelectItem value="Asian - Japanese">Asian - Japanese</SelectItem>
+                    <SelectItem value="Asian - Korean">Asian - Korean</SelectItem>
+                    <SelectItem value="Asian - Vietnamese">Asian - Vietnamese</SelectItem>
+                    <SelectItem value="Asian - Filipino">Asian - Filipino</SelectItem>
+                    <SelectItem value="Asian - Other">Asian - Other</SelectItem>
+                    <SelectItem value="Black or African American">Black or African American</SelectItem>
+                    <SelectItem value="Hispanic or Latino">Hispanic or Latino</SelectItem>
+                    <SelectItem value="Middle Eastern or North African">Middle Eastern or North African</SelectItem>
+                    <SelectItem value="Native Hawaiian or Pacific Islander">Native Hawaiian or Pacific Islander</SelectItem>
+                    <SelectItem value="White or Caucasian">White or Caucasian</SelectItem>
+                    <SelectItem value="Two or More Races">Two or More Races</SelectItem>
+                    <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {validationErrors.ethnicity && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {validationErrors.ethnicity}
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-3">
@@ -1297,7 +1351,7 @@ function AssessmentContent() {
                     <Input
                       value={school}
                       onChange={(e) => updateDreamSchool(index, e.target.value)}
-                      placeholder={`School ${index + 1} (e.g., Harvard)`}
+                      placeholder={`School ${index + 1}`}
                     />
                     {(formData.basicInfo.dreamSchools as string[]).length > 3 && (
                       <Button
@@ -1327,8 +1381,97 @@ function AssessmentContent() {
         )
 
       case 2:
+        const currentCurriculum = formData.academicProfile.curriculum || ""
+
+        // Map curriculum selection to tag(s) for filtering
+        const getCurriculumTags = (curriculum: string): string[] => {
+          if (!curriculum || curriculum === "Other") return [] // empty = show all
+          if (curriculum.includes("IB")) return ["IB"]
+          if (curriculum.includes("AP") || curriculum === "US High School Diploma") return ["AP", "US", "Honors"]
+          if (curriculum.includes("A-Level")) return ["A-Level"]
+          if (curriculum.includes("IGCSE")) return ["IGCSE"]
+          if (curriculum === "CBSE") return ["CBSE"]
+          if (curriculum.includes("ICSE")) return ["ICSE"]
+          if (curriculum === "NIOS") return ["NIOS"]
+          if (curriculum.includes("French")) return ["French_Bac"]
+          if (curriculum.includes("German")) return ["German_Abitur"]
+          if (curriculum.includes("European")) return ["European_Bac"]
+          if (curriculum.includes("Scottish")) return ["Scottish"]
+          if (curriculum.includes("Swiss") || curriculum.includes("Maturità")) return ["Swiss_Matura", "Italian_Matura"]
+          if (curriculum.includes("OSSD")) return ["OSSD"]
+          if (curriculum.includes("BC Curriculum")) return ["BC"]
+          if (curriculum.includes("Australian")) return ["Australian"]
+          if (curriculum.includes("NCEA")) return ["NCEA"]
+          if (curriculum.includes("BTEC")) return ["BTEC"]
+          if (curriculum.includes("Gaokao")) return ["Gaokao"]
+          // Montessori / Waldorf / IPC / IMYC — show universal
+          return []
+        }
+
+        const activeTags = getCurriculumTags(currentCurriculum)
+        const showAll = activeTags.length === 0
+
+        const filteredCategories = COURSE_CATEGORIES.map(category => ({
+          ...category,
+          courses: category.courses
+            .filter(course => showAll || course.tags.some(tag => activeTags.includes(tag)) || course.tags.includes("Universal"))
+            .map(course => course.name)
+        })).filter(cat => cat.courses.length > 0)
+
+        const filteredRegularCategories = REGULAR_COURSE_CATEGORIES
+
         return (
           <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="curriculum" className="flex items-center gap-1">
+                  Select Your Curriculum <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.academicProfile.curriculum}
+                  onValueChange={(value) => {
+                    updateFormData("academicProfile", "curriculum", value)
+                    if (validationErrors.curriculum) {
+                      setValidationErrors(prev => ({ ...prev, curriculum: "" }))
+                    }
+                  }}
+                >
+                  <SelectTrigger id="curriculum" className={validationErrors.curriculum ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Select curriculum" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRICULUM_OPTIONS.map((group) => (
+                      <SelectGroup key={group.category}>
+                        <SelectLabel>{group.category}</SelectLabel>
+                        {group.curriculums.map((curr) => (
+                          <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {validationErrors.curriculum && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {validationErrors.curriculum}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Select GPA Scale</Label>
+                <Select
+                  value={formData.academicProfile.gpaScale}
+                  onValueChange={(value) => updateFormData("academicProfile", "gpaScale", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose your GPA scale" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GPA_SCALE_OPTIONS.map((scale) => (
+                      <SelectItem key={scale.value} value={scale.value}>{scale.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="gpaUnweighted">GPA (Unweighted)</Label>
@@ -1349,128 +1492,114 @@ function AssessmentContent() {
                 />
               </div>
             </div>
-              <div className="space-y-3">
-                <Label>Honors/AP/IB Courses Taken (Select all that apply)</Label>
-                <div className="p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg max-h-[400px] overflow-y-auto space-y-6">
-                  {filteredCourseCategories.map((category) => (
-                    <div key={category.category} className="space-y-3">
-                      <h4 className="text-sm font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-1">
-                        {category.category}
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {category.courses.map((course) => (
-                          <div key={course} className="flex items-start space-x-2">
-                            <Checkbox
-                              id={`taken-${course}`}
-                              checked={(formData.academicProfile.coursesTaken || []).includes(course)}
-                              onCheckedChange={() => toggleArrayItem("academicProfile", "coursesTaken", course)}
-                            />
-                            <Label htmlFor={`taken-${course}`} className="text-sm font-normal cursor-pointer leading-tight">
-                              {course}
-                            </Label>
-                          </div>
-                        ))}
+            <div className="space-y-3">
+              <Label>Courses Taken (Select all that apply)</Label>
+              <div className="p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg max-h-[500px] overflow-y-auto space-y-6">
+                {filteredCategories.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider">Curriculum-Specific Courses</p>
+                    {filteredCategories.map((category) => (
+                      <div key={category.category} className="space-y-3">
+                        <h4 className="text-sm font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-1">
+                          {category.category}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {category.courses.map((course) => (
+                            <div key={course} className="flex items-start space-x-2">
+                              <Checkbox
+                                id={`taken-${course}`}
+                                checked={(formData.academicProfile.coursesTaken || []).includes(course)}
+                                onCheckedChange={() => toggleArrayItem("academicProfile", "coursesTaken", course)}
+                              />
+                              <Label htmlFor={`taken-${course}`} className="text-sm font-normal cursor-pointer leading-tight">
+                                {course}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
                       </div>
+                    ))}
+                    <div className="border-t-2 border-[#e5e0d5] pt-4" />
+                  </>
+                )}
+                <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider">Regular Courses</p>
+                {filteredRegularCategories.map((category) => (
+                  <div key={category.category} className="space-y-3">
+                    <h4 className="text-sm font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-1">
+                      {category.category}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {category.courses.map((course) => (
+                        <div key={course} className="flex items-start space-x-2">
+                          <Checkbox
+                            id={`reg-taken-${course}`}
+                            checked={(formData.academicProfile.regularCoursesTaken || []).includes(course)}
+                            onCheckedChange={() => toggleArrayItem("academicProfile", "regularCoursesTaken", course)}
+                          />
+                          <Label htmlFor={`reg-taken-${course}`} className="text-sm font-normal cursor-pointer leading-tight">
+                            {course}
+                          </Label>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-3">
-                <Label>Advanced Courses Planned (Select all that apply)</Label>
-                <div className="p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg max-h-[400px] overflow-y-auto space-y-6">
-                  {filteredCourseCategories.map((category) => (
-                    <div key={category.category} className="space-y-3">
-                      <h4 className="text-sm font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-1">
-                        {category.category}
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {category.courses.map((course) => (
-                          <div key={course} className="flex items-start space-x-2">
-                            <Checkbox
-                              id={`planned-${course}`}
-                              checked={(formData.academicProfile.coursesPlanned || []).includes(course)}
-                              onCheckedChange={() => toggleArrayItem("academicProfile", "coursesPlanned", course)}
-                            />
-                            <Label htmlFor={`planned-${course}`} className="text-sm font-normal cursor-pointer leading-tight">
-                              {course}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            {/* Divider */}
-            <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-semibold mb-4">Regular Courses</h3>
-
-              <div className="space-y-4">
-                <Label>Regular Courses Taken</Label>
-                <div className="max-h-[400px] overflow-y-auto border rounded-lg p-4 space-y-4">
-                  {REGULAR_COURSE_CATEGORIES.map((category) => (
-                    <div key={category.category}>
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{category.category}</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {category.courses.map((course) => (
-                          <div key={course} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`regular-taken-${course}`}
-                              checked={formData.academicProfile.regularCoursesTaken?.includes(course)}
-                              onCheckedChange={(checked) => {
-                                const current = formData.academicProfile.regularCoursesTaken || []
-                                updateFormData(
-                                  "academicProfile",
-                                  "regularCoursesTaken",
-                                  checked ? [...current, course] : current.filter((c: string) => c !== course)
-                                )
-                              }}
-                            />
-                            <Label htmlFor={`regular-taken-${course}`} className="text-sm font-normal cursor-pointer">
-                              {course}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4 mt-6">
-                <Label>Regular Courses Planned</Label>
-                <div className="max-h-[400px] overflow-y-auto border rounded-lg p-4 space-y-4">
-                  {REGULAR_COURSE_CATEGORIES.map((category) => (
-                    <div key={category.category}>
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{category.category}</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {category.courses.map((course) => (
-                          <div key={course} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`regular-planned-${course}`}
-                              checked={formData.academicProfile.regularCoursesPlanned?.includes(course)}
-                              onCheckedChange={(checked) => {
-                                const current = formData.academicProfile.regularCoursesPlanned || []
-                                updateFormData(
-                                  "academicProfile",
-                                  "regularCoursesPlanned",
-                                  checked ? [...current, course] : current.filter((c: string) => c !== course)
-                                )
-                              }}
-                            />
-                            <Label htmlFor={`regular-planned-${course}`} className="text-sm font-normal cursor-pointer">
-                              {course}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
-
+            <div className="space-y-3">
+              <Label>Courses Planned (Select all that apply)</Label>
+              <div className="p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg max-h-[500px] overflow-y-auto space-y-6">
+                {filteredCategories.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider">Curriculum-Specific Courses</p>
+                    {filteredCategories.map((category) => (
+                      <div key={category.category} className="space-y-3">
+                        <h4 className="text-sm font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-1">
+                          {category.category}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {category.courses.map((course) => (
+                            <div key={course} className="flex items-start space-x-2">
+                              <Checkbox
+                                id={`planned-${course}`}
+                                checked={(formData.academicProfile.coursesPlanned || []).includes(course)}
+                                onCheckedChange={() => toggleArrayItem("academicProfile", "coursesPlanned", course)}
+                              />
+                              <Label htmlFor={`planned-${course}`} className="text-sm font-normal cursor-pointer leading-tight">
+                                {course}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="border-t-2 border-[#e5e0d5] pt-4" />
+                  </>
+                )}
+                <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider">Regular Courses</p>
+                {filteredRegularCategories.map((category) => (
+                  <div key={category.category} className="space-y-3">
+                    <h4 className="text-sm font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-1">
+                      {category.category}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {category.courses.map((course) => (
+                        <div key={course} className="flex items-start space-x-2">
+                          <Checkbox
+                            id={`reg-planned-${course}`}
+                            checked={(formData.academicProfile.regularCoursesPlanned || []).includes(course)}
+                            onCheckedChange={() => toggleArrayItem("academicProfile", "regularCoursesPlanned", course)}
+                          />
+                          <Label htmlFor={`reg-planned-${course}`} className="text-sm font-normal cursor-pointer leading-tight">
+                            {course}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="classRank">Class Rank (if available)</Label>
               <Input
@@ -1496,97 +1625,7 @@ function AssessmentContent() {
                     </div>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    Current Curriculum <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.basicInfo.curriculum}
-                    onValueChange={(value) => {
-                      updateFormData("academicProfile", "curriculum", value)
-                      updateFormData("basicInfo", "curriculum", value)
-                      if (validationErrors.curriculum) {
-                        setValidationErrors(prev => ({ ...prev, curriculum: "" }))
-                      }
-                    }}
-                  >
-                    <SelectTrigger className={validationErrors.curriculum ? "border-red-500" : ""}>
-                      <SelectValue placeholder="Select curriculum" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRICULUM_OPTIONS.map((group) => (
-                        <SelectGroup key={group.category}>
-                          <SelectLabel className="font-semibold text-xs text-muted-foreground">{group.category}</SelectLabel>
-                          {group.curriculums.map((curr) => (
-                            <SelectItem key={curr} value={curr}>{curr}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {validationErrors.curriculum && (
-                    <p className="text-xs text-red-500 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {validationErrors.curriculum}
-                    </p>
-                  )}
-                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Select GPA Scale</Label>
-                <Select
-                  value={formData.academicProfile.gpaScale || ""}
-                  onValueChange={(value) => updateFormData("academicProfile", "gpaScale", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your school's GPA scale" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GPA_SCALE_OPTIONS.map((scale) => (
-                      <SelectItem key={scale.value} value={scale.value}>{scale.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-                <div className="space-y-4 p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="studyAbroad"
-                      checked={formData.basicInfo.studyAbroad}
-                      onCheckedChange={(checked) => updateFormData("basicInfo", "studyAbroad", checked)}
-                    />
-                    <Label htmlFor="studyAbroad" className="cursor-pointer font-semibold">
-                      Are you planning to study abroad?
-                    </Label>
-                  </div>
-                  
-                  <AnimatePresence>
-                    {formData.basicInfo.studyAbroad && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3 pt-2"
-                      >
-                        <Label>Target Countries for Study Abroad (Select all that apply)</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {COUNTRY_OPTIONS.map((country) => (
-                            <div key={country} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`target-${country}`}
-                                checked={(formData.basicInfo.targetCountries || []).includes(country)}
-                                onCheckedChange={() => toggleArrayItem("basicInfo", "targetCountries", country)}
-                              />
-                              <Label htmlFor={`target-${country}`} className="text-sm font-normal cursor-pointer">
-                                {country}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
               <div className="space-y-3">
                 <Label>Least Favorite Subjects (Select all that apply)</Label>
                 <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3">
@@ -1881,12 +1920,42 @@ function AssessmentContent() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="apScores">AP/IB Scores (if available)</Label>
+              <Label htmlFor="apScores">
+                {(() => {
+                  const curr = formData.academicProfile.curriculum || ""
+                  if (curr.includes("IB")) return "IB Exam Scores (if available)"
+                  if (curr.includes("A-Level")) return "A-Level Exam Scores (if available)"
+                  if (curr.includes("IGCSE")) return "IGCSE Exam Scores (if available)"
+                  if (curr === "CBSE") return "CBSE Board Exam Scores (if available)"
+                  if (curr.includes("ICSE")) return "ICSE/ISC Board Exam Scores (if available)"
+                  if (curr.includes("French")) return "Baccalauréat Scores (if available)"
+                  if (curr.includes("German")) return "Abitur Scores (if available)"
+                  if (curr.includes("Scottish")) return "Higher/Advanced Higher Scores (if available)"
+                  if (curr.includes("Australian")) return "ATAR / VCE / HSC Scores (if available)"
+                  if (curr.includes("NCEA")) return "NCEA Scores (if available)"
+                  if (curr.includes("Gaokao")) return "Gaokao Scores (if available)"
+                  return "AP/IB/Exam Scores (if available)"
+                })()}
+              </Label>
               <Textarea
                 id="apScores"
                 value={formData.testingInfo.apScores}
                 onChange={(e) => updateFormData("testingInfo", "apScores", e.target.value)}
-                placeholder="e.g., AP Calculus BC: 5, AP Physics: 4..."
+                placeholder={(() => {
+                  const curr = formData.academicProfile.curriculum || ""
+                  if (curr.includes("IB")) return "e.g., IB Biology HL: 7, IB Math AA SL: 6..."
+                  if (curr.includes("A-Level")) return "e.g., A-Level Mathematics: A*, A-Level Physics: A..."
+                  if (curr.includes("IGCSE")) return "e.g., IGCSE Mathematics: A*, IGCSE English: A..."
+                  if (curr === "CBSE") return "e.g., Physics: 95, Chemistry: 92, Mathematics: 98..."
+                  if (curr.includes("ICSE")) return "e.g., Physics: 94, Chemistry: 90, Mathematics: 97..."
+                  if (curr.includes("French")) return "e.g., Mathematics: 18/20, Physics-Chemistry: 16/20..."
+                  if (curr.includes("German")) return "e.g., Mathematik: 14, Physik: 13 (out of 15)..."
+                  if (curr.includes("Scottish")) return "e.g., Higher Mathematics: A, Higher English: B..."
+                  if (curr.includes("Australian")) return "e.g., Mathematical Methods: 42, Chemistry: 38..."
+                  if (curr.includes("NCEA")) return "e.g., Mathematics: Excellence, Physics: Merit..."
+                  if (curr.includes("Gaokao")) return "e.g., Mathematics: 140/150, Physics: 95/100..."
+                  return "e.g., AP Calculus BC: 5, AP Physics: 4..."
+                })()}
                 rows={2}
               />
             </div>
@@ -1917,19 +1986,17 @@ function AssessmentContent() {
         return (
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm">List up to 10 extracurricular activities with details about your involvement.</p>
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="flex items-center space-x-2 bg-[#faf8f3] p-3 rounded-lg border border-[#e5e0d5]">
               <Checkbox
                 id="noExtracurriculars"
                 checked={formData.extracurriculars.noExtracurriculars}
                 onCheckedChange={(checked) => updateFormData("extracurriculars", "noExtracurriculars", checked)}
               />
-              <Label htmlFor="noExtracurriculars" className="text-sm font-normal cursor-pointer">
-                I don&apos;t have any extracurricular activities yet
+              <Label htmlFor="noExtracurriculars" className="cursor-pointer font-medium">
+                I don't have any extracurricular activities yet
               </Label>
             </div>
-            {!formData.extracurriculars.noExtracurriculars && (
-            <>
-            {formData.extracurriculars.activities.map((activity, index) => (
+            {!formData.extracurriculars.noExtracurriculars && formData.extracurriculars.activities.map((activity, index) => (
               <Card key={index} className="border-[#e5e0d5]">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
@@ -1995,7 +2062,7 @@ function AssessmentContent() {
                 </CardContent>
               </Card>
             ))}
-            {formData.extracurriculars.activities.length < 10 && (
+            {!formData.extracurriculars.noExtracurriculars && formData.extracurriculars.activities.length < 10 && (
               <Button
                 type="button"
                 variant="outline"
@@ -2005,8 +2072,6 @@ function AssessmentContent() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add Another Activity
               </Button>
-            )}
-            </>
             )}
           </div>
         )
@@ -2350,12 +2415,21 @@ function AssessmentContent() {
                 value={formData.careerAspirations.bestFitStatement}
                 onValueChange={(value) => updateFormData("careerAspirations", "bestFitStatement", value)}
               >
-                {CAREER_STATEMENT_OPTIONS.map((statement) => (
-                  <div key={statement} className="flex items-center space-x-2">
-                    <RadioGroupItem value={statement} id={statement} />
-                    <Label htmlFor={statement} className="font-normal cursor-pointer">{statement}</Label>
-                  </div>
-                ))}
+                {CAREER_STATEMENT_OPTIONS.map((statement) => {
+                  const statementDescriptions: Record<string, string> = {
+                    "I love solving problems with logic.": "You enjoy math, coding, engineering, data analysis, or strategy. You're drawn to careers like software engineer, data scientist, financial analyst, or architect.",
+                    "I love helping people directly.": "You're motivated by making a difference in individual lives. Think: doctor, therapist, teacher, nurse, social worker, or counselor.",
+                    "I love creating beautiful or powerful things.": "You express yourself through design, writing, film, music, or building products. Careers like graphic designer, filmmaker, author, game developer, or UX designer appeal to you.",
+                    "I love building businesses and making things grow.": "You're entrepreneurial and love leadership, sales, marketing, or scaling ideas. Think: startup founder, product manager, consultant, or marketing director."
+                  }
+                  return (
+                    <div key={statement} className="flex items-center space-x-2">
+                      <RadioGroupItem value={statement} id={statement} />
+                      <Label htmlFor={statement} className="font-normal cursor-pointer">{statement}</Label>
+                      <InfoTooltip content={statementDescriptions[statement] || statement} wide />
+                    </div>
+                  )
+                })}
               </RadioGroup>
             </div>
           </div>
@@ -2480,19 +2554,17 @@ function AssessmentContent() {
         return (
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm">Add any summer programs (academic, leadership, pre-college, etc.) you have attended or plan to attend.</p>
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="flex items-center space-x-2 bg-[#faf8f3] p-3 rounded-lg border border-[#e5e0d5]">
               <Checkbox
                 id="noSummerPrograms"
                 checked={formData.summerPrograms.noSummerPrograms}
                 onCheckedChange={(checked) => updateFormData("summerPrograms", "noSummerPrograms", checked)}
               />
-              <Label htmlFor="noSummerPrograms" className="text-sm font-normal cursor-pointer">
-                I haven&apos;t done or planned any summer programs yet
+              <Label htmlFor="noSummerPrograms" className="cursor-pointer font-medium">
+                I haven't done or planned any summer programs yet
               </Label>
             </div>
-            {!formData.summerPrograms.noSummerPrograms && (
-            <>
-            {(formData.summerPrograms.entries || []).map((entry, index) => (
+            {!formData.summerPrograms.noSummerPrograms && (formData.summerPrograms.entries || []).map((entry, index) => (
               <Card key={index} className="border-[#e5e0d5]">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
@@ -2548,7 +2620,7 @@ function AssessmentContent() {
                 </CardContent>
               </Card>
             ))}
-            {(formData.summerPrograms.entries || []).length < 10 && (
+            {!formData.summerPrograms.noSummerPrograms && (formData.summerPrograms.entries || []).length < 10 && (
               <Button
                 type="button"
                 variant="outline"
@@ -2558,8 +2630,6 @@ function AssessmentContent() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add Another Summer Program
               </Button>
-            )}
-            </>
             )}
           </div>
         )
@@ -2613,103 +2683,117 @@ function AssessmentContent() {
       case 12:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fatherProfession">Father&apos;s Profession</Label>
-                <Input
-                  id="fatherProfession"
-                  placeholder="e.g., Software Engineer at Google"
-                  value={formData.familyContext.fatherProfession || ""}
-                  onChange={(e) => updateFormData("familyContext", "fatherProfession", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motherProfession">Mother&apos;s Profession</Label>
-                <Input
-                  id="motherProfession"
-                  placeholder="e.g., Doctor at Mayo Clinic"
-                  value={formData.familyContext.motherProfession || ""}
-                  onChange={(e) => updateFormData("familyContext", "motherProfession", e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="siblingProfessions">Sibling Professions (if any)</Label>
-              <Input
-                id="siblingProfessions"
-                placeholder="e.g., Sister - MIT student, Brother - Investment Banking at Goldman Sachs"
-                value={formData.familyContext.siblingProfessions || ""}
-                onChange={(e) => updateFormData("familyContext", "siblingProfessions", e.target.value)}
-              />
-            </div>
-
+            <p className="text-[#5a7a9a] text-sm italic">This section is optional but can help us provide more tailored recommendations.</p>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Legacy College Connections</Label>
-                {(formData.familyContext.legacyEntries || []).length < 5 && (
-                  <Button type="button" variant="outline" size="sm" onClick={addLegacyEntry}>
-                    <Plus className="h-4 w-4 mr-1" /> Add Connection
-                  </Button>
-                )}
+              <Label>Family Professions</Label>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fatherProfession" className="text-sm text-[#5a7a9a]">Father&apos;s / Guardian&apos;s Profession</Label>
+                  <Input
+                    id="fatherProfession"
+                    value={formData.familyContext.fatherProfession || ""}
+                    onChange={(e) => updateFormData("familyContext", "fatherProfession", e.target.value)}
+                    placeholder="e.g., Software Engineer, Doctor, Business Owner"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="motherProfession" className="text-sm text-[#5a7a9a]">Mother&apos;s / Guardian&apos;s Profession</Label>
+                  <Input
+                    id="motherProfession"
+                    value={formData.familyContext.motherProfession || ""}
+                    onChange={(e) => updateFormData("familyContext", "motherProfession", e.target.value)}
+                    placeholder="e.g., Teacher, Lawyer, Homemaker"
+                  />
+                </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="siblingProfessions" className="text-sm text-[#5a7a9a]">Sibling(s)&apos; Professions / Fields of Study</Label>
+                <Input
+                  id="siblingProfessions"
+                  value={formData.familyContext.siblingProfessions || ""}
+                  onChange={(e) => updateFormData("familyContext", "siblingProfessions", e.target.value)}
+                  placeholder="e.g., Older brother studying CS at MIT, Sister is a nurse"
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Label>Legacy Connections to Top Colleges</Label>
+              <p className="text-[#5a7a9a] text-xs">List any colleges where a family member attended or works.</p>
               {(formData.familyContext.legacyEntries || []).map((entry, index) => (
-                <div key={index} className="flex gap-3 items-start">
-                  <div className="flex-1 space-y-2">
+                <div key={index} className="flex items-start gap-3">
+                  <div className="flex-1 grid sm:grid-cols-2 gap-3">
                     <Input
-                      placeholder="College name (e.g., Harvard University)"
                       value={entry.college}
                       onChange={(e) => updateLegacyEntry(index, "college", e.target.value)}
+                      placeholder="College / University name"
                     />
-                  </div>
-                  <div className="w-[200px]">
                     <Select
                       value={entry.relation}
                       onValueChange={(value) => updateLegacyEntry(index, "relation", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Relation" />
+                        <SelectValue placeholder="Family connection" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Parent (Alumnus/Alumna)">Parent (Alumnus/Alumna)</SelectItem>
-                        <SelectItem value="Grandparent">Grandparent</SelectItem>
-                        <SelectItem value="Sibling">Sibling</SelectItem>
-                        <SelectItem value="Aunt / Uncle">Aunt / Uncle</SelectItem>
-                        <SelectItem value="Cousin">Cousin</SelectItem>
-                        <SelectItem value="Other Family">Other Family</SelectItem>
-                        <SelectItem value="Family Donor">Family Donor</SelectItem>
+                        <SelectItem value="Grandparent (Alumnus/Alumna)">Grandparent (Alumnus/Alumna)</SelectItem>
+                        <SelectItem value="Sibling (Current Student)">Sibling (Current Student)</SelectItem>
+                        <SelectItem value="Sibling (Alumnus/Alumna)">Sibling (Alumnus/Alumna)</SelectItem>
+                        <SelectItem value="Parent (Faculty/Staff)">Parent (Faculty/Staff)</SelectItem>
+                        <SelectItem value="Family Member (Donor)">Family Member (Donor)</SelectItem>
+                        <SelectItem value="Other Family Connection">Other Family Connection</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   {(formData.familyContext.legacyEntries || []).length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeLegacyEntry(index)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeLegacyEntry(index)}
+                      className="text-red-500 hover:text-red-700 mt-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   )}
                 </div>
               ))}
+              {(formData.familyContext.legacyEntries || []).length < 5 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addLegacyEntry}
+                  className="w-full border-dashed border-[#c9a227] text-[#c9a227] hover:bg-[#c9a227]/5"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Another Legacy Connection
+                </Button>
+              )}
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="financialAid"
-                  checked={formData.familyContext.financialAidNeeded}
-                  onCheckedChange={(checked) => updateFormData("familyContext", "financialAidNeeded", checked === true)}
-                />
-                <Label htmlFor="financialAid" className="text-sm font-normal cursor-pointer">
-                  We will need financial aid for college
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="meritScholarship"
-                  checked={formData.familyContext.meritScholarshipInterest}
-                  onCheckedChange={(checked) => updateFormData("familyContext", "meritScholarshipInterest", checked === true)}
-                />
-                <Label htmlFor="meritScholarship" className="text-sm font-normal cursor-pointer">
-                  Interested in merit-based scholarships
-                </Label>
+            <div className="space-y-2">
+              <Label htmlFor="financialAidNeeded">Financial Aid or Merit Scholarship Interest</Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="financialAidNeeded"
+                    checked={formData.familyContext.financialAidNeeded}
+                    onCheckedChange={(checked) => updateFormData("familyContext", "financialAidNeeded", checked)}
+                  />
+                  <Label htmlFor="financialAidNeeded" className="font-normal cursor-pointer">
+                    Financial Aid
+                  </Label>
+                  <InfoTooltip content="Need-based aid awarded by colleges based on your family's financial situation. This includes grants, work-study, and subsidized loans. Checking this helps us recommend schools with strong financial aid packages and guide you through FAFSA/CSS Profile." wide />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="meritScholarshipInterest"
+                    checked={formData.familyContext.meritScholarshipInterest}
+                    onCheckedChange={(checked) => updateFormData("familyContext", "meritScholarshipInterest", checked)}
+                  />
+                  <Label htmlFor="meritScholarshipInterest" className="font-normal cursor-pointer">
+                    Merit Scholarships
+                  </Label>
+                  <InfoTooltip content="Awards based on academic achievement, test scores, leadership, or talent — regardless of financial need. Many schools offer $5K–full tuition merit awards. Checking this helps us find schools where your profile qualifies for merit money and recommend specific scholarships to apply for." wide />
+                </div>
               </div>
             </div>
           </div>
@@ -2784,27 +2868,40 @@ function AssessmentContent() {
             </div>
             <div className="space-y-3">
               <Label>Personality Archetypes (Select up to 2)</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {ARCHETYPE_OPTIONS.map((archetype) => (
-                  <div key={archetype} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={archetype}
-                      checked={(formData.personality.archetypes || []).includes(archetype)}
-                      onCheckedChange={() => {
-                        const archetypes = formData.personality.archetypes || []
-                        if (archetypes.includes(archetype)) {
-                          toggleArrayItem("personality", "archetypes", archetype)
-                        } else if (archetypes.length < 2) {
-                          toggleArrayItem("personality", "archetypes", archetype)
-                        }
-                      }}
-                      disabled={!(formData.personality.archetypes || []).includes(archetype) && (formData.personality.archetypes || []).length >= 2}
-                    />
-                    <Label htmlFor={archetype} className="text-sm font-normal cursor-pointer">
-                      {archetype}
-                    </Label>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                {ARCHETYPE_OPTIONS.map((archetype) => {
+                  const descriptions: Record<string, string> = {
+                    "Visionary": "Big-picture thinker who sees future possibilities. You love imagining what could be and inspiring others with bold ideas. Think: Elon Musk, Steve Jobs.",
+                    "Builder": "Hands-on doer who turns ideas into reality. You thrive on creating systems, products, or organizations from scratch. Think: engineers, startup founders.",
+                    "Healer": "Deeply empathetic and driven to help others. You're drawn to medicine, counseling, social work, or any field where you can make people's lives better.",
+                    "Analyst": "Logical, data-driven, and detail-oriented. You love solving complex problems, finding patterns, and making sense of information. Think: scientists, strategists.",
+                    "Artist": "Creative and expressive, you see the world differently. You communicate through art, writing, music, design, or storytelling.",
+                    "Advocate": "Passionate about justice and making the world fairer. You speak up for others and are drawn to law, policy, activism, or community organizing.",
+                    "Entrepreneur": "Resourceful and opportunity-driven. You love building businesses, taking calculated risks, and creating value. You see problems as business opportunities.",
+                    "Researcher": "Curious and methodical, you love deep exploration. You're driven by the desire to discover new knowledge through experimentation and inquiry."
+                  }
+                  return (
+                    <div key={archetype} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={archetype}
+                        checked={(formData.personality.archetypes || []).includes(archetype)}
+                        onCheckedChange={() => {
+                          const archetypes = formData.personality.archetypes || []
+                          if (archetypes.includes(archetype)) {
+                            toggleArrayItem("personality", "archetypes", archetype)
+                          } else if (archetypes.length < 2) {
+                            toggleArrayItem("personality", "archetypes", archetype)
+                          }
+                        }}
+                        disabled={!(formData.personality.archetypes || []).includes(archetype) && (formData.personality.archetypes || []).length >= 2}
+                      />
+                      <Label htmlFor={archetype} className="text-sm font-normal cursor-pointer">
+                        {archetype}
+                      </Label>
+                      <InfoTooltip content={descriptions[archetype] || archetype} wide />
+                    </div>
+                  )
+                })}
               </div>
             </div>
             <div className="space-y-3">
@@ -2816,14 +2913,17 @@ function AssessmentContent() {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Introvert" id="introvert" />
                   <Label htmlFor="introvert" className="font-normal cursor-pointer">Introvert</Label>
+                  <InfoTooltip content="You recharge by spending time alone. You prefer deep one-on-one conversations over large groups, think before you speak, and often do your best work independently." wide />
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Extrovert" id="extrovert" />
                   <Label htmlFor="extrovert" className="font-normal cursor-pointer">Extrovert</Label>
+                  <InfoTooltip content="You recharge by being around people. You thrive in group settings, think out loud, enjoy collaboration, and feel energized after social interactions." wide />
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Ambivert" id="ambivert" />
                   <Label htmlFor="ambivert" className="font-normal cursor-pointer">Ambivert (both)</Label>
+                  <InfoTooltip content="You're a blend of both. You enjoy socializing but also need alone time to recharge. You can adapt your energy depending on the situation — comfortable leading a group or working solo." wide />
                 </div>
               </RadioGroup>
             </div>
@@ -2835,7 +2935,10 @@ function AssessmentContent() {
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm">These stories help us understand your unique journey and can inspire powerful college essay topics.</p>
             <div className="space-y-2">
-              <Label htmlFor="lifeChallenge">A life challenge you have overcome</Label>
+              <Label htmlFor="lifeChallenge" className="flex items-center">
+                A life challenge you have overcome
+                <InfoTooltip content="Think about a personal, family, health, or academic challenge that shaped who you are. What happened? How did you respond? What did it teach you about yourself? Admissions officers value resilience and self-awareness — be honest and specific." wide />
+              </Label>
               <Textarea
                 id="lifeChallenge"
                 value={formData.personalStories.lifeChallenge}
@@ -2848,7 +2951,10 @@ function AssessmentContent() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="leadershipMoment">A time you showed leadership or initiative</Label>
+              <Label htmlFor="leadershipMoment" className="flex items-center">
+                A time you showed leadership or initiative
+                <InfoTooltip content="This doesn't have to be a formal title. Did you start a club, organize an event, mentor someone, or step up when no one else would? Focus on the impact you made and what motivated you to take action. Small moments of initiative can be more powerful than big titles." wide />
+              </Label>
               <Textarea
                 id="leadershipMoment"
                 value={formData.personalStories.leadershipMoment}
@@ -2861,7 +2967,10 @@ function AssessmentContent() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="failureLesson">A time you failed and learned an important lesson</Label>
+              <Label htmlFor="failureLesson" className="flex items-center">
+                A time you failed and learned an important lesson
+                <InfoTooltip content="Everyone fails — colleges want to see how you handle it. What went wrong? Did you bomb a test, lose a competition, let someone down, or miss a big opportunity? The key is what you learned and how you grew from it. Show maturity and self-reflection, not perfection." wide />
+              </Label>
               <Textarea
                 id="failureLesson"
                 value={formData.personalStories.failureLesson}
@@ -2874,7 +2983,10 @@ function AssessmentContent() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="proudMoment">Something you're insanely proud of that most people don't know</Label>
+              <Label htmlFor="proudMoment" className="flex items-center">
+                Something you're insanely proud of that most people don't know
+                <InfoTooltip content="This is your chance to share something unique. Maybe you taught yourself a skill, helped a family member through a tough time, built something cool in your room, or achieved something quietly without recognition. It doesn't have to be a trophy — it just has to matter to you." wide />
+              </Label>
               <Textarea
                 id="proudMoment"
                 value={formData.personalStories.proudMoment}
@@ -2972,10 +3084,10 @@ function AssessmentContent() {
                 Generating Your Report
               </h2>
               <p className="text-[#5a7a9a] mb-2">
-                Please stay on this page, your report will be ready in &lt;2 min
+                Please stay on this page, your report will be ready in &lt;10 min
               </p>
               <p className="text-sm text-[#5a7a9a]/70">
-                Our AI is analyzing your profile and creating your personalized roadmap...
+                Our team is analyzing your profile and creating your personalized roadmap. We will also email you the results once it&apos;s ready.
               </p>
             </CardContent>
           </Card>
@@ -2989,16 +3101,14 @@ function AssessmentContent() {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10">
-                  <Image 
-                    src={tenant?.logo_url || "/logo.png"} 
-                    alt={`${tenant?.name || "TheStudentBlueprint"} Logo`}
+                  <Image
+                    src={tenant?.logo_url || "/logo.png"}
+                    alt={`${tenant?.name || "Student Blueprint"} Logo`}
                     fill
-                    className="object-contain" 
+                    className="object-contain"
                   />
                 </div>
-                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif", color: tenant?.primary_color || "#1e3a5f" }}>
-                  {tenant?.name || "TheStudentBlueprint"}
-                </span>
+                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>{tenant?.name || "Student Blueprint"}</span>
               </Link>
               <div className="flex items-center gap-2 sm:gap-3">
                 {isSaving && (
@@ -3116,7 +3226,7 @@ function AssessmentContent() {
               </Button>
             ) : (
               <Button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 disabled={isSubmitting}
                 className="bg-[#c9a227] hover:bg-[#b8921f] text-[#1e3a5f] font-semibold px-3 sm:px-4 text-sm"
                 size="sm"
@@ -3292,7 +3402,7 @@ function AssessmentContent() {
             <p className="text-sm text-[#5a7a9a]">
               To continue later, go to{" "}
               <Link href="/resume" className="text-[#c9a227] font-medium hover:underline">
-                studentblueprint.com/resume
+                vmotiv8.com/resume
               </Link>{" "}
               and enter this code.
             </p>
@@ -3316,9 +3426,9 @@ function InfoTooltip({ content, wide }: { content: string, wide?: boolean }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Info className="w-4 h-4 text-[#5a7a9a] cursor-help ml-1.5 inline-block" />
+          <Info className="w-4 h-4 text-[#5a7a9a] cursor-help ml-1.5 inline-block shrink-0" />
         </TooltipTrigger>
-        <TooltipContent className={`${wide ? "max-w-sm" : "max-w-xs"} bg-[#1e3a5f] text-white border-none p-3 shadow-xl`}>
+        <TooltipContent className={`${wide ? "max-w-[320px]" : "max-w-[250px]"} bg-[#1e3a5f] text-white border-none p-3 shadow-xl`}>
           <p className="text-xs font-normal leading-relaxed">{content}</p>
         </TooltipContent>
       </Tooltip>

@@ -634,13 +634,13 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] font-sans selection:bg-[#c9a227]/30">
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#0a0a0a]/90 backdrop-blur-2xl py-4 border-b border-white/5" : "bg-transparent py-6"}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#FFFAF0]/90 backdrop-blur-2xl py-4 border-b border-[#1E2849]/5" : "bg-transparent py-6"}`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
             <div className="relative w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-700 group-hover:rotate-[360deg]">
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
-            <span className="font-bold text-xl sm:text-2xl text-white tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <span className="font-bold text-xl sm:text-2xl text-[#1E2849] tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
               TheStudentBlueprint
             </span>
           </Link>
@@ -650,7 +650,7 @@ function LandingPage() {
               <Link
                 key={item}
                 href={`#${item.toLowerCase()}`}
-                className="text-white/50 hover:text-white text-xs font-medium tracking-[0.2em] uppercase transition-all duration-300"
+                className="text-[#1E2849]/50 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-all duration-300"
               >
                 {item}
               </Link>
@@ -658,16 +658,16 @@ function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/admin/login" className="text-white/70 hover:text-white text-xs sm:text-xs font-medium tracking-[0.2em] uppercase transition-colors">
+            <Link href="/admin/login" className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs sm:text-xs font-medium tracking-[0.2em] uppercase transition-colors">
               Login
             </Link>
-            <Button asChild className="hidden sm:inline-flex bg-white hover:bg-[#c9a227] text-[#0a0a0a] font-semibold text-xs px-6 py-3 h-auto rounded-full transition-all duration-500 tracking-wide">
+            <Button asChild className="hidden sm:inline-flex bg-[#1E2849] hover:bg-[#1E2849]/90 text-white font-semibold text-xs px-6 py-3 h-auto rounded-full transition-all duration-500 tracking-wide">
               <Link href="/get-started">
                 Get Started
               </Link>
             </Button>
             <button
-              className="lg:hidden text-white p-2"
+              className="lg:hidden text-[#1E2849] p-2"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -681,28 +681,28 @@ function LandingPage() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden absolute top-full left-0 right-0 bg-[#0a0a0a]/98 backdrop-blur-2xl border-b border-white/5 py-8 px-6 shadow-2xl z-50"
+              className="lg:hidden absolute top-full left-0 right-0 bg-[#FFFAF0]/98 backdrop-blur-2xl border-b border-[#1E2849]/5 py-8 px-6 shadow-2xl z-50"
             >
               <div className="flex flex-col gap-6">
                 {["Services", "Testimonials", "Methodology", "FAQ"].map((item) => (
                   <Link
                     key={item}
                     href={`#${item.toLowerCase()}`}
-                    className="text-white/80 hover:text-[#c9a227] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
+                    className="text-[#1E2849]/70 hover:text-[#D3AF78] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item}
                   </Link>
                 ))}
-                <div className="h-px bg-white/10 my-2" />
+                <div className="h-px bg-[#1E2849]/10 my-2" />
                 <Link
                   href="/admin/login"
-                  className="text-white/80 hover:text-[#c9a227] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
+                  className="text-[#1E2849]/70 hover:text-[#D3AF78] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Login
                 </Link>
-                <Button asChild className="w-full bg-white text-[#0a0a0a] font-semibold py-4 rounded-full uppercase tracking-[0.15em]">
+                <Button asChild className="w-full bg-[#1E2849] text-white font-semibold py-4 rounded-full uppercase tracking-[0.15em]">
                   <Link href="/get-started" onClick={() => setIsMobileMenuOpen(false)}>
                     Get Started
                   </Link>
@@ -714,12 +714,12 @@ function LandingPage() {
       </nav>
 
       {/* ── Section 1: Hero ──────────────────────────────────────────────── */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] pt-24 sm:pt-28 md:pt-32">
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#FFFAF0] pt-24 sm:pt-28 md:pt-32">
         {/* Animated gradient background */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#0f1419] to-[#0a0a0a]" />
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-[#c9a227]/[0.04] rounded-full blur-[180px]" />
-          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
+          <div className="absolute inset-0 bg-[#FFFAF0]" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-white/[0.06] rounded-full blur-[180px]" />
+          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#1E2849]/20 to-transparent" />
         </div>
 
         <motion.div
@@ -731,7 +731,7 @@ function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-[#c9a227]/80 mb-6 sm:mb-8"
+            className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-[#1E2849]/60 mb-6 sm:mb-8"
           >
             The platform behind the top 1% of admissions agencies
           </motion.p>
@@ -744,11 +744,11 @@ function LandingPage() {
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            <span className="text-white">What If Every Student</span>
+            <span className="text-[#1E2849]">What If Every Student</span>
             <br />
-            <span className="text-white">Got a Roadmap Built by</span>
+            <span className="text-[#1E2849]">Got a Roadmap Built by</span>
             <br />
-            <span className="bg-gradient-to-r from-[#c9a227] via-[#e8d48b] to-[#c9a227] bg-clip-text text-transparent">
+            <span className="text-[#D3AF78] italic">
               an Ivy League Strategist?
             </span>
           </motion.h1>
@@ -758,11 +758,11 @@ function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.7 }}
-            className="text-base sm:text-lg md:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2"
+            className="text-base sm:text-lg md:text-xl text-[#1E2849]/50 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2"
           >
-            Now they can. <span className="text-white font-medium">Blueprint Intelligence</span> gives
+            Now they can. <span className="text-[#1E2849] font-medium">Blueprint Intelligence</span> gives
             your agency the power to deliver elite, personalized college strategies
-            to <span className="text-[#c9a227] font-medium">hundreds of students</span> — in the time it used to take for one.
+            to <span className="text-[#1E2849] font-semibold">hundreds of students</span> — in the time it used to take for one.
           </motion.p>
 
           {/* CTAs */}
@@ -772,12 +772,12 @@ function LandingPage() {
             transition={{ duration: 1, delay: 1.0 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
           >
-            <Button asChild size="lg" className="bg-[#c9a227] hover:bg-[#e8d48b] text-[#0a0a0a] px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#c9a227]/20 tracking-wide">
+            <Button asChild size="lg" className="bg-[#1E2849] hover:bg-[#1E2849]/90 text-white px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#1E2849]/20 tracking-wide">
               <Link href="/get-started">
                 See It in Action <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-white/15 text-white/70 hover:text-white hover:border-white/30 px-8 sm:px-10 py-5 sm:py-6 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
+            <Button asChild variant="outline" size="lg" className="border-[#1E2849]/20 text-[#1E2849]/70 hover:text-[#1E2849] hover:border-[#1E2849]/40 px-8 sm:px-10 py-5 sm:py-6 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
               <Link href="#methodology">
                 How It Works
               </Link>
@@ -789,7 +789,7 @@ function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.2 }}
-            className="text-xs text-white/25"
+            className="text-xs text-[#1E2849]/30"
           >
             Free to explore. No credit card. Set up in 5 minutes.
           </motion.p>
@@ -806,7 +806,7 @@ function LandingPage() {
             animate={{ y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
           >
-            <ArrowDown className="w-5 h-5 text-white/20" />
+            <ArrowDown className="w-5 h-5 text-[#1E2849]/25" />
           </motion.div>
         </motion.div>
       </section>

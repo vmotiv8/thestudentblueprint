@@ -25,6 +25,8 @@ import Image from "next/image"
 export default function CheckoutPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [phone, setPhone] = useState("")
   const [couponCode, setCouponCode] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
@@ -60,10 +62,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!tenantLoaded) return
 
-    // If org has free assessments, redirect to assessment directly
+    // If org has free assessments, skip payment check
     if (tenant?.free_assessments) {
-      const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}` : ''
-      router.push(`/assessment${orgParam}`)
+      setIsCheckingPayment(false)
       return
     }
 
@@ -131,6 +132,23 @@ export default function CheckoutPage() {
     }
   }
 
+  const handleFreeStart = () => {
+    if (!fullName.trim()) {
+      toast.error("Please enter your full name")
+      return
+    }
+    if (!email.trim()) {
+      toast.error("Please enter your email address")
+      return
+    }
+    // Store student info for the assessment page to pick up
+    localStorage.setItem("studentblueprint_paid_email", email)
+    localStorage.setItem("studentblueprint_student_name", fullName)
+    if (phone.trim()) localStorage.setItem("studentblueprint_student_phone", phone)
+    const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}` : ''
+    router.push(`/assessment${orgParam}`)
+  }
+
   const handleCouponSubmit = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code")
@@ -177,13 +195,114 @@ localStorage.setItem("studentblueprint_coupon", data.code)
     "Email delivery of results",
   ]
 
+  const primaryColor = tenant?.primary_color || "#1e3a5f"
+  const secondaryColor = tenant?.secondary_color || "#c9a227"
+  const orgName = tenant?.name || "Student Blueprint"
+
   if (isCheckingPayment) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#faf8f3] to-[#f0ece3] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#1e3a5f] mx-auto mb-4" />
-          <p className="text-[#5a7a9a]">Checking payment status...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: primaryColor }} />
+          <p className="text-[#5a7a9a]">Loading...</p>
         </div>
+      </div>
+    )
+  }
+
+  // ─── Free Assessment Flow ──────────────────────────────────────────────
+  if (tenant?.free_assessments) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#faf8f3] to-[#f0ece3]">
+        <nav className="bg-[#faf8f3]/95 backdrop-blur-md border-b border-[#e5e0d5] sticky top-0 z-50 py-3 sm:py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+                <Image
+                  src={tenant?.logo_url || "/logo.png"}
+                  alt={`${orgName} Logo`}
+                  fill
+                  className="object-contain group-hover:scale-110 transition-transform"
+                />
+              </div>
+              <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Playfair Display', serif", color: primaryColor }}>
+                {orgName}
+              </span>
+            </Link>
+            <Link href="/resume">
+              <Button variant="ghost" className="text-[#5a7a9a] hover:text-[#1e3a5f] text-xs font-semibold">
+                Resume Assessment
+              </Button>
+            </Link>
+          </div>
+        </nav>
+
+        <main className="max-w-lg mx-auto px-4 sm:px-6 py-12 sm:py-16">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+            <h1
+              className="text-3xl sm:text-4xl font-bold mb-3"
+              style={{ fontFamily: "'Playfair Display', serif", color: primaryColor }}
+            >
+              Get Started
+            </h1>
+            <p className="text-base text-[#5a7a9a]">
+              Enter your details to begin your personalized assessment
+            </p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="border-[#e5e0d5] shadow-lg">
+              <CardContent className="p-6 sm:p-8 space-y-5">
+                <div className="space-y-2">
+                  <Label style={{ color: primaryColor }}>Full Name</Label>
+                  <Input
+                    placeholder="e.g. Sarah Mitchell"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="border-[#e5e0d5] h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label style={{ color: primaryColor }}>Email Address</Label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="border-[#e5e0d5] h-12"
+                  />
+                  <p className="text-xs text-[#5a7a9a]">We&apos;ll send your results to this email</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label style={{ color: primaryColor }}>Phone Number <span className="text-[#5a7a9a] font-normal">(optional)</span></Label>
+                  <Input
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="border-[#e5e0d5] h-12"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleFreeStart}
+                  className="w-full font-semibold h-12 text-white mt-2"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Start Assessment
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+
+                <div className="flex items-center gap-2 text-xs text-[#5a7a9a] justify-center pt-2">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Your information is private and secure</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </main>
       </div>
     )
   }

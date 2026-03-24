@@ -283,11 +283,11 @@ export default function AgencyDashboard() {
         adminsRes.json(),
       ])
 
-      if (assessmentsData.assessments) setAssessments(assessmentsData.assessments)
-      if (atRiskData.atRiskStudents) setAtRiskStudents(atRiskData.atRiskStudents)
-      if (couponsData.coupons) setCoupons(couponsData.coupons)
-      if (auditLogsData.logs) setAuditLogs(auditLogsData.logs)
-      if (adminsData.admins) setAdmins(adminsData.admins)
+      if (Array.isArray(assessmentsData.assessments)) setAssessments(assessmentsData.assessments)
+      if (Array.isArray(atRiskData.atRiskStudents)) setAtRiskStudents(atRiskData.atRiskStudents)
+      if (Array.isArray(couponsData.coupons)) setCoupons(couponsData.coupons)
+      if (Array.isArray(auditLogsData.logs)) setAuditLogs(auditLogsData.logs)
+      if (Array.isArray(adminsData.admins)) setAdmins(adminsData.admins)
 
       // Fetch Knowledge Hub resources
       fetchKhResources()
@@ -1010,7 +1010,7 @@ export default function AgencyDashboard() {
                                 a.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
                                 'bg-gray-50 text-gray-700 border border-gray-100'
                               }`}>
-                                {a.status.replace('_', ' ')}
+                                {(a.status || 'pending').replace('_', ' ')}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -1421,7 +1421,7 @@ export default function AgencyDashboard() {
                               <span className="font-bold text-[#0a192f] text-sm">{log.actor_email}</span>
                             </TableCell>
                             <TableCell>
-                              <span className="text-xs text-[#5a7a9a] font-medium">{JSON.stringify(log.metadata).slice(0, 50)}...</span>
+                              <span className="text-xs text-[#5a7a9a] font-medium">{(JSON.stringify(log.metadata ?? {}) || '').slice(0, 50)}...</span>
                             </TableCell>
                             <TableCell className="px-8 text-right">
                               <span className="text-xs text-[#5a7a9a] font-bold uppercase">{new Date(log.created_at).toLocaleString()}</span>

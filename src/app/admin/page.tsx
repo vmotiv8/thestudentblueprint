@@ -339,7 +339,7 @@ export default function SuperAdminDashboard() {
       const orgsRes = await fetch("/api/admin/organizations")
       const orgsData = await orgsRes.json()
 
-      if (orgsData.organizations) setOrganizations(orgsData.organizations)
+      if (Array.isArray(orgsData.organizations)) setOrganizations(orgsData.organizations)
     } catch (error) {
       console.error("Error fetching data:", error)
       toast.error("Failed to load data")
@@ -355,7 +355,7 @@ export default function SuperAdminDashboard() {
     try {
       const response = await fetch("/api/admin/assessments?limit=100&include_demos=true")
       const data = await response.json()
-      if (data.assessments) setAllStudents(data.assessments)
+      if (Array.isArray(data.assessments)) setAllStudents(data.assessments)
     } catch (error) {
       console.error("Error fetching students:", error)
     } finally {
@@ -1464,7 +1464,7 @@ export default function SuperAdminDashboard() {
                                           amount: String(org.plan_price || 499),
                                           description: org.billing_type === 'one_time'
                                             ? `${org.name} - One-Time License (${org.max_students} students)`
-                                            : `${org.plan_type.charAt(0).toUpperCase() + org.plan_type.slice(1)} Plan - Monthly Subscription`,
+                                            : `${(org.plan_type || 'starter').charAt(0).toUpperCase() + (org.plan_type || 'starter').slice(1)} Plan - Monthly Subscription`,
                                           quantity: "1"
                                         })
                                         setShowInvoiceDialog(true)

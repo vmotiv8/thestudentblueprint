@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
-import { canAddStudent } from '@/lib/plan-enforcement'
 
 export async function POST(request: Request) {
   try {
@@ -134,13 +133,20 @@ export async function POST(request: Request) {
       })
     }
 
-    // Check org limits before creating a new student
-    const studentLimitCheck = canAddStudent(organization)
-    if (!studentLimitCheck.allowed) {
-      return NextResponse.json(
-        { error: studentLimitCheck.reason },
-        { status: 403 }
-      )
+    // Check org limits before creating a new student — use actual DB count, not cached counter
+    if (organization.max_students !== -1) {
+      const { count: actualCount } = await supabase
+        .from('students')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', organization.id)
+
+      if (actualCount !== null && actualCount >= organization.max_students) {
+        console.error(`[AssessmentSave] License limit reached for org ${organization.slug}: ${actualCount}/${organization.max_students}`)
+        return NextResponse.json(
+          { error: `Student license limit reached (${organization.max_students} max). Please upgrade your plan.` },
+          { status: 403 }
+        )
+      }
     }
 
     // Extract name parts from fullName if firstName/lastName not provided

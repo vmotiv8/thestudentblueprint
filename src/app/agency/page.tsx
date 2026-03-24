@@ -651,7 +651,6 @@ export default function AgencyDashboard() {
               <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                 {admin.organization?.name || 'Dashboard'}
               </span>
-              <Badge className="bg-white/10 text-white border-0 text-[10px] uppercase tracking-widest font-bold px-2 py-0 h-5">BETA</Badge>
             </Link>
             <div className="hidden md:flex items-center ml-4">
               <Badge className="bg-white/20 text-white border-0 px-3 py-1 text-[10px] font-bold tracking-wider">Admin Dashboard</Badge>

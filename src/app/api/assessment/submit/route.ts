@@ -140,6 +140,15 @@ export async function POST(request: Request) {
 
     const failed = !!analysis.generationFailed
 
+    // If AI analysis completely failed, don't mark as completed — let the student retry
+    if (failed) {
+      console.error('[Submit] AI analysis failed, keeping assessment in_progress for retry:', analysis.error)
+      return NextResponse.json(
+        { error: analysis.error || 'AI analysis failed. Please try again in a moment.' },
+        { status: 503 }
+      )
+    }
+
     let updateQuery = supabase
       .from('assessments')
       .update({
@@ -647,8 +656,8 @@ Respond ONLY with valid JSON, no additional text.`
 
       if (!isTransient || attempt === MAX_RETRIES) break
 
-      // Exponential backoff: 1s, 2s
-      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+      // Exponential backoff: 3s, 6s
+      await new Promise(r => setTimeout(r, 3000 * (attempt + 1)))
     }
   }
 

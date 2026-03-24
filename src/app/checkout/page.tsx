@@ -34,15 +34,21 @@ export default function CheckoutPage() {
   const [tenant, setTenant] = useState<any>(null)
   const [tenantLoaded, setTenantLoaded] = useState(false)
 
+  // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
+  const getOrgSlug = () => {
+    const params = new URLSearchParams(window.location.search)
+    const fromQuery = params.get('org')
+    if (fromQuery) return fromQuery
+    const match = window.location.pathname.match(/^\/([a-z0-9-]+)\/(assessment|checkout)/)
+    return match ? match[1] : null
+  }
+
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        // Extract org slug from URL search params (set by middleware rewrite)
-        // or from the referrer path (e.g., /agency-slug/checkout)
-        const urlParams = new URLSearchParams(window.location.search)
-        const orgSlug = urlParams.get('org')
-        const apiUrl = orgSlug
-          ? `/api/platform/organizations/me?org=${encodeURIComponent(orgSlug)}`
+        const slug = getOrgSlug()
+        const apiUrl = slug
+          ? `/api/platform/organizations/me?org=${encodeURIComponent(slug)}`
           : '/api/platform/organizations/me'
 
         const response = await fetch(apiUrl)

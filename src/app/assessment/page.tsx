@@ -108,13 +108,21 @@ function AssessmentContent() {
 
   const progress = (currentSection / 15) * 100
 
+  // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
+  const getOrgSlug = () => {
+    const params = new URLSearchParams(window.location.search)
+    const fromQuery = params.get('org')
+    if (fromQuery) return fromQuery
+    const match = window.location.pathname.match(/^\/([a-z0-9-]+)\/(assessment|checkout)/)
+    return match ? match[1] : null
+  }
+
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        const urlParams = new URLSearchParams(window.location.search)
-        const orgSlug = urlParams.get('org')
-        const apiUrl = orgSlug
-          ? `/api/platform/organizations/me?org=${encodeURIComponent(orgSlug)}`
+        const slug = getOrgSlug()
+        const apiUrl = slug
+          ? `/api/platform/organizations/me?org=${encodeURIComponent(slug)}`
           : '/api/platform/organizations/me'
         const response = await fetch(apiUrl)
         if (response.ok) {
@@ -214,8 +222,7 @@ function AssessmentContent() {
       setIsLoading(true)
 
       // Check if this org offers free assessments — skip payment verification if so
-      const urlParams = new URLSearchParams(window.location.search)
-      const orgSlug = urlParams.get('org')
+      const orgSlug = getOrgSlug()
       if (orgSlug || tenant?.free_assessments) {
         try {
           const orgParam = orgSlug ? `?org=${encodeURIComponent(orgSlug)}` : ''

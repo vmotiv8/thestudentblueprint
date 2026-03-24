@@ -466,8 +466,8 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
 
   return (
     <div className="relative group px-4 sm:px-12">
-      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-r from-[#faf8f3] via-[#faf8f3] to-transparent z-20 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-l from-[#faf8f3] via-[#faf8f3] to-transparent z-20 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-r from-[#FFFAF0] via-[#FFFAF0] to-transparent z-20 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-l from-[#FFFAF0] via-[#FFFAF0] to-transparent z-20 pointer-events-none" />
 
       <button
         className="absolute left-1 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
@@ -538,7 +538,7 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
       className="text-center"
     >
       <div
-        className="text-6xl sm:text-7xl md:text-8xl font-bold bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent mb-4"
+        className="text-6xl sm:text-7xl md:text-8xl font-bold bg-gradient-to-b from-[#1E2849] to-[#1E2849]/40 bg-clip-text text-transparent mb-4"
         style={{ fontFamily: "'Playfair Display', serif" }}
       >
         {display}
@@ -546,7 +546,7 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
       <div className="text-xs sm:text-sm font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-2">
         {stat.label}
       </div>
-      <div className="text-xs text-white/60 font-light tracking-wide">
+      <div className="text-xs text-[#1E2849]/50 font-light tracking-wide">
         {stat.sub}
       </div>
     </motion.div>
@@ -632,7 +632,7 @@ function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] font-sans selection:bg-[#c9a227]/30">
+    <div className="min-h-screen bg-[#FFFAF0] font-sans selection:bg-[#D3AF78]/30">
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#FFFAF0]/90 backdrop-blur-2xl py-4 border-b border-[#1E2849]/5" : "bg-transparent py-6"}`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
@@ -718,7 +718,7 @@ function LandingPage() {
         {/* Animated gradient background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[#FFFAF0]" />
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-white/[0.06] rounded-full blur-[180px]" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-white/80 rounded-full blur-[180px]" />
           <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#1E2849]/20 to-transparent" />
         </div>
 
@@ -812,13 +812,13 @@ function LandingPage() {
       </section>
 
       {/* ── Section 2: Statement ─────────────────────────────────────────── */}
-      <section ref={statementRef} className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-6">
+      <section ref={statementRef} className="min-h-screen flex items-center justify-center bg-[#FFFAF0] px-6">
         <motion.div
           style={{ opacity: stmtOpacity, y: stmtY }}
           className="max-w-5xl mx-auto text-center"
         >
           <p
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] text-white/90"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] text-[#1E2849]/80"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             A single counselor. Hundreds of students.{" "}
@@ -831,7 +831,7 @@ function LandingPage() {
       </section>
 
       {/* ── Section 3: Stats ─────────────────────────────────────────────── */}
-      <section className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+      <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-16 sm:gap-20">
           {stats.map((stat, i) => (
             <StatCard key={i} stat={stat} index={i} />
@@ -840,7 +840,7 @@ function LandingPage() {
       </section>
 
       {/* ── Section 4: How It Works ──────────────────────────────────────── */}
-      <section id="methodology" className="relative py-32 sm:py-48 bg-[#0a0a0a] px-6 overflow-hidden">
+      <section id="methodology" className="relative py-32 sm:py-48 bg-[#FFFAF0] px-6 overflow-hidden">
         {/* Background accents */}
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#c9a227]/[0.02] rounded-full blur-[200px]" />
@@ -848,14 +848,14 @@ function LandingPage() {
         <div className="relative max-w-7xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
             <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">The Process</p>
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
               Three Steps to{" "}
               <span className="bg-gradient-to-r from-[#c9a227] via-[#e8d48b] to-[#c9a227] bg-clip-text text-transparent">
                 Transform
               </span>{" "}
               Your Agency
             </h2>
-            <p className="mt-6 text-lg text-white/40 max-w-2xl mx-auto">
+            <p className="mt-6 text-lg text-[#1E2849]/35 max-w-2xl mx-auto">
               From setup to scale in under a week. No technical expertise required.
             </p>
           </motion.div>
@@ -890,7 +890,7 @@ function LandingPage() {
                 className="relative group"
               >
                 {/* Card */}
-                <div className="relative p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm hover:border-[#c9a227]/30 hover:bg-white/[0.04] transition-all duration-700 h-full overflow-hidden">
+                <div className="relative p-8 sm:p-10 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 backdrop-blur-sm hover:border-[#c9a227]/30 hover:bg-white/[0.04] transition-all duration-700 h-full overflow-hidden">
                   {/* Hover glow */}
                   <div className="absolute inset-0 bg-gradient-to-b from-[#c9a227]/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
 
@@ -906,13 +906,13 @@ function LandingPage() {
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[#1E2849] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                       {item.title}
                     </h3>
                     <p className="text-sm font-medium text-[#c9a227] mb-4 tracking-wide">
                       {item.subtitle}
                     </p>
-                    <p className="text-base text-white/50 leading-relaxed">
+                    <p className="text-base text-[#1E2849]/40 leading-relaxed">
                       {item.description}
                     </p>
 
@@ -934,11 +934,11 @@ function LandingPage() {
       </section>
 
       {/* ── Section 5: Features ──────────────────────────────────────────── */}
-      <section id="services" className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+      <section id="services" className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
             <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Platform</p>
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
               Built for Scale
             </h2>
           </motion.div>
@@ -948,7 +948,7 @@ function LandingPage() {
               <motion.div
                 key={i}
                 {...stagger(i, 0.15)}
-                className="relative group p-8 sm:p-12 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-700 overflow-hidden"
+                className="relative group p-8 sm:p-12 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:border-white/[0.12] transition-all duration-700 overflow-hidden"
               >
                 {/* Glassmorphism highlight */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
@@ -957,10 +957,10 @@ function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-[#c9a227]/10 flex items-center justify-center mb-8 group-hover:bg-[#c9a227]/20 transition-colors duration-500">
                     <feature.icon className="w-5 h-5 text-[#c9a227]" />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#1E2849] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {feature.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-white/70 leading-relaxed font-light">
+                  <p className="text-sm sm:text-base text-[#1E2849]/60 leading-relaxed font-light">
                     {feature.description}
                   </p>
                 </div>
@@ -971,7 +971,7 @@ function LandingPage() {
       </section>
 
       {/* ── Section 6: Comparison ────────────────────────────────────────── */}
-      <section className="py-32 sm:py-48 bg-[#faf8f3] px-6">
+      <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
             <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Why Switch</p>
@@ -1052,20 +1052,20 @@ function LandingPage() {
       </section>
 
       {/* ── Section 7: Deep Dive ─────────────────────────────────────────── */}
-      <section className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+      <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 sm:gap-24 items-center">
           <motion.div {...fadeUp}>
             <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-6">Strategic Intelligence</p>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#1E2849] leading-tight mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
               We look beyond the{" "}
               <span className="italic bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent">
                 surface level.
               </span>
             </h2>
-            <p className="text-base sm:text-lg text-white/70 font-light leading-relaxed mb-12 max-w-lg">
+            <p className="text-base sm:text-lg text-[#1E2849]/60 font-light leading-relaxed mb-12 max-w-lg">
               Our 15-section methodology is designed to uncover the hidden gems in your students' profiles. We automate the dimensions that standard counselors often overlook.
             </p>
-            <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white hover:text-[#0a0a0a] rounded-full px-10 py-6 text-sm font-medium tracking-wide transition-all duration-500 bg-transparent">
+            <Button asChild variant="outline" className="border-[#1E2849]/20 text-[#1E2849] hover:bg-[#1E2849] hover:text-white rounded-full px-10 py-6 text-sm font-medium tracking-wide transition-all duration-500 bg-transparent">
               <Link href="/get-started">
                 Get Started
               </Link>
@@ -1077,13 +1077,13 @@ function LandingPage() {
               <motion.div
                 key={i}
                 {...stagger(i, 0.2)}
-                className="p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-[#c9a227]/20 transition-all duration-700"
+                className="p-8 sm:p-10 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 hover:border-[#c9a227]/20 transition-all duration-700"
               >
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-10 h-10 rounded-xl bg-[#c9a227]/10 flex items-center justify-center">
                     <section.icon className="w-4 h-4 text-[#c9a227]" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {section.category}
                   </h3>
                 </div>
@@ -1091,7 +1091,7 @@ function LandingPage() {
                   {section.questions.map((q, j) => (
                     <li key={j} className="flex items-start gap-4 group">
                       <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#c9a227] shrink-0 opacity-30 group-hover:opacity-100 transition-opacity" />
-                      <p className="text-sm text-white/60 font-light group-hover:text-white/70 transition-colors duration-500 italic">
+                      <p className="text-sm text-[#1E2849]/50 font-light group-hover:text-[#1E2849]/60 transition-colors duration-500 italic">
                         {q}
                       </p>
                     </li>
@@ -1104,7 +1104,7 @@ function LandingPage() {
       </section>
 
       {/* ── Section 8: Testimonials ──────────────────────────────────────── */}
-      <section id="testimonials" className="py-32 sm:py-48 bg-[#faf8f3] overflow-hidden">
+      <section id="testimonials" className="py-32 sm:py-48 bg-[#FFFAF0] overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 mb-16 sm:mb-20">
           <motion.div {...fadeUp} className="flex flex-col md:flex-row md:items-end justify-between gap-10">
             <div>
@@ -1135,10 +1135,10 @@ function LandingPage() {
       </section>
 
       {/* ── Section 9: FAQ ───────────────────────────────────────────────── */}
-      <section id="faq" className="py-32 sm:py-48 bg-[#0a0a0a] px-6">
+      <section id="faq" className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-20">
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
               Questions?
             </h2>
           </motion.div>
@@ -1149,12 +1149,12 @@ function LandingPage() {
                 <AccordionItem
                   key={i}
                   value={`item-${i}`}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-6 sm:px-8 data-[state=open]:border-[#c9a227]/30 data-[state=open]:bg-white/[0.05] transition-all duration-500"
+                  className="bg-white/70 border border-[#1E2849]/[0.08] rounded-xl px-6 sm:px-8 data-[state=open]:border-[#c9a227]/30 data-[state=open]:bg-white/80 transition-all duration-500"
                 >
-                  <AccordionTrigger className="text-white/80 hover:text-white text-left py-6 text-base sm:text-lg font-medium hover:no-underline transition-colors duration-300">
+                  <AccordionTrigger className="text-[#1E2849]/70 hover:text-[#1E2849] text-left py-6 text-base sm:text-lg font-medium hover:no-underline transition-colors duration-300">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-white/70 pb-8 text-sm sm:text-base leading-relaxed">
+                  <AccordionContent className="text-[#1E2849]/60 pb-8 text-sm sm:text-base leading-relaxed">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -1165,7 +1165,7 @@ function LandingPage() {
       </section>
 
       {/* ── Section 10: Final CTA ────────────────────────────────────────── */}
-      <section className="relative py-32 sm:py-48 overflow-hidden bg-[#0a0a0a]">
+      <section className="relative py-32 sm:py-48 overflow-hidden bg-[#FFFAF0]">
         {/* Gradient orbs */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#c9a227]/[0.04] rounded-full blur-[200px]" />
@@ -1174,13 +1174,13 @@ function LandingPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <motion.div {...fadeUp}>
-            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-[#1E2849] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
               Ready to{" "}
               <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent">
                 Scale?
               </span>
             </h2>
-            <p className="text-base sm:text-lg text-white/70 mb-12 font-light leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-[#1E2849]/60 mb-12 font-light leading-relaxed max-w-2xl mx-auto">
               Join the elite network of tutoring agencies and educational consultancies using TheStudentBlueprint to deliver world-class admissions strategy.
             </p>
 
@@ -1190,7 +1190,7 @@ function LandingPage() {
               </Link>
             </Button>
 
-            <div className="mt-16 sm:mt-20 pt-12 border-t border-white/5 flex flex-wrap justify-center gap-8 sm:gap-12 text-xs text-white/50 font-medium">
+            <div className="mt-16 sm:mt-20 pt-12 border-t border-[#1E2849]/5 flex flex-wrap justify-center gap-8 sm:gap-12 text-xs text-[#1E2849]/40 font-medium">
               <div className="flex items-center gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-[#c9a227]/50" /> Secure Integration
               </div>
@@ -1206,28 +1206,28 @@ function LandingPage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="bg-[#0a0a0a] py-16 sm:py-20 px-6 border-t border-white/5">
+      <footer className="bg-[#FFFAF0] py-16 sm:py-20 px-6 border-t border-[#1E2849]/5">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 relative">
                 <Image src="/logo.png" alt="Logo" fill className="object-contain" />
               </div>
-              <span className="text-xl sm:text-2xl text-white font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <span className="text-xl sm:text-2xl text-[#1E2849] font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                 TheStudentBlueprint
               </span>
             </div>
 
             <div className="flex flex-wrap justify-center gap-8">
-              <Link href="/privacy" className="text-xs text-white/50 hover:text-white/60 transition-colors tracking-wide">
+              <Link href="/privacy" className="text-xs text-[#1E2849]/40 hover:text-[#1E2849]/50 transition-colors tracking-wide">
                 Privacy
               </Link>
-              <Link href="/terms" className="text-xs text-white/50 hover:text-white/60 transition-colors tracking-wide">
+              <Link href="/terms" className="text-xs text-[#1E2849]/40 hover:text-[#1E2849]/50 transition-colors tracking-wide">
                 Terms & Conditions
               </Link>
             </div>
 
-            <div className="text-xs text-white/40 tracking-wide">
+            <div className="text-xs text-[#1E2849]/35 tracking-wide">
               &copy; {new Date().getFullYear()} TheStudentBlueprint
             </div>
           </div>

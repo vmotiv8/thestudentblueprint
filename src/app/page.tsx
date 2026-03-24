@@ -338,27 +338,59 @@ function useCountUp(target: string, inView: boolean) {
 // ─── Testimonial Marquee ─────────────────────────────────────────────────────
 
 function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonials: Testimonial[] }) {
-  const x = useMotionValue(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
   const controls = useRef<any>(null)
   const pausedRef = useRef(false)
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isDragging = useRef(false)
   const doubledTestimonials = [...initialTestimonials, ...initialTestimonials, ...initialTestimonials]
 
+  // Card width + gap in pixels — computed safely for SSR
+  const [cardWidth, setCardWidth] = useState(452)
+  useEffect(() => {
+    setCardWidth(window.innerWidth < 640 ? 332 : 452)
+    const handleResize = () => setCardWidth(window.innerWidth < 640 ? 332 : 452)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  const totalWidth = initialTestimonials.length * cardWidth
+
+  const getCurrentX = (): number => {
+    if (!innerRef.current) return 0
+    try {
+      const transform = window.getComputedStyle(innerRef.current).transform
+      if (!transform || transform === 'none') return 0
+      const match = transform.match(/matrix.*\((.+)\)/)
+      if (match) {
+        const values = match[1].split(',')
+        return parseFloat(values[4]) || 0
+      }
+    } catch (e) {
+      console.error('[Marquee] Failed to read transform:', e)
+    }
+    return 0
+  }
+
   const startMarquee = () => {
-    if (pausedRef.current) return
+    if (pausedRef.current || !innerRef.current) return
     if (controls.current) controls.current.stop()
 
-    const currentX = x.get()
-    const targetX = -33.333
-    const remainingDistance = currentX <= targetX ? 33.333 + currentX : Math.abs(targetX - currentX)
-    const baseDuration = Math.max(30, initialTestimonials.length * 5)
-    const duration = (remainingDistance / 33.333) * baseDuration
+    const currentX = getCurrentX()
+    const resetPoint = -totalWidth
+    const baseDuration = Math.max(40, initialTestimonials.length * 4)
 
-    controls.current = animate(x, targetX, {
-      duration: duration,
+    const remaining = Math.abs(resetPoint - currentX)
+    const fullDistance = Math.abs(resetPoint)
+    const duration = fullDistance > 0 ? (remaining / fullDistance) * baseDuration : baseDuration
+
+    controls.current = animate(innerRef.current, { x: resetPoint }, {
+      duration,
       ease: "linear",
       onComplete: () => {
-        x.set(0)
+        if (innerRef.current) {
+          innerRef.current.style.transform = 'translateX(0px)'
+        }
         if (!pausedRef.current) startMarquee()
       }
     })
@@ -370,7 +402,7 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
     if (controls.current) controls.current.stop()
   }
 
-  const resumeAfterDelay = (ms = 3000) => {
+  const resumeAfterDelay = (ms = 4000) => {
     if (resumeTimer.current) clearTimeout(resumeTimer.current)
     resumeTimer.current = setTimeout(() => {
       pausedRef.current = false
@@ -379,8 +411,9 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
   }
 
   useEffect(() => {
-    startMarquee()
+    const timer = setTimeout(() => startMarquee(), 500)
     return () => {
+      clearTimeout(timer)
       controls.current?.stop()
       if (resumeTimer.current) clearTimeout(resumeTimer.current)
     }
@@ -388,17 +421,47 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
 
   const scroll = (direction: 'left' | 'right') => {
     pause()
+    if (!innerRef.current) return
 
-    const currentX = x.get()
-    const step = 3
-    const targetX = direction === 'left' ? currentX + step : currentX - step
+    const current = getCurrentX()
+    const step = cardWidth
+    const target = direction === 'left' ? current + step : current - step
 
-    animate(x, targetX, {
+    animate(innerRef.current, { x: target }, {
       duration: 0.4,
       ease: "easeOut",
     })
 
-    resumeAfterDelay(4000)
+    resumeAfterDelay(5000)
+  }
+
+  // Drag handlers
+  const dragStartX = useRef(0)
+  const dragStartScroll = useRef(0)
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pause()
+    isDragging.current = false
+    dragStartX.current = e.clientX
+    dragStartScroll.current = getCurrentX()
+    try {
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    } catch (err) {
+      console.warn('[Marquee] setPointerCapture failed:', err)
+    }
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!e.buttons) return
+    const dx = e.clientX - dragStartX.current
+    if (Math.abs(dx) > 5) isDragging.current = true
+    if (innerRef.current) {
+      innerRef.current.style.transform = `translateX(${dragStartScroll.current + dx}px)`
+    }
+  }
+
+  const handlePointerUp = () => {
+    resumeAfterDelay(5000)
   }
 
   return (
@@ -419,34 +482,43 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
         <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
 
-      <div className="relative overflow-hidden py-12">
-        <motion.div
-          className="flex"
-          style={{ x: useTransform(x, v => `${v}%`) }}
-          onMouseEnter={() => pause()}
-          onMouseLeave={() => {
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden py-12 cursor-grab active:cursor-grabbing select-none touch-pan-y"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onMouseEnter={() => pause()}
+        onMouseLeave={() => {
+          if (!isDragging.current) {
             pausedRef.current = false
             startMarquee()
-          }}
+          }
+        }}
+      >
+        <div
+          ref={innerRef}
+          className="flex will-change-transform"
         >
           {doubledTestimonials.map((t, i) => (
-            <div key={i} className="flex-shrink-0 px-3 group/card">
-              <motion.div
-                className="w-[320px] sm:w-[440px] bg-white border border-[#e5e0d5] p-6 sm:p-8 rounded-2xl transition-all duration-700 group-hover/card:border-[#c9a227]/30 group-hover/card:shadow-xl group-hover/card:shadow-[#c9a227]/5 shadow-sm"
-                whileHover={{ scale: 1.03 }}
+            <div key={i} className="flex-shrink-0 px-3">
+              <div
+                className="w-[320px] sm:w-[440px] bg-white border border-[#e5e0d5] p-6 sm:p-8 rounded-2xl transition-colors duration-700 hover:border-[#c9a227]/30 hover:shadow-xl hover:shadow-[#c9a227]/5 shadow-sm"
+                onClick={(e) => { if (isDragging.current) e.preventDefault() }}
               >
                 <div className="mb-5 relative">
-                  <div className="absolute -top-4 -left-2 text-6xl font-display text-[#c9a227]/15 select-none">&ldquo;</div>
+                  <div className="absolute -top-4 -left-2 text-6xl font-display text-[#c9a227]/15 select-none pointer-events-none">&ldquo;</div>
                   <p className="text-sm sm:text-[15px] text-[#1a1a1a] leading-relaxed relative z-10 min-h-[100px]">{t.quote}</p>
                 </div>
                 <div className="pt-5 border-t border-[#e5e0d5]">
                   <p className="text-xs sm:text-sm font-bold text-[#0a0a0a]">{t.name}</p>
                   <p className="text-xs sm:text-xs text-[#c9a227] font-medium mt-1">{t.school}</p>
                 </div>
-              </motion.div>
+              </div>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   )

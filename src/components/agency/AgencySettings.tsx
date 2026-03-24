@@ -1096,7 +1096,26 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
                       type="button"
                       role="switch"
                       aria-checked={!org.free_assessments}
-                      onClick={() => setOrg({ ...org, free_assessments: !org.free_assessments })}
+                      onClick={async () => {
+                        const updated = { ...org, free_assessments: !org.free_assessments }
+                        setOrg(updated)
+                        try {
+                          const res = await fetch('/api/agency/settings', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ free_assessments: updated.free_assessments }),
+                          })
+                          if (res.ok) {
+                            toast.success(updated.free_assessments ? 'Assessments set to free' : 'Student charging enabled')
+                          } else {
+                            setOrg(org) // revert on failure
+                            toast.error('Failed to update pricing setting')
+                          }
+                        } catch {
+                          setOrg(org) // revert on failure
+                          toast.error('Failed to update pricing setting')
+                        }
+                      }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${!org.free_assessments ? 'bg-[#0a192f]' : 'bg-gray-300'}`}
                     >
                       <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!org.free_assessments ? 'translate-x-6' : 'translate-x-1'}`} />

@@ -212,14 +212,34 @@ function AssessmentContent() {
   useEffect(() => {
     const loadAssessment = async () => {
       setIsLoading(true)
-      
+
+      // Check if this org offers free assessments — skip payment verification if so
+      const urlParams = new URLSearchParams(window.location.search)
+      const orgSlug = urlParams.get('org')
+      if (orgSlug || tenant?.free_assessments) {
+        try {
+          const orgParam = orgSlug ? `?org=${encodeURIComponent(orgSlug)}` : ''
+          const tenantRes = await fetch(`/api/platform/organizations/me${orgParam}`)
+          if (tenantRes.ok) {
+            const tenantData = await tenantRes.json()
+            if (tenantData.free_assessments) {
+              setIsPaid(true)
+              setIsLoading(false)
+              return
+            }
+          }
+        } catch (e) {
+          console.error('Error checking org free_assessments:', e)
+        }
+      }
+
       const resumeId = searchParams.get("resume")
       const sessionId = searchParams.get("session_id")
       const resumeCode = searchParams.get("code")
       const couponUsed = localStorage.getItem("studentblueprint_coupon")
-      
+
       let verified = false
-      
+
       if (sessionId) {
         const response = await fetch(`/api/payment/verify?session_id=${sessionId}`)
         const data = await response.json()
@@ -300,7 +320,8 @@ function AssessmentContent() {
       }
       
       if (!verified) {
-        router.replace("/checkout")
+        const orgParam = orgSlug ? `?org=${encodeURIComponent(orgSlug)}` : ''
+        router.replace(`/checkout${orgParam}`)
         return
       }
       

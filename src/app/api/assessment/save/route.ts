@@ -88,6 +88,17 @@ export async function POST(request: Request) {
         .eq('organization_id', organization.id)
         .single()
 
+      // Fetch the student's unique_code for the response
+      let uniqueCode: string | null = null
+      if (assessment?.student_id) {
+        const { data: student } = await supabase
+          .from('students')
+          .select('unique_code')
+          .eq('id', assessment.student_id)
+          .single()
+        uniqueCode = student?.unique_code || null
+      }
+
       if (assessment?.student_id && formData.basicInfo) {
         const fullName = String(formData.basicInfo.fullName || '')
         const nameParts = fullName.trim().split(/\s+/)
@@ -127,9 +138,10 @@ export async function POST(request: Request) {
           .eq('id', assessment.student_id)
       }
   
-      return NextResponse.json({ 
-        success: true, 
-        assessmentId
+      return NextResponse.json({
+        success: true,
+        assessmentId,
+        uniqueCode
       })
     }
 
@@ -155,6 +167,15 @@ export async function POST(request: Request) {
     const firstName = formData.basicInfo?.firstName || nameParts[0] || null
     const lastName = formData.basicInfo?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : null)
 
+    // Generate a unique 6-character resume code
+    const generateCode = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+      let code = ''
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
+      return code
+    }
+    const newUniqueCode = generateCode()
+
     const { data: student, error: studentError } = await supabase
       .from('students')
       .insert({
@@ -163,6 +184,7 @@ export async function POST(request: Request) {
         first_name: firstName,
         last_name: lastName,
         full_name: fullName || null,
+        unique_code: newUniqueCode,
         phone: formData.basicInfo?.phone || null,
         grade_level: formData.basicInfo?.currentGrade || formData.basicInfo?.gradeLevel || null,
         current_grade: formData.basicInfo?.currentGrade || null,
@@ -214,7 +236,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       assessmentId: assessment.id,
-      studentId: student.id
+      studentId: student.id,
+      uniqueCode: newUniqueCode
     })
 
   } catch (error) {

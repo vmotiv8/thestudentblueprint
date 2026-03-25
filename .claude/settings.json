@@ -21,7 +21,21 @@
       "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint -type f \\\\\\(-name *.sql -o -name *schema* -o -name *migration* \\\\\\))",
       "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/src -type f -name *supabase* -o -name *client*)",
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/src -type f -name *tenant* -o -name *resolv*)"
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/src -type f -name *tenant* -o -name *resolv*)",
+      "Bash(node -e \"const p = require\\(''pdf-parse''\\); console.log\\(typeof p\\)\")",
+      "Bash(node -e \"const p = require\\(''pdf-parse''\\); console.log\\(Object.keys\\(p\\).slice\\(0, 5\\)\\)\")",
+      "Bash(node -e \"const p = require\\(''pdf-parse''\\); console.log\\(typeof p.default, typeof p.pdf\\)\")",
+      "Bash(node -e \"const p = require\\(''pdf-parse''\\); const keys = Object.keys\\(p\\); const funcs = keys.filter\\(k => typeof p[k] === ''function''\\); console.log\\(funcs.slice\\(0, 10\\)\\)\")",
+      "Bash(node -e \"const { PDFParse } = require\\(''pdf-parse''\\); console.log\\(typeof PDFParse\\)\")",
+      "Bash(node -e \"const { PDFParse } = require\\(''pdf-parse''\\); const p = new PDFParse\\(\\); console.log\\(Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(p\\)\\).filter\\(n => n !== ''constructor''\\)\\)\")",
+      "Bash(node -e 'const { PDFParse } = require\\(\"\"pdf-parse\"\"\\); const p = new PDFParse\\(\\); console.log\\(Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(p\\)\\)\\)')",
+      "Bash(node -e 'const { PDFParse } = require\\(\"\"pdf-parse\"\"\\); const p = new PDFParse\\(\\); const methods = Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(p\\)\\).filter\\(n => n !== \"\"constructor\"\"\\); console.log\\(methods\\)')",
+      "Bash(node -e 'const { PDFParse } = require\\(\"\"pdf-parse\"\"\\); const p = new PDFParse\\(\\); console.log\\(Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(p\\)\\).filter\\(n => n != \"\"constructor\"\"\\)\\)')",
+      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); console.log\\(typeof PDFParse.prototype.loadPDF, typeof PDFParse.prototype.parse\\)\")",
+      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const fs = require\\(''fs''\\); console.log\\(PDFParse.toString\\(\\).slice\\(0, 200\\)\\)\")",
+      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const fs = require\\(''fs''\\); const buf = fs.readFileSync\\(''package.json''\\); try { const p = new PDFParse\\({data: buf}\\); console.log\\(typeof p.getText, typeof p.parse, typeof p.loadPDF\\); } catch\\(e\\) { console.log\\(''err:'', e.message\\); }\")",
+      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const p = new PDFParse\\({data: new Uint8Array\\(10\\)}\\); const methods = Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(p\\)\\); console.log\\(methods\\)\")",
+      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const p = new PDFParse\\({data: new Uint8Array\\(10\\)}\\); p.load\\(\\).then\\(\\(\\) => p.getText\\(\\)\\).then\\(r => console.log\\(typeof r, JSON.stringify\\(r\\).slice\\(0,200\\)\\)\\).catch\\(e => console.log\\(''err'', e.message\\)\\)\")"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

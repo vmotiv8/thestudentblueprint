@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildStudentProfileContext, parseClaudeResponse } from '@/lib/assessment-prompts'
+import { fetchKnowledgeHubWithContent } from '@/lib/knowledge-hub-content'
 
 export const maxDuration = 120
 
@@ -45,15 +46,10 @@ export async function POST(
       return NextResponse.json({ error: 'No assessment responses found' }, { status: 400 })
     }
 
-    // Fetch knowledge hub resources
-    let knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
-    if (assessment.organization_id) {
-      const { data: khData } = await supabase
-        .from('knowledge_hub_resources')
-        .select('type, title, description')
-        .eq('organization_id', assessment.organization_id)
-      knowledgeHubResources = khData || []
-    }
+    // Fetch knowledge hub resources with file content extraction
+    const knowledgeHubResources = assessment.organization_id
+      ? await fetchKnowledgeHubWithContent(assessment.organization_id)
+      : []
 
     const { context } = buildStudentProfileContext(formData, knowledgeHubResources)
 

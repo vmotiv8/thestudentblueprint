@@ -11,6 +11,7 @@ import {
   buildStudentProfileContext,
   sanitizeForPrompt,
 } from '@/lib/assessment-prompts'
+import { fetchKnowledgeHubWithContent } from '@/lib/knowledge-hub-content'
 
 // Allow up to 5 minutes for AI analysis
 export const maxDuration = 300
@@ -63,13 +64,10 @@ export async function POST(request: Request) {
         .eq('id', assessmentId)
     }
 
-    // Fetch knowledge hub resources
-    let knowledgeHubResources: { type: string; title: string; description: string | null }[] = []
-    if (organization?.id) {
-      const { data: khData } = await supabase
-        .from('knowledge_hub_resources').select('type, title, description').eq('organization_id', organization.id)
-      knowledgeHubResources = khData || []
-    }
+    // Fetch knowledge hub resources with file content extraction
+    const knowledgeHubResources = organization?.id
+      ? await fetchKnowledgeHubWithContent(organization.id)
+      : []
 
     // ── Build student context (shared across all phases) ────────────────
     const { context: studentContext, currentGrade } = buildStudentProfileContext(formData, knowledgeHubResources)

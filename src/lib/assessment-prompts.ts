@@ -28,7 +28,7 @@ export function toStringList(value: unknown): string {
   return ''
 }
 
-type KnowledgeHubResource = { type: string; title: string; description: string | null }
+export type KnowledgeHubResource = { type: string; title: string; description: string | null; fileContent?: string | null }
 
 /**
  * Build the student profile context string used in all AI prompts.
@@ -56,16 +56,25 @@ export function buildStudentProfileContext(
   const currentGrade = sanitizeForPrompt(basicInfo.currentGrade) || 'Not provided'
 
   const khSection = (() => {
+    if (knowledgeHubResources.length === 0) return ''
     const khByType: Record<string, string[]> = {}
+    const fileContents: string[] = []
     for (const r of knowledgeHubResources) {
       if (!khByType[r.type]) khByType[r.type] = []
       khByType[r.type].push(r.description ? `${r.title} (${r.description})` : r.title)
+      if (r.fileContent) {
+        fileContents.push(`--- ${r.type.replace(/_/g, ' ').toUpperCase()}: ${r.title} ---\n${r.fileContent}`)
+      }
     }
-    if (Object.keys(khByType).length === 0) return ''
-    return '\n  School-Specific Resources (uploaded by the student\'s school — prioritize these in recommendations):\n' +
+    let section = '\n  School-Specific Resources (uploaded by the student\'s school — PRIORITIZE these in recommendations, use specific names and details from uploaded documents):\n' +
       Object.entries(khByType)
         .map(([type, items]) => `  - ${type.replace(/_/g, ' ')}: ${items.join('; ')}`)
         .join('\n')
+    if (fileContents.length > 0) {
+      section += '\n\n  === UPLOADED DOCUMENT CONTENTS (reference these directly when making recommendations) ===\n' +
+        fileContents.join('\n\n')
+    }
+    return section
   })()
 
   const context = `Student Information:

@@ -23,7 +23,8 @@ export async function savePhaseResults(
     updated_at: new Date().toISOString(),
   }
   if (status === 'completed') update.completed_at = new Date().toISOString()
-  if (phaseStatus) update.phase_status = phaseStatus
+  // phase_status column may not exist yet if migration hasn't been run
+  // We'll set it but handle the error gracefully below
 
   // Map AI output keys → DB columns (only write what exists)
   if (results.studentArchetype) update.student_archetype = results.studentArchetype
@@ -55,7 +56,17 @@ export async function savePhaseResults(
   if (results.wasteOfTimeActivities) update.waste_of_time_activities = results.wasteOfTimeActivities
   if (results.scholarshipRecommendations) update.scholarship_recommendations = results.scholarshipRecommendations
 
-  const { error } = await supabase.from('assessments').update(update).eq('id', assessmentId)
+  // Try with phase_status first, fall back without it if column doesn't exist
+  if (phaseStatus) update.phase_status = phaseStatus
+
+  let { error } = await supabase.from('assessments').update(update).eq('id', assessmentId)
+
+  // If phase_status column doesn't exist yet, retry without it
+  if (error?.message?.includes('phase_status')) {
+    delete update.phase_status
+    const retry = await supabase.from('assessments').update(update).eq('id', assessmentId)
+    error = retry.error
+  }
 
   if (error) {
     // If 'partial' status fails (CHECK constraint), retry with 'in_progress'

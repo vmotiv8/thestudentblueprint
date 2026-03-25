@@ -86,18 +86,10 @@ async function extractFileContent(fileUrl: string): Promise<string | null> {
       return text.slice(0, MAX_CONTENT_LENGTH)
     }
 
-    // PDF files
+    // PDF files — skip extraction in this environment (pdf-parse has webpack compatibility issues)
+    // Content will be available via the title and description fields instead
     if (contentType.includes('application/pdf') || url.endsWith('.pdf')) {
-      const arrayBuffer = await response.arrayBuffer()
-      try {
-        const { PDFParse } = await import('pdf-parse')
-        const parser = new PDFParse({ data: new Uint8Array(arrayBuffer) })
-        const result = await parser.getText()
-        return result?.text?.slice(0, MAX_CONTENT_LENGTH) || null
-      } catch (pdfErr) {
-        console.error('[KH] PDF parse error:', pdfErr)
-        return null
-      }
+      return null
     }
 
     // For Word/Excel — just note we can't extract (would need mammoth/xlsx libs)

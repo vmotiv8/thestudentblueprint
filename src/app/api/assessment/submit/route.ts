@@ -49,14 +49,18 @@ export async function POST(request: Request) {
     }
 
     // Save responses and set status to in_progress
-    await supabase.from('assessments')
-      .update({
-        responses: formData,
-        status: 'in_progress',
-        phase_status: { phase1: 'pending', phase2: 'pending', phase3: 'pending', phase4: 'pending' },
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', assessmentId)
+    const submitUpdate: Record<string, unknown> = {
+      responses: formData,
+      status: 'in_progress',
+      updated_at: new Date().toISOString(),
+    }
+    // Try with phase_status, fall back without if column doesn't exist yet
+    submitUpdate.phase_status = { phase1: 'pending', phase2: 'pending', phase3: 'pending', phase4: 'pending' }
+    let { error: saveErr } = await supabase.from('assessments').update(submitUpdate).eq('id', assessmentId)
+    if (saveErr?.message?.includes('phase_status')) {
+      delete submitUpdate.phase_status
+      await supabase.from('assessments').update(submitUpdate).eq('id', assessmentId)
+    }
 
     console.log(`[Submit] Assessment ${assessmentId} saved, enqueueing Phase 1`)
 

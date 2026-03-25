@@ -348,7 +348,7 @@ function getHealthcareDemoData() {
 
   const satActGoals = {
     targetSATScore: "1550+ (target for junior year)",
-    satSectionGoals: { reading: "770+", writing: "770+", math: "790+" },
+    satSectionGoals: { reading: "770+", math: "790+" },
     targetACTScore: "35+",
     actSectionGoals: { english: "35+", math: "35+", reading: "36", science: "36" },
     prepStrategy: "Start with PSAT 8/9 this spring to establish a baseline. Focus on building strong reading habits now — read scientific journals (Nature, Scientific American), classic literature, and long-form journalism to build the comprehension speed needed for the SAT reading section. Math foundation in Honors Geometry is solid; continue strengthening through pre-calculus. Begin structured SAT prep in spring of sophomore year with Khan Academy (free, official College Board partner). Take a full-length practice test every month starting January of junior year.",
@@ -1199,7 +1199,7 @@ function getFinanceDemoData() {
 
   const satActGoals = {
     targetSATScore: "1560+ (target for junior year spring)",
-    satSectionGoals: { reading: "780+", writing: "780+", math: "800" },
+    satSectionGoals: { reading: "780+", math: "800" },
     targetACTScore: "35+",
     actSectionGoals: { english: "35+", math: "36", reading: "35+", science: "35+" },
     prepStrategy: "Leverage strong quantitative foundation from AP Calculus and Statistics — math section should be near-perfect. Focus prep time on Evidence-Based Reading & Writing by reading The Wall Street Journal, The Economist, and Financial Times daily to build reading speed with complex analytical texts. Use Khan Academy for official College Board practice. Take a full-length practice test every 2 weeks starting January of junior year. Consider a tutor for reading section if practice scores are below 750.",
@@ -2024,7 +2024,7 @@ function getEngineeringDemoData() {
 
   const satActGoals = {
     targetSATScore: "1560+ (retake target — current 1520 needs improvement for MIT/Caltech)",
-    satSectionGoals: { reading: "760+", writing: "760+", math: "800" },
+    satSectionGoals: { reading: "760+", math: "800" },
     targetACTScore: "35+",
     actSectionGoals: { english: "34+", math: "36", reading: "35+", science: "36" },
     prepStrategy: "Your math foundation is exceptional (AP Calculus BC, AP Physics C) — target a perfect 800 math. Focus all prep time on the Evidence-Based Reading & Writing section, which is your growth area. Read challenging nonfiction daily: MIT Technology Review, Nature, Scientific American, and The Economist. Use Khan Academy for targeted practice on passage types you find most challenging. Take a full-length practice test every 2 weeks leading up to the retake.",

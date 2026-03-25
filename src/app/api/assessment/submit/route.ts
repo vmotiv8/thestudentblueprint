@@ -172,7 +172,7 @@ Generate DETAILED JSON:
   },
   "satActGoals": {
     "targetSATScore": "Specific target (e.g., '1520+')",
-    "satSectionGoals": { "reading": "specific target with strategy", "writing": "specific target", "math": "specific target" },
+    "satSectionGoals": { "reading": "specific target with strategy", "math": "specific target" },
     "targetACTScore": "Specific target (e.g., '35+')",
     "actSectionGoals": { "english": "target", "math": "target", "reading": "target", "science": "target" },
     "prepStrategy": "3-4 sentence detailed prep plan — name specific resources (Khan Academy, College Panda, Erica Meltzer, etc.), study schedule, practice test cadence",

@@ -152,7 +152,7 @@ interface Assessment {
   }
   sat_act_goals: {
     targetSATScore: string
-    satSectionGoals: { reading: string; writing: string; math: string }
+    satSectionGoals: { reading: string; math: string }
     targetACTScore: string
     actSectionGoals: { english: string; math: string; reading: string; science: string }
     prepStrategy: string
@@ -471,7 +471,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${assessment?.students?.full_name}'s The Student Blueprint Results`,
+          title: `${assessment?.students?.full_name}'s ${orgName} Results`,
           text: 'Check out my personalized college success roadmap!',
           url
         })
@@ -617,7 +617,15 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     // Safely coerce any value to a string array — handles Gemini returning strings/objects instead of arrays
     const toArray = (val: unknown): string[] => {
       if (!val) return []
-      if (Array.isArray(val)) return val.map(v => typeof v === 'string' ? v : JSON.stringify(v))
+      if (Array.isArray(val)) return val.map(v => {
+        if (typeof v === 'string') return v
+        if (typeof v === 'object' && v !== null) {
+          // Extract the most meaningful field from objects (e.g. Gemini returning {"name": "RSI"})
+          const obj = v as Record<string, unknown>
+          return String(obj.name || obj.title || obj.description || obj.sport || obj.club || obj.program || obj.competition || Object.values(obj).find(val => typeof val === 'string') || JSON.stringify(v))
+        }
+        return String(v)
+      })
       if (typeof val === 'string') return val.split('\n').filter(Boolean)
       return []
     }
@@ -749,8 +757,51 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           </div>
         </nav>
 
-        <main className="py-6 sm:py-12 px-4 sm:px-6">
+        <main className="pt-4 sm:pt-6 pb-6 sm:pb-12 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto">
+
+                {isPhase2Loading && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 bg-gradient-to-r from-[#1e3a5f]/5 to-[#c9a227]/5 border border-[#c9a227]/20 rounded-xl p-3 flex items-center gap-3"
+                  >
+                    <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" style={{ color: secondaryColor }} />
+                    <p className="text-xs text-[#5a7a9a]">
+                      Generating recommendations... Tabs will unlock automatically.
+                    </p>
+                  </motion.div>
+                )}
+
+                <Tabs defaultValue="archetype" className="w-full">
+                  <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
+                    <TabsList className="bg-white border border-[#e5e0d5] p-1 inline-flex h-auto gap-0.5 shadow-sm rounded-2xl min-w-max">
+                      {[
+                        { value: "archetype", icon: Sparkles, label: "Archetype" },
+                        { value: "roadmap", icon: Calendar, label: "Roadmap" },
+                        { value: "gaps", icon: AlertCircle, label: "Gaps" },
+                        { value: "projects", icon: Lightbulb, label: "Projects" },
+                        { value: "career-future", icon: Compass, label: "Career" },
+                        { value: "academics", icon: BookOpen, label: "Academics" },
+                        { value: "testing", icon: Target, label: "Testing" },
+                        { value: "scholarships", icon: DollarSign, label: "Scholarships" },
+                        { value: "activities", icon: Trophy, label: "Activities" },
+                        { value: "college-match", icon: Building, label: "Colleges" },
+                        { value: "essays", icon: PenLine, label: "Essays" },
+                      ].map(({ value, icon: Icon, label }) => (
+                        <TabsTrigger key={value} value={value} className="brand-tab px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-200 font-semibold flex items-center gap-1.5 h-auto whitespace-nowrap text-xs sm:text-sm relative">
+                          <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          {label}
+                          {isPhase2Loading && PHASE_2_TABS.has(value) && (
+                            <span className="w-1.5 h-1.5 rounded-full animate-pulse brand-pulse" />
+                          )}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
+
+                  {/* ── Archetype Tab ─────────────────────────────────────── */}
+                  <TabsContent value="archetype" className="mt-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -974,50 +1025,9 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </Card>
               </motion.div>
             </div>
+                  </TabsContent>
 
-                {isPhase2Loading && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 bg-gradient-to-r from-[#1e3a5f]/5 to-[#c9a227]/5 border border-[#c9a227]/20 rounded-xl p-4 flex items-center gap-3"
-                  >
-                    <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" style={{ color: secondaryColor }} />
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: primaryColor }}>
-                        Generating detailed recommendations...
-                      </p>
-                      <p className="text-xs text-[#5a7a9a]">
-                        Your core analysis is ready below. Remaining tabs will unlock automatically over the next 5-10 minutes.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-
-                <Tabs defaultValue="roadmap" className="mb-8 sm:mb-12 w-full">
-                  <div className="sm:max-w-full sm:overflow-x-auto scrollbar-hide sm:-mx-0 sm:px-0">
-                    <TabsList className="bg-white/40 backdrop-blur-2xl border border-white/20 p-1.5 sm:p-2 grid grid-cols-4 sm:grid-cols-7 h-auto gap-1 sm:gap-2 shadow-2xl shadow-[#1e3a5f]/5 rounded-xl sm:rounded-[2.5rem] w-full scrollbar-hide mb-2">
-                      {[
-                        { value: "roadmap", icon: Calendar, label: "Roadmap" },
-                        { value: "gaps", icon: AlertCircle, label: "Gaps" },
-                        { value: "projects", icon: Lightbulb, label: "Projects" },
-                        { value: "career-future", icon: Compass, label: "Career" },
-                        { value: "academics", icon: BookOpen, label: "Academics" },
-                        { value: "testing", icon: Target, label: "Testing" },
-                        { value: "scholarships", icon: DollarSign, label: "Scholarships" },
-                        { value: "activities", icon: Trophy, label: "Activities" },
-                        { value: "college-match", icon: Building, label: "Colleges" },
-                        { value: "essays", icon: PenLine, label: "Essays" },
-                      ].map(({ value, icon: Icon, label }) => (
-                        <TabsTrigger key={value} value={value} className="brand-tab px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0 relative">
-                          <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                          <span className="text-[7px] sm:text-[10px] uppercase tracking-tight leading-tight truncate w-full text-center">{label}</span>
-                          {isPhase2Loading && PHASE_2_TABS.has(value) && (
-                            <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#c9a227] rounded-full animate-pulse" />
-                          )}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </div>
+                  {/* ── Other Tab Content ── */}
 
                 <TabsContent value="timeline" className="mt-6">
                 <div className="space-y-6">
@@ -1639,8 +1649,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       })()}
                       <Accordion type="multiple" className="space-y-1.5">
                         {[
-                          { label: "Reading", value: assessment.sat_act_goals?.satSectionGoals?.reading },
-                          { label: "Writing", value: assessment.sat_act_goals?.satSectionGoals?.writing },
+                          { label: "Reading & Writing", value: assessment.sat_act_goals?.satSectionGoals?.reading },
                           { label: "Math", value: assessment.sat_act_goals?.satSectionGoals?.math },
                         ].filter(s => s.value).map((section) => {
                           const text = String(section.value || '')
@@ -2071,14 +2080,21 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ul className="space-y-2">
-                            {assessment.college_recommendations?.collegeBreakdown?.reach?.map((school, i) => (
-                              <li key={i} className="flex items-center gap-2 text-sm text-[#5a7a9a]">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
-                                {school}
-                              </li>
-                            ))}
-                          </ul>
+                          <Accordion type="multiple" className="space-y-1">
+                            {toArray(assessment.college_recommendations?.collegeBreakdown?.reach).map((school, i) => {
+                              const colonIdx = school.indexOf(':')
+                              const name = colonIdx > 0 ? school.slice(0, colonIdx).trim() : school.slice(0, 50)
+                              const detail = colonIdx > 0 ? school.slice(colonIdx + 1).trim() : ''
+                              return (
+                                <AccordionItem key={i} value={`school-${i}`}>
+                                  <AccordionTrigger className="text-sm font-medium text-[#1e3a5f] py-2">
+                                    {name}
+                                  </AccordionTrigger>
+                                  {detail && <AccordionContent className="text-sm text-[#5a7a9a]">{detail}</AccordionContent>}
+                                </AccordionItem>
+                              )
+                            })}
+                          </Accordion>
                         </CardContent>
                       </Card>
                       <Card className="border-[#e5e0d5]">
@@ -2089,14 +2105,21 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ul className="space-y-2">
-                            {assessment.college_recommendations?.collegeBreakdown?.target?.map((school, i) => (
-                              <li key={i} className="flex items-center gap-2 text-sm text-[#5a7a9a]">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
-                                {school}
-                              </li>
-                            ))}
-                          </ul>
+                          <Accordion type="multiple" className="space-y-1">
+                            {toArray(assessment.college_recommendations?.collegeBreakdown?.target).map((school, i) => {
+                              const colonIdx = school.indexOf(':')
+                              const name = colonIdx > 0 ? school.slice(0, colonIdx).trim() : school.slice(0, 50)
+                              const detail = colonIdx > 0 ? school.slice(colonIdx + 1).trim() : ''
+                              return (
+                                <AccordionItem key={i} value={`school-${i}`}>
+                                  <AccordionTrigger className="text-sm font-medium text-[#1e3a5f] py-2">
+                                    {name}
+                                  </AccordionTrigger>
+                                  {detail && <AccordionContent className="text-sm text-[#5a7a9a]">{detail}</AccordionContent>}
+                                </AccordionItem>
+                              )
+                            })}
+                          </Accordion>
                         </CardContent>
                       </Card>
                       <Card className="border-[#e5e0d5]">
@@ -2107,14 +2130,21 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ul className="space-y-2">
-                            {assessment.college_recommendations?.collegeBreakdown?.safety?.map((school, i) => (
-                              <li key={i} className="flex items-center gap-2 text-sm text-[#5a7a9a]">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                                {school}
-                              </li>
-                            ))}
-                          </ul>
+                          <Accordion type="multiple" className="space-y-1">
+                            {toArray(assessment.college_recommendations?.collegeBreakdown?.safety).map((school, i) => {
+                              const colonIdx = school.indexOf(':')
+                              const name = colonIdx > 0 ? school.slice(0, colonIdx).trim() : school.slice(0, 50)
+                              const detail = colonIdx > 0 ? school.slice(colonIdx + 1).trim() : ''
+                              return (
+                                <AccordionItem key={i} value={`school-${i}`}>
+                                  <AccordionTrigger className="text-sm font-medium text-[#1e3a5f] py-2">
+                                    {name}
+                                  </AccordionTrigger>
+                                  {detail && <AccordionContent className="text-sm text-[#5a7a9a]">{detail}</AccordionContent>}
+                                </AccordionItem>
+                              )
+                            })}
+                          </Accordion>
                         </CardContent>
                       </Card>
                     </div>
@@ -2256,14 +2286,41 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   </TabsContent>
 
                 <TabsContent value="roadmap" className="mt-6">
-                  <div className="space-y-8">
-                    {/* Grade-by-Grade Timeline (from old timeline tab) */}
+                  <div className="space-y-6">
+                    {/* Immediate Actions Banner */}
+                    {assessment.roadmap_data?.immediate?.length > 0 && (
+                      <Card className="border-red-200 bg-red-50/30">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                            Immediate Actions <span className="text-[10px] text-[#5a7a9a] bg-white px-2 py-0.5 rounded-full">Next 3 months</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <Accordion type="multiple" className="space-y-1">
+                            {toArray(assessment.roadmap_data.immediate).map((item, i) => {
+                              const colonIdx = item.indexOf(':')
+                              const heading = colonIdx > 0 && colonIdx < 80 ? item.slice(0, colonIdx).trim() : item
+                              const detail = colonIdx > 0 && colonIdx < 80 ? item.slice(colonIdx + 1).trim() : ''
+                              return (
+                                <AccordionItem key={i} value={`imm-${i}`} className="bg-red-50 rounded-lg border-none px-3">
+                                  <AccordionTrigger className="py-2 hover:no-underline"><div className="flex items-center gap-2 text-left"><span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-red-500 shrink-0">{i+1}</span><span className="text-[13px] font-medium text-[#1e3a5f]">{heading}</span></div></AccordionTrigger>
+                                  {detail && <AccordionContent className="pb-2 pl-7"><p className="text-[13px] text-[#5a7a9a]">{detail}</p></AccordionContent>}
+                                </AccordionItem>
+                              )
+                            })}
+                          </Accordion>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Grade-by-Grade Timeline */}
                     {assessment.grade_by_grade_roadmap && (
-                      <div className="space-y-6">
-                        <div className="bg-gradient-to-r from-[#1e3a5f] to-[#c9a227] text-white rounded-xl p-4 sm:p-6">
-                          <h3 className="text-lg sm:text-2xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>Grade-by-Grade Timeline</h3>
-                          <p className="text-white/70 text-sm">Your personalized year-by-year roadmap to college success</p>
-                        </div>
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#1e3a5f] flex items-center gap-2">
+                          <GraduationCap className="w-5 h-5" style={{ color: secondaryColor }} />
+                          Year-by-Year Roadmap
+                        </h3>
                         {/* Render existing timeline content inline */}
                         {(() => {
                           try {
@@ -2313,62 +2370,31 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       </div>
                     )}
 
-                    {/* Action Items (immediate/short/medium/long term) */}
-                    <div className="grid md:grid-cols-2 gap-5">
-                      {[
-                        { title: "Immediate Actions", subtitle: "Next 3 months", items: assessment.roadmap_data?.immediate, color: "#ef4444", accent: "bg-red-50" },
-                        { title: "Short-term Goals", subtitle: "3-6 months", items: assessment.roadmap_data?.shortTerm, color: "#f59e0b", accent: "bg-amber-50" },
-                        { title: "Medium-term", subtitle: "6-12 months", items: assessment.roadmap_data?.mediumTerm, color: "#3b82f6", accent: "bg-blue-50" },
-                        { title: "Long-term", subtitle: "1+ years", items: assessment.roadmap_data?.longTerm, color: "#10b981", accent: "bg-emerald-50" }
-                      ].map((phase, phaseIndex) => (
-                        <motion.div
-                          key={phase.title}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: phaseIndex * 0.1 }}
-                        >
-                          <Card className="border-[#e5e0d5] h-full">
+                    {/* Short/Medium/Long-term goals */}
+                    {assessment.roadmap_data && (
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {[
+                          { title: "Short-term", subtitle: "3-6 months", items: toArray(assessment.roadmap_data.shortTerm), color: "#f59e0b" },
+                          { title: "Medium-term", subtitle: "6-12 months", items: toArray(assessment.roadmap_data.mediumTerm), color: "#3b82f6" },
+                          { title: "Long-term", subtitle: "1+ years", items: toArray(assessment.roadmap_data.longTerm), color: "#10b981" },
+                        ].filter(p => p.items.length > 0).map((phase) => (
+                          <Card key={phase.title} className="border-[#e5e0d5]">
                             <CardHeader className="pb-2">
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
-                                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: phase.color }} />
-                                  {phase.title}
-                                </CardTitle>
-                                <span className="text-[10px] text-[#5a7a9a] bg-[#f0ece3] px-2 py-0.5 rounded-full whitespace-nowrap">{phase.subtitle}</span>
-                              </div>
+                              <CardTitle className="text-sm text-[#1e3a5f] flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: phase.color }} />
+                                {phase.title}
+                                <span className="text-[10px] text-[#5a7a9a] ml-auto">{phase.subtitle}</span>
+                              </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                              <Accordion type="multiple" className="space-y-1">
-                                {phase.items?.map((item, index) => {
-                                  const colonIdx = item.indexOf(':')
-                                  let heading = item
-                                  let detail = ''
-                                  if (colonIdx > 0 && colonIdx < 80) {
-                                    heading = item.slice(0, colonIdx).trim()
-                                    detail = item.slice(colonIdx + 1).trim()
-                                  }
-                                  return (
-                                    <AccordionItem key={index} value={`${phase.title}-${index}`} className={`${phase.accent} rounded-lg border-none px-3`}>
-                                      <AccordionTrigger className="py-2 hover:no-underline">
-                                        <div className="flex items-center gap-2 text-left">
-                                          <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ backgroundColor: phase.color }}>{index + 1}</span>
-                                          <span className="text-[13px] font-medium text-[#1e3a5f] leading-snug">{heading}</span>
-                                        </div>
-                                      </AccordionTrigger>
-                                      {detail && (
-                                        <AccordionContent className="pb-2 pl-7">
-                                          <p className="text-[13px] text-[#5a7a9a] leading-relaxed">{detail}</p>
-                                        </AccordionContent>
-                                      )}
-                                    </AccordionItem>
-                                  )
-                                })}
-                              </Accordion>
+                            <CardContent className="space-y-1.5">
+                              {phase.items.map((item, i) => (
+                                <p key={i} className="text-[13px] text-[#5a7a9a] leading-snug">• {item}</p>
+                              ))}
                             </CardContent>
                           </Card>
-                        </motion.div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
 
                     {assessment.waste_of_time_activities?.activities && assessment.waste_of_time_activities.activities.length > 0 && (
                       <Card className="border-red-200/60">
@@ -2571,7 +2597,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
       <footer className="py-8 px-6 bg-[#0f1f30] border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center text-white/40 text-sm">
-          &copy; 2024 The Student Blueprint. All rights reserved.
+          &copy; 2024 {orgName}. All rights reserved.
         </div>
       </footer>
     </div>

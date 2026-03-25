@@ -754,7 +754,7 @@ export async function GET(
           pdf.setFontSize(8.5)
           pdf.setTextColor(90, 122, 154)
           pdf.setFont('helvetica', 'normal')
-          pdf.text(`R: ${goals.satSectionGoals.reading || 'N/A'} | W: ${goals.satSectionGoals.writing || 'N/A'} | M: ${goals.satSectionGoals.math || 'N/A'}`, margin + contentWidth / 4 - 3, yPos + 46, { align: 'center' })
+          pdf.text(`R&W: ${goals.satSectionGoals.reading || 'N/A'} | M: ${goals.satSectionGoals.math || 'N/A'}`, margin + contentWidth / 4 - 3, yPos + 46, { align: 'center' })
         }
 
         if (goals.actSectionGoals) {

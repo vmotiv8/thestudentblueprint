@@ -158,7 +158,7 @@ ${khSection}
     },
   "satActGoals": {
     "targetSATScore": "Target composite score",
-    "satSectionGoals": { "reading": "target", "writing": "target", "math": "target" },
+    "satSectionGoals": { "reading": "target", "math": "target" },
     "targetACTScore": "Target composite score",
     "actSectionGoals": { "english": "target", "math": "target", "reading": "target", "science": "target" },
     "prepStrategy": "Recommended preparation approach",

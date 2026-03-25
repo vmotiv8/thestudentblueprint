@@ -273,7 +273,7 @@ Generate detailed recommendations with the following structure in JSON format:
   },
   "satActGoals": {
     "targetSATScore": "Target composite score",
-    "satSectionGoals": { "reading": "target", "writing": "target", "math": "target" },
+    "satSectionGoals": { "reading": "target", "math": "target" },
     "targetACTScore": "Target composite score",
     "actSectionGoals": { "english": "target", "math": "target", "reading": "target", "science": "target" },
     "prepStrategy": "Recommended preparation approach",
@@ -464,7 +464,7 @@ Generate a comprehensive analysis with the following structure in JSON format:
   },
   "satActGoals": {
     "targetSATScore": "Target composite score",
-    "satSectionGoals": { "reading": "target", "writing": "target", "math": "target" },
+    "satSectionGoals": { "reading": "target", "math": "target" },
     "targetACTScore": "Target composite score",
     "actSectionGoals": { "english": "target", "math": "target", "reading": "target", "science": "target" },
     "prepStrategy": "Recommended preparation approach",

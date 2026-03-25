@@ -488,6 +488,21 @@ export default function AgencyDashboard() {
     }
   }
 
+  const deleteCoupon = async (couponId: string, code: string) => {
+    if (!confirm(`Delete coupon "${code}"? This cannot be undone.`)) return
+    try {
+      const response = await fetch(`/api/admin/coupons?id=${couponId}`, { method: 'DELETE' })
+      if (response.ok) {
+        toast.success('Coupon deleted')
+        fetchData()
+      } else {
+        toast.error('Failed to delete coupon')
+      }
+    } catch {
+      toast.error('Failed to delete coupon')
+    }
+  }
+
   const toggleCouponStatus = async (couponId: string, currentStatus: boolean) => {
     try {
       const response = await fetch("/api/admin/coupons", {
@@ -1191,10 +1206,19 @@ export default function AgencyDashboard() {
                           <div className="p-3 rounded-2xl bg-amber-50 text-[#c9a227]">
                             <Ticket className="w-6 h-6" />
                           </div>
-                          <Switch
-                            checked={coupon.is_active}
-                            onCheckedChange={() => toggleCouponStatus(coupon.id, coupon.is_active)}
-                          />
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={coupon.is_active}
+                              onCheckedChange={() => toggleCouponStatus(coupon.id, coupon.is_active)}
+                            />
+                            <button
+                              onClick={() => deleteCoupon(coupon.id, coupon.code)}
+                              className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              title="Delete coupon"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                         <h3 className="text-2xl font-black text-[#0a192f] mb-1">{coupon.code}</h3>
                         <p className="text-[#5a7a9a] font-bold text-sm mb-6">

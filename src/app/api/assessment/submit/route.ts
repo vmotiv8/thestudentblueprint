@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     }
     // Try with phase_status, fall back without if column doesn't exist yet
     submitUpdate.phase_status = { phase1: 'pending', phase2: 'pending', phase3: 'pending', phase4: 'pending' }
-    let { error: saveErr } = await supabase.from('assessments').update(submitUpdate).eq('id', assessmentId)
+    const { error: saveErr } = await supabase.from('assessments').update(submitUpdate).eq('id', assessmentId)
     if (saveErr?.message?.includes('phase_status')) {
       delete submitUpdate.phase_status
       await supabase.from('assessments').update(submitUpdate).eq('id', assessmentId)

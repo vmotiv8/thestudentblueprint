@@ -12,12 +12,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
     }
 
-    // Extract fields manually to be more permissive than strict Zod validation
     const assessmentId = body.assessmentId as string | undefined
     const rawFormData = body.formData as Record<string, Record<string, unknown>> | undefined
     const currentSection = typeof body.currentSection === 'number' ? body.currentSection : null
     const couponCode = body.couponCode as string | undefined
     const organization_slug = body.organization_slug as string | undefined
+
+    console.log('[AssessmentSave] Request:', { assessmentId: assessmentId || 'new', section: currentSection, org_slug: organization_slug, hasFormData: !!rawFormData })
 
     if (!rawFormData || typeof rawFormData !== 'object') {
       console.error('[AssessmentSave] Missing or invalid formData:', { hasFormData: !!rawFormData, type: typeof rawFormData })
@@ -32,11 +33,13 @@ export async function POST(request: Request) {
       : await getDefaultOrganization()
 
     if (!organization) {
+      console.error('[AssessmentSave] Organization not found for slug:', organization_slug || '(default)')
       return NextResponse.json(
-        { error: 'Organization not found' },
+        { error: `Organization not found for: ${organization_slug || 'default'}` },
         { status: 400 }
       )
     }
+    console.log('[AssessmentSave] Resolved org:', { id: organization.id, slug: organization.slug })
 
     // Validate coupon if provided
     let validatedCoupon: { discount_type: string } | null = null
@@ -257,17 +260,18 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const err = error as { message?: string; code?: string; details?: string; hint?: string; stack?: string }
+    const errorMessage = err.message || (error instanceof Error ? error.message : JSON.stringify(error))
     console.error('[AssessmentSave] Error:', {
       message: errorMessage,
-      code: (error as { code?: string })?.code,
-      details: (error as { details?: string })?.details,
-      hint: (error as { hint?: string })?.hint,
-      stack: error instanceof Error ? error.stack : undefined,
+      code: err.code,
+      details: err.details,
+      hint: err.hint,
+      stack: err.stack || (error instanceof Error ? error.stack : undefined),
       timestamp: new Date().toISOString(),
     })
     return NextResponse.json(
-      { error: `Failed to save assessment: ${errorMessage}` },
+      { error: `Failed to save: ${errorMessage}` },
       { status: 500 }
     )
   }

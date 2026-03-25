@@ -83,34 +83,66 @@ IMPORTANT GUIDELINES:
 3. Tailor to the student's location and curriculum (${curriculum}).
 4. If school-specific resources are listed, PRIORITIZE those in recommendations.`
 
-    const SYSTEM = `You are an expert college admissions counselor specializing in Ivy League and Top 20 admissions with 15+ years of experience. Your recommendations MUST be specific, actionable, and prestigious. Respond ONLY with valid JSON, no additional text.`
+    const SYSTEM = `You are an elite college admissions strategist who has placed 500+ students into Harvard, Stanford, MIT, Yale, Princeton, and other Top 20 universities. You think at the level of a PhD advisor combined with a McKinsey consultant. Every recommendation must be SPECIFIC (name real programs, real professors, real competitions), ACTIONABLE (concrete next steps), and AMBITIOUS (push students beyond their comfort zone). Never give generic advice. Respond ONLY with valid JSON, no additional text.`
 
     console.log('[Submit] Starting multi-phase analysis for assessment', assessmentId)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allResults: Record<string, any> = {}
 
-    // ── PHASE 1: Core Analysis (archetype, scores, strengths, gaps, roadmap, essays) ──
+    // ── PHASE 1: Core Analysis ──────────────────────────────────────────
     const phase1 = await callClaude(`${SYSTEM}
 
-Analyze this student profile:
+Analyze this student profile and produce a brutally honest, deeply insightful analysis:
 
 ${studentContext}
 ${GUIDELINES}
 
-Generate JSON with these fields:
+Generate JSON:
 {
-  "studentArchetype": "Unique 2-3 word descriptor",
+  "studentArchetype": "A unique 2-3 word archetype (e.g., 'Analytical Entrepreneur', 'Creative Humanitarian', 'Scientific Visionary')",
   "archetypeScores": { "Visionary": 0-100, "Builder": 0-100, "Healer": 0-100, "Analyst": 0-100, "Artist": 0-100, "Advocate": 0-100, "Entrepreneur": 0-100, "Researcher": 0-100 },
-  "competitivenessScore": 0-100,
-  "strengthsAnalysis": { "competitiveAdvantages": ["3 items"], "uniqueDifferentiators": ["2-3 items"], "alignedActivities": ["items"] },
-  "gapAnalysis": { "missingElements": ["3-4 items"], "activitiesToDeepen": ["2-3 items"], "skillsToDevelope": ["3-4 items"] },
-  "roadmap": { "immediate": ["4-5 actions for next 3 months"], "shortTerm": ["4-5 goals for 3-6 months"], "mediumTerm": ["4-5 projects for 6-12 months"], "longTerm": ["4-5 items for 1+ years"] },
-  "gradeByGradeRoadmap": { "currentGrade": { "grade": "${currentGrade}", "focus": "string", "academics": ["3-4"], "extracurriculars": ["3-4"], "testing": ["2-3"], "leadership": ["2-3"], "summerPlan": "string" }, "nextYears": [{ same structure per year until graduation }] },
-  "essayBrainstorm": [{ "title": "5-8 words", "hook": "vivid opening sentence", "narrative": "3-4 sentence arc", "connectingThreads": ["3-5 profile elements"], "whyItWorks": "2-3 sentences" }]
+  "competitivenessScore": number 0-100 (be realistic — most students are 40-70, only nationally ranked students get 80+),
+  "strengthsAnalysis": {
+    "competitiveAdvantages": ["5-6 SPECIFIC advantages with concrete evidence from their profile — not generic. Reference their actual activities, grades, awards"],
+    "uniqueDifferentiators": ["3-4 things that make this student genuinely different from other applicants — what's their 'spike'?"],
+    "alignedActivities": ["4-5 current activities that directly support their college narrative"]
+  },
+  "gapAnalysis": {
+    "missingElements": ["5-6 SPECIFIC gaps — be brutally honest. What would an admissions officer flag? Reference what top admits typically have that this student lacks"],
+    "activitiesToDeepen": ["3-4 existing activities that need more depth/recognition/leadership — explain HOW to deepen each one"],
+    "skillsToDevelope": ["4-5 specific skills with WHY each matters for their target schools and career path"]
+  },
+  "roadmap": {
+    "immediate": ["6-8 highly specific actions for next 3 months — include deadlines, program names, specific steps. Each item should be 2-3 sentences"],
+    "shortTerm": ["6-8 detailed goals for 3-6 months with milestones"],
+    "mediumTerm": ["5-6 transformative projects/achievements for 6-12 months"],
+    "longTerm": ["5-6 trajectory items for 1+ years leading to college applications"]
+  },
+  "gradeByGradeRoadmap": {
+    "currentGrade": {
+      "grade": "${currentGrade}",
+      "focus": "2-3 sentence strategic focus for this year",
+      "academics": ["4-5 specific academic goals with course names"],
+      "extracurriculars": ["4-5 specific extracurricular milestones"],
+      "testing": ["3-4 testing milestones with target scores"],
+      "leadership": ["3-4 leadership positions to pursue"],
+      "summerPlan": "Detailed 3-4 sentence summer plan with specific programs"
+    },
+    "nextYears": [one entry per remaining year until 12th grade, same structure]
+  },
+  "essayBrainstorm": [
+    {
+      "title": "Compelling 5-8 word title",
+      "hook": "A vivid, cinematic opening sentence that drops the reader into a specific moment. Must reference a REAL detail from the student's life.",
+      "narrative": "4-5 sentence description of the full narrative arc — the specific moment, the tension/challenge, the turning point, and the insight that reveals character growth.",
+      "connectingThreads": ["4-5 specific elements from the student's profile this essay weaves together"],
+      "whyItWorks": "3-4 sentences on why Ivy admissions officers would be captivated — what character qualities emerge and why the structure is effective."
+    }
+  ]
 }
 
-Generate exactly 5 essay ideas. Each must connect 3+ aspects of the student's profile.`, 8000, 120000)
+CRITICAL: Generate exactly 5 essay ideas. Each MUST be deeply personal and connect 3+ profile elements. NO cliche topics (immigration stories, sports injuries, volunteer trips). Focus on specific, surprising moments.`, 10000, 120000)
 
     if (!phase1.success) {
       console.error('[Submit] Phase 1 failed:', phase1.error)
@@ -119,81 +151,162 @@ Generate exactly 5 essay ideas. Each must connect 3+ aspects of the student's pr
     Object.assign(allResults, phase1.data)
     console.log('[Submit] Phase 1 complete — archetype:', phase1.data.studentArchetype)
 
-    // Save Phase 1 immediately so student sees core results
     await savePartialResults(supabase, assessmentId, organization?.id, reanalyze, allResults, 'partial')
 
-    // ── PHASE 2: Academic & Testing Recommendations ─────────────────────
+    // ── PHASE 2: Academics, Testing, Colleges, Career ───────────────────
     const phase2 = await callClaude(`${SYSTEM}
 
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Score: ${allResults.competitivenessScore}/100)
+Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Competitiveness: ${allResults.competitivenessScore}/100)
 
 ${studentContext}
 ${GUIDELINES}
 
-Generate JSON with ONLY these fields:
+Generate DETAILED JSON:
 {
-  "academicCoursesRecommendations": { "apCourses": ["4-5 with reasoning"], "ibCourses": ["if applicable"], "honorsCourses": ["3-4"], "electivesRecommended": ["3-4"] },
-  "satActGoals": { "targetSATScore": "score", "satSectionGoals": { "reading": "", "writing": "", "math": "" }, "targetACTScore": "score", "actSectionGoals": { "english": "", "math": "", "reading": "", "science": "" }, "prepStrategy": "string", "timeline": "string" },
-  "collegeRecommendations": { "collegeBreakdown": { "reach": ["3"], "target": ["3"], "safety": ["3"] }, "schoolMatches": [{ "schoolName": "", "matchScore": 0-100, "why": "" }] },
-  "scholarshipRecommendations": { "scholarships": [{ "name": "", "organization": "", "amount": "", "deadline": "", "why": "", "url": "" }] },
-  "careerRecommendations": { "jobTitles": ["3"], "blueOceanIndustries": [{ "industry": "", "why": "" }], "salaryPotential": "", "linkedInBioHeadline": "" }
+  "academicCoursesRecommendations": {
+    "apCourses": ["6-8 specific AP courses, each with a 1-2 sentence explanation of WHY this course strengthens their application — e.g., 'AP Research: Essential for demonstrating independent scholarly work; aligns with your interest in biomedical engineering and lets you produce a publishable paper'"],
+    "ibCourses": ["If applicable, 4-5 IB courses with reasoning. If student is not IB, write: 'Not applicable — focus on AP pathway'"],
+    "honorsCourses": ["4-5 Honors courses that complement their AP choices"],
+    "electivesRecommended": ["4-5 strategic electives that differentiate — e.g., 'Multivariable Calculus (if your school offers it)' or 'Independent Study in Machine Learning with a faculty sponsor'"]
+  },
+  "satActGoals": {
+    "targetSATScore": "Specific target (e.g., '1520+')",
+    "satSectionGoals": { "reading": "specific target with strategy", "writing": "specific target", "math": "specific target" },
+    "targetACTScore": "Specific target (e.g., '35+')",
+    "actSectionGoals": { "english": "target", "math": "target", "reading": "target", "science": "target" },
+    "prepStrategy": "3-4 sentence detailed prep plan — name specific resources (Khan Academy, College Panda, Erica Meltzer, etc.), study schedule, practice test cadence",
+    "timeline": "Month-by-month testing timeline through senior year"
+  },
+  "collegeRecommendations": {
+    "collegeBreakdown": {
+      "reach": ["10 reach schools — include university name and 1-sentence reason it fits this student"],
+      "target": ["10 target schools with reasons"],
+      "safety": ["10 safety schools with reasons — these should still be good schools, not throwaway picks"]
+    },
+    "schoolMatches": [{"schoolName": "Full University Name", "matchScore": 0-100, "why": "2-3 sentence detailed explanation of fit — reference specific programs, professors, research labs, or campus culture elements"}]
+  },
+  "scholarshipRecommendations": {
+    "scholarships": [{"name": "Real Scholarship Name", "organization": "Granting Org", "amount": "Dollar amount or range", "deadline": "Typical deadline month", "why": "Why this student specifically qualifies", "url": "Real URL if known, or 'Search [scholarship name]'"}]
+  },
+  "careerRecommendations": {
+    "jobTitles": ["5 specific job titles that align with their interests and strengths — not just generic titles but specific roles (e.g., 'Product Manager at a Health-Tech Startup' not just 'Product Manager')"],
+    "blueOceanIndustries": [{"industry": "Emerging industry name", "why": "2-3 sentences on why this is a blue ocean opportunity for this student specifically"}],
+    "salaryPotential": "Realistic salary range with trajectory (entry → 5yr → 10yr)",
+    "linkedInBioHeadline": "Professional headline optimized for networking"
+  }
 }
 
-Generate at least 6 school matches and 4 scholarships.`, 8000, 50000)
+CRITICAL: Generate at least 12 schoolMatches with detailed why. Generate at least 6 scholarships with real names. Be specific — name real programs, real amounts, real deadlines.`, 12000, 60000)
 
     if (phase2.success) {
       Object.assign(allResults, phase2.data)
-      console.log('[Submit] Phase 2 complete — colleges, academics, testing')
+      console.log('[Submit] Phase 2 complete — colleges, academics, testing, career')
       await savePartialResults(supabase, assessmentId, organization?.id, reanalyze, allResults, 'partial')
     } else {
       console.error('[Submit] Phase 2 failed (non-fatal):', phase2.error)
     }
 
-    // ── PHASE 3: Activities & Leadership Recommendations ────────────────
+    // ── PHASE 3: Projects, Mentors, Research ────────────────────────────
     const phase3 = await callClaude(`${SYSTEM}
 
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Score: ${allResults.competitivenessScore}/100)
+Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Competitiveness: ${allResults.competitivenessScore}/100)
 
 ${studentContext}
 ${GUIDELINES}
 
-Generate JSON with ONLY these fields:
+Generate DETAILED JSON:
 {
-  "passionProjects": [{ "title": "", "description": "", "timeCommitment": "", "skillsDeveloped": ["3-4"], "applicationImpact": "", "resources": "", "implementationSteps": ["4-5"] }],
-  "leadershipRecommendations": { "clubLeadership": ["3-4"], "schoolWideRoles": ["2-3"], "communityLeadership": ["3-4"], "leadershipDevelopment": ["4-5"] },
-  "serviceCommunityRecommendations": { "localOpportunities": ["4-5"], "nationalPrograms": ["3-4"], "internationalService": ["2-3"], "sustainedCommitment": ["3-4"] },
-  "studentGovernmentRecommendations": { "schoolGovernment": ["3-4"], "districtStateRoles": ["2-3"], "youthGovernment": ["3-4"], "advocacyRoles": ["3-4"] },
-  "mentorRecommendations": { "mentors": [{ "name": "Dr. Name", "university": "", "department": "", "why": "" }] },
-  "wasteOfTimeActivities": { "activities": [{ "activity": "", "whyQuit": "" }] }
+  "passionProjects": [
+    {
+      "title": "Specific, compelling project title",
+      "description": "4-5 sentence detailed description. These should be AMBITIOUS — think PhD-level research questions, startup-worthy ideas, or projects that could win national competitions. Not basic school projects.",
+      "timeCommitment": "Specific hours per week and duration",
+      "skillsDeveloped": ["5-6 specific skills including both technical and soft skills"],
+      "applicationImpact": "3-4 sentences on how this project transforms their college application — which schools would love this, what narrative it builds",
+      "resources": "Specific resources — name tools, platforms, mentors, funding sources",
+      "implementationSteps": ["6-8 detailed step-by-step actions, each 1-2 sentences, with realistic timelines"]
+    }
+  ],
+  "researchPublicationsRecommendations": {
+    "researchTopics": ["5-7 SPECIFIC research topics at PhD level that haven't been fully explored but relate to the student's interests. Each should be 2-3 sentences describing the research question, methodology, and why it matters. Example: 'Investigating the correlation between social media algorithm exposure and adolescent decision-making using fMRI data — partner with a local university neuroscience lab'"],
+    "publicationOpportunities": ["5-6 REAL journals and conferences where a high school student can publish — name specific publications (e.g., 'Journal of Emerging Investigators', 'Regeneron ISEF', 'Concord Review for humanities')"],
+    "mentorshipSuggestions": ["4-5 specific strategies to find research mentors — include cold email templates, specific programs like RSI/PRIMES/Clark Scholars"],
+    "timeline": "Detailed 3-4 sentence research timeline from finding a mentor through publication"
+  },
+  "mentorRecommendations": {
+    "mentors": [
+      {
+        "name": "Real Professor Name (or 'Professor in [specific field]' if name unknown)",
+        "university": "Nearby or relevant university — PRIORITIZE local state schools and community colleges in the student's area for realistic access",
+        "department": "Specific department or lab",
+        "why": "3-4 sentences on why this mentor is perfect — reference their research interests, how they connect to the student's goals, and a specific approach strategy"
+      }
+    ]
+  },
+  "wasteOfTimeActivities": {
+    "activities": [{"activity": "Specific activity to stop or reduce", "whyQuit": "2-3 sentence honest explanation of why this doesn't help their application"}]
+  }
 }
 
-Generate at least 3 passion projects.`, 8000, 50000)
+CRITICAL: Generate 4-5 passion projects that are genuinely ambitious (startup-level, research-level, or competition-winning ideas). Generate 5+ research topics at PhD level. Generate 5+ mentor recommendations with specific professors from nearby universities.`, 10000, 60000)
 
     if (phase3.success) {
       Object.assign(allResults, phase3.data)
-      console.log('[Submit] Phase 3 complete — projects, leadership, mentors')
+      console.log('[Submit] Phase 3 complete — projects, research, mentors')
       await savePartialResults(supabase, assessmentId, organization?.id, reanalyze, allResults, 'partial')
     } else {
       console.error('[Submit] Phase 3 failed (non-fatal):', phase3.error)
     }
 
-    // ── PHASE 4: Extracurricular & Research Recommendations ─────────────
+    // ── PHASE 4: Activities, Competitions, Summer Programs ──────────────
     const phase4 = await callClaude(`${SYSTEM}
 
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Score: ${allResults.competitivenessScore}/100)
+Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Competitiveness: ${allResults.competitivenessScore}/100)
 
 ${studentContext}
 ${GUIDELINES}
 
-Generate JSON with ONLY these fields:
+Generate DETAILED JSON:
 {
-  "researchPublicationsRecommendations": { "researchTopics": ["4-5"], "publicationOpportunities": ["3-4"], "mentorshipSuggestions": ["3-4"], "timeline": "" },
-  "summerIvyProgramsRecommendations": { "preFreshmanPrograms": ["3-4"], "competitivePrograms": ["4-5"], "researchPrograms": ["4-5"], "enrichmentPrograms": ["3-4"] },
-  "sportsRecommendations": { "varsitySports": ["2-3"], "clubSports": ["2-3"], "recruitingStrategy": ["3-4"], "fitnessLeadership": ["2-3"] },
-  "competitionsRecommendations": { "academicCompetitions": ["5-6"], "businessCompetitions": ["4-5"], "artsCompetitions": ["4-5"], "debateSpeech": ["4-5"] },
-  "internshipsRecommendations": { "industryInternships": ["4-5"], "researchInternships": ["4-5"], "nonprofitInternships": ["3-4"], "virtualOpportunities": ["3-4"] },
-  "cultureArtsRecommendations": { "performingArts": ["3-4"], "visualArts": ["3-4"], "creativeWriting": ["4-5"], "culturalClubs": ["3-4"] }
-}`, 8000, 50000)
+  "summerIvyProgramsRecommendations": {
+    "preFreshmanPrograms": ["4-5 prestigious pre-college programs with full names, universities, selectivity level, and application deadlines"],
+    "competitivePrograms": ["5-6 highly selective summer programs (e.g., RSI, TASP, MITES, Clark Scholars, SSP) with acceptance rates and why this student should apply"],
+    "researchPrograms": ["5-6 summer research programs at universities with specific lab/department recommendations"],
+    "enrichmentPrograms": ["4-5 enrichment programs aligned with student's interests"]
+  },
+  "sportsRecommendations": {
+    "varsitySports": ["3-4 sports with specific strategic value for their application"],
+    "clubSports": ["3-4 club/travel team options"],
+    "recruitingStrategy": ["4-5 detailed recruiting tips if applicable"],
+    "fitnessLeadership": ["3-4 leadership opportunities through athletics"]
+  },
+  "competitionsRecommendations": {
+    "academicCompetitions": ["6-8 specific competitions with full names, websites, and difficulty level — e.g., 'USAMO (extremely competitive, for top 500 math students nationally)', 'Science Olympiad (accessible, great for teamwork narrative)'"],
+    "businessCompetitions": ["5-6 business/entrepreneurship competitions with names and deadlines"],
+    "artsCompetitions": ["5-6 arts competitions if relevant"],
+    "debateSpeech": ["5-6 debate/speech/Model UN competitions"]
+  },
+  "internshipsRecommendations": {
+    "industryInternships": ["5-6 specific internship opportunities — name companies, programs, or types of organizations to target in the student's area"],
+    "researchInternships": ["5-6 research internship programs with application details"],
+    "nonprofitInternships": ["4-5 nonprofit opportunities"],
+    "virtualOpportunities": ["4-5 remote internships or virtual programs"]
+  },
+  "serviceCommunityRecommendations": {
+    "localOpportunities": ["5-6 specific community service opportunities in the student's area"],
+    "nationalPrograms": ["4-5 national service programs"],
+    "internationalService": ["3-4 international volunteer opportunities"],
+    "sustainedCommitment": ["4-5 strategies for building a sustained service narrative with measurable impact"]
+  },
+  "cultureArtsRecommendations": {
+    "performingArts": ["4-5 opportunities"],
+    "visualArts": ["4-5 opportunities"],
+    "creativeWriting": ["5-6 publications and literary magazines that accept high school submissions"],
+    "culturalClubs": ["4-5 heritage/cultural organizations"]
+  }
+}
+
+Be SPECIFIC — name real programs, real competitions, real deadlines. Not generic categories.`, 12000, 60000)
 
     if (phase4.success) {
       Object.assign(allResults, phase4.data)

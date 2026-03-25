@@ -67,7 +67,7 @@ import {
 } from "recharts"
 
 const PHASE_1_TABS = new Set(['timeline', 'gaps', 'roadmap', 'essays'])
-const PHASE_2_TABS = new Set(['projects', 'research', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match', 'network', 'leadership'])
+const PHASE_2_TABS = new Set(['projects', 'research', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match', 'network'])
 
 interface Assessment {
   id: string
@@ -985,7 +985,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         { value: "college-match", icon: Building, label: "Colleges" },
                         { value: "network", icon: Users, label: "Network" },
                         { value: "roadmap", icon: Calendar, label: "Action" },
-                        { value: "leadership", icon: Flag, label: "Leadership" },
                         { value: "essays", icon: PenLine, label: "Essays" },
                       ].map(({ value, icon: Icon, label }) => (
                         <TabsTrigger key={value} value={value} className="brand-tab px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0 relative">

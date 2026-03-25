@@ -42,6 +42,7 @@ import {
     FlaskConical,
     Compass,
     DollarSign,
+    PenLine,
     Linkedin,
     Link2,
     XCircle,
@@ -790,6 +791,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         { value: "network", icon: Users, label: "Network" },
                         { value: "roadmap", icon: Calendar, label: "Action" },
                         { value: "leadership", icon: Flag, label: "Leadership" },
+                        { value: "essays", icon: PenLine, label: "Essays" },
                       ].map(({ value, icon: Icon, label }) => (
                         <TabsTrigger key={value} value={value} className="data-[state=active]:bg-[#1e3a5f] data-[state=active]:text-[#c9a227] px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold text-[#1e3a5f]/50 flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0">
                           <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
@@ -2152,6 +2154,66 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="essays" className="mt-6">
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-[#1e3a5f] to-[#c9a227] text-white rounded-xl p-4 sm:p-6 mb-6">
+                  <h3 className="text-lg sm:text-2xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    Personal Essay Brainstorm
+                  </h3>
+                  <p className="text-white/70 text-sm">Five compelling essay concepts that weave your unique experiences into an Ivy League-worthy narrative.</p>
+                </div>
+
+                {assessment.report_data?.essayBrainstorm && Array.isArray(assessment.report_data.essayBrainstorm) ? (
+                  assessment.report_data.essayBrainstorm.map((essay: { title: string; hook: string; narrative: string; connectingThreads: string[]; whyItWorks: string }, idx: number) => (
+                    <Card key={idx} className="border-[#e5e0d5] shadow-sm overflow-hidden">
+                      <div className="bg-[#1e3a5f] px-5 py-3 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#c9a227] flex items-center justify-center text-[#1e3a5f] font-bold text-sm">
+                          {idx + 1}
+                        </div>
+                        <h4 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "'Playfair Display', serif" }}>
+                          {essay.title}
+                        </h4>
+                      </div>
+                      <CardContent className="p-5 space-y-4">
+                        <div>
+                          <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider mb-1">Opening Hook</p>
+                          <p className="text-sm text-[#1e3a5f]/80 italic leading-relaxed">&ldquo;{essay.hook}&rdquo;</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider mb-1">Narrative Arc</p>
+                          <p className="text-sm text-[#1e3a5f]/70 leading-relaxed">{essay.narrative}</p>
+                        </div>
+                        {essay.connectingThreads && essay.connectingThreads.length > 0 && (
+                          <div>
+                            <p className="text-xs font-bold text-[#c9a227] uppercase tracking-wider mb-2">Connecting Threads</p>
+                            <div className="flex flex-wrap gap-2">
+                              {essay.connectingThreads.map((thread: string, tIdx: number) => (
+                                <span key={tIdx} className="px-3 py-1 bg-[#1e3a5f]/5 text-[#1e3a5f] text-xs font-medium rounded-full border border-[#1e3a5f]/10">
+                                  {thread}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="bg-[#faf8f3] rounded-lg p-4 border border-[#e5e0d5]">
+                          <p className="text-xs font-bold text-[#1e3a5f] uppercase tracking-wider mb-1">Why This Works for Top Schools</p>
+                          <p className="text-sm text-[#5a7a9a] leading-relaxed">{essay.whyItWorks}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <Card className="border-[#e5e0d5]">
+                    <CardContent className="p-8 text-center">
+                      <PenLine className="w-10 h-10 text-[#c9a227]/40 mx-auto mb-3" />
+                      <p className="text-[#5a7a9a] text-sm">Essay brainstorm ideas will appear here once your report is generated.</p>
+                      <p className="text-[#5a7a9a]/60 text-xs mt-1">Ask your counselor to regenerate the report to include essay ideas.</p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </TabsContent>
 

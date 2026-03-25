@@ -570,8 +570,19 @@ Generate a comprehensive analysis with the following structure in JSON format:
       { "activity": "Activity to stop", "whyQuit": "Reason why it doesn't align" }
     ]
   },
+  "essayBrainstorm": [
+    {
+      "title": "A compelling 5-8 word essay title",
+      "hook": "A vivid, specific opening sentence that immediately draws the reader in. Must reference a real moment from the student's life.",
+      "narrative": "A 3-4 sentence description of the essay's narrative arc — how it moves from the opening moment through a challenge or realization to a meaningful conclusion that reveals character growth.",
+      "connectingThreads": ["3-5 specific elements from the student's profile that this essay weaves together, e.g., 'robotics club', 'grandmother's immigration story', 'love of mathematics'"],
+      "whyItWorks": "2-3 sentences explaining why this essay would resonate with Ivy League admissions officers — what qualities it demonstrates and why the narrative structure is effective."
+    }
+  ],
   "competitivenessScore": number 0-100
 }
+
+IMPORTANT for essayBrainstorm: Generate exactly 5 essay ideas. Each must connect at least 3 different aspects of the student's profile (academics, extracurriculars, personal stories, family background, passions) into a cohesive narrative. Avoid cliche topics. Focus on specific, personal moments that reveal character.
 
 Respond ONLY with valid JSON, no additional text.`
 

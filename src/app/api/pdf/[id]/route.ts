@@ -1198,6 +1198,54 @@ The user assumes sole responsibility for any actions or decisions that are made 
 
       addSectionHeader('Recommended Next Steps')
 
+      // Essay Brainstorm Section
+      if (assessment.report_data?.essayBrainstorm && Array.isArray(assessment.report_data.essayBrainstorm)) {
+        addFooter()
+        pdf.addPage()
+        addPageHeader('Personal Essay Brainstorm')
+
+        addParagraph('Five compelling essay concepts that weave your unique experiences into an Ivy League-worthy narrative. Each idea connects multiple aspects of your profile into a cohesive story.')
+
+        assessment.report_data.essayBrainstorm.forEach((essay: { title: string; hook: string; narrative: string; connectingThreads?: string[]; whyItWorks: string }, idx: number) => {
+          addNewPageIfNeeded(80)
+
+          // Essay number + title
+          pdf.setFillColor(30, 58, 95)
+          pdf.roundedRect(margin, yPos, contentWidth, 12, 3, 3, 'F')
+          pdf.setTextColor(201, 162, 39)
+          pdf.setFontSize(12)
+          pdf.setFont('helvetica', 'bold')
+          pdf.text(`Essay ${idx + 1}: ${essay.title}`, margin + 8, yPos + 8)
+          yPos += 18
+
+          // Hook
+          addSubsectionHeader('Opening Hook', '#c9a227')
+          pdf.setTextColor(90, 122, 154)
+          pdf.setFontSize(10)
+          pdf.setFont('helvetica', 'italic')
+          const hookLines = pdf.splitTextToSize(`"${essay.hook}"`, contentWidth - 8)
+          addNewPageIfNeeded(hookLines.length * 5.5 + 10)
+          pdf.text(hookLines, margin + 4, yPos)
+          yPos += hookLines.length * 5.5 + 6
+
+          // Narrative
+          addSubsectionHeader('Narrative Arc', '#6366f1')
+          addParagraph(essay.narrative)
+
+          // Connecting threads
+          if (essay.connectingThreads && essay.connectingThreads.length > 0) {
+            addSubsectionHeader('Connecting Threads', '#10b981')
+            addBulletPoints(essay.connectingThreads)
+          }
+
+          // Why it works
+          addSubsectionHeader('Why This Works', '#1e3a5f')
+          addParagraph(essay.whyItWorks)
+
+          yPos += 8
+        })
+      }
+
       const nextSteps = [
         'Review this report thoroughly with your parents or guardians',
         'Prioritize 2-3 immediate action items from your roadmap',

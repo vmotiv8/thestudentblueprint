@@ -2242,30 +2242,49 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         </div>
                         {/* Render existing timeline content inline */}
                         {(() => {
-                          const roadmap = assessment.grade_by_grade_roadmap
-                          const allYears = [roadmap.currentGrade, ...(roadmap.nextYears || [])]
-                          return (
-                            <div className="space-y-4">
-                              {allYears.map((year, idx) => (
-                                <Card key={idx} className="border-[#e5e0d5]">
-                                  <CardHeader className="pb-2">
-                                    <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
-                                      <GraduationCap className="w-4 h-4 text-[#c9a227]" />
-                                      {year.grade} {idx === 0 && <Badge className="bg-[#c9a227]/10 text-[#c9a227] text-[10px]">Current</Badge>}
-                                    </CardTitle>
-                                    {year.focus && <p className="text-sm text-[#5a7a9a]">{year.focus}</p>}
-                                  </CardHeader>
-                                  <CardContent className="grid sm:grid-cols-2 gap-3 text-sm">
-                                    {year.academics?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Academics</p>{year.academics.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
-                                    {year.extracurriculars?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Extracurriculars</p>{year.extracurriculars.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
-                                    {year.testing?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Testing</p>{year.testing.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
-                                    {year.leadership?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Leadership</p>{year.leadership.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
-                                    {year.summerPlan && <div className="sm:col-span-2"><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Summer Plan</p><p className="text-[#5a7a9a] text-[13px]">{year.summerPlan}</p></div>}
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          )
+                          try {
+                            const roadmap = assessment.grade_by_grade_roadmap as Record<string, unknown> | undefined
+                            if (!roadmap) return null
+                            const currentGrade = (roadmap.currentGrade || roadmap.currentYear) as Record<string, unknown> | undefined
+                            const nextYears = Array.isArray(roadmap.nextYears) ? roadmap.nextYears as Record<string, unknown>[] : []
+                            const allYears = currentGrade ? [currentGrade, ...nextYears] : nextYears
+                            if (allYears.length === 0) return null
+                            return (
+                              <div className="space-y-4">
+                                {allYears.map((year: Record<string, unknown>, idx: number) => {
+                                  if (!year || typeof year !== 'object') return null
+                                  const grade = String(year.grade || year.year || `Year ${idx + 1}`)
+                                  const focus = year.focus ? String(year.focus) : null
+                                  const academics = Array.isArray(year.academics) ? year.academics : []
+                                  const extracurriculars = Array.isArray(year.extracurriculars) ? year.extracurriculars : []
+                                  const testing = Array.isArray(year.testing) ? year.testing : []
+                                  const leadership = Array.isArray(year.leadership) ? year.leadership : []
+                                  const summerPlan = year.summerPlan ? String(year.summerPlan) : null
+                                  return (
+                                    <Card key={idx} className="border-[#e5e0d5]">
+                                      <CardHeader className="pb-2">
+                                        <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                                          <GraduationCap className="w-4 h-4 text-[#c9a227]" />
+                                          {grade} {idx === 0 && <Badge className="bg-[#c9a227]/10 text-[#c9a227] text-[10px]">Current</Badge>}
+                                        </CardTitle>
+                                        {focus && <p className="text-sm text-[#5a7a9a]">{focus}</p>}
+                                      </CardHeader>
+                                      <CardContent className="grid sm:grid-cols-2 gap-3 text-sm">
+                                        {academics.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Academics</p>{academics.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
+                                        {extracurriculars.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Extracurriculars</p>{extracurriculars.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
+                                        {testing.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Testing</p>{testing.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
+                                        {leadership.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Leadership</p>{leadership.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
+                                        {summerPlan && <div className="sm:col-span-2"><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Summer Plan</p><p className="text-[#5a7a9a] text-[13px]">{summerPlan}</p></div>}
+                                      </CardContent>
+                                    </Card>
+                                  )
+                                })}
+                              </div>
+                            )
+                          } catch (e) {
+                            console.error('Timeline render error:', e)
+                            return null
+                          }
                         })()}
                       </div>
                     )}

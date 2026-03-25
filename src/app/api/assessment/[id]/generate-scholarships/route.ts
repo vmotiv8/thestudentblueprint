@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { GoogleGenAI } from '@google/genai'
 import Anthropic from '@anthropic-ai/sdk'
-import { buildStudentProfileContext, parseClaudeResponse } from '@/lib/assessment-prompts'
+import { buildStudentProfileContext } from '@/lib/assessment-prompts'
 import { fetchKnowledgeHubWithContent } from '@/lib/knowledge-hub-content'
 
 export const maxDuration = 120
@@ -86,33 +87,10 @@ Respond ONLY with valid JSON in this exact format:
   }
 }`
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
-    }
+    const result = await callGemini(prompt, 90000)
 
-    const client = new Anthropic({ apiKey })
-    const response = await Promise.race([
-      client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 8000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Scholarship generation timed out')), 90000)
-      ),
-    ])
-
-    const textBlock = response.content.find(block => block.type === 'text')
-    const content = textBlock?.text || ''
-
-    if (!content.trim()) {
-      return NextResponse.json({ error: 'Empty response from AI' }, { status: 503 })
-    }
-
-    const result = parseClaudeResponse(content, ['scholarshipRecommendations'])
     if (!result.success) {
-      return NextResponse.json({ error: 'Failed to parse scholarship results' }, { status: 503 })
+      return NextResponse.json({ error: result.error || 'AI analysis failed' }, { status: 503 })
     }
 
     const scholarships = result.data.scholarshipRecommendations
@@ -136,5 +114,78 @@ Respond ONLY with valid JSON in this exact format:
     console.error('[Scholarships] Error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+async function callGemini(
+  prompt: string,
+  timeoutMs: number,
+): Promise<{ success: true; data: Record<string, unknown> } | { success: false; error: string }> {
+  const geminiKey = process.env.GEMINI_API_KEY
+  if (geminiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: geminiKey })
+      const response = await Promise.race([
+        ai.models.generateContent({
+          model: 'gemini-2.5-flash-lite',
+          contents: prompt,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after ${timeoutMs / 1000}s`)), timeoutMs)
+        ),
+      ])
+
+      const content = response.text || ''
+      if (!content.trim()) {
+        console.error('[Scholarships/Gemini] Empty response')
+      } else {
+        const jsonMatch = content.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          try {
+            return { success: true, data: JSON.parse(jsonMatch[0]) }
+          } catch {
+            console.error('[Scholarships/Gemini] Bad JSON')
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[Scholarships/Gemini] Error:', err instanceof Error ? err.message : err)
+    }
+  }
+
+  // Fallback to Claude
+  const anthropicKey = process.env.ANTHROPIC_API_KEY
+  if (!anthropicKey) {
+    return { success: false, error: 'No AI service configured' }
+  }
+
+  try {
+    const client = new Anthropic({ apiKey: anthropicKey })
+    const response = await Promise.race([
+      client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 8000,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Claude timeout')), timeoutMs)
+      ),
+    ])
+
+    const textBlock = response.content.find(block => block.type === 'text')
+    const content = textBlock?.text || ''
+    if (!content.trim()) {
+      return { success: false, error: 'Empty response from AI' }
+    }
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      return { success: false, error: 'Non-JSON response from AI' }
+    }
+
+    return { success: true, data: JSON.parse(jsonMatch[0]) }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, error: msg }
   }
 }

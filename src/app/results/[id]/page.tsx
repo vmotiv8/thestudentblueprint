@@ -917,25 +917,90 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </p>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="bg-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm max-w-[220px]">
+                    <div className="bg-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm max-w-[280px]">
                       <div className="text-center">
                         <p className="text-white/60 text-xs sm:text-sm mb-1 uppercase tracking-wider">Comp. Score</p>
                         <div className="text-4xl sm:text-5xl font-bold" style={{ color: secondaryColor }}>{assessment.competitiveness_score ?? '--'}</div>
                         <p className="text-white/40 text-[10px] sm:text-xs mt-1">out of 100</p>
                       </div>
-                      <p className="text-white/50 text-[9px] sm:text-[10px] mt-3 leading-snug text-center">
-                        {(assessment.competitiveness_score ?? 0) >= 90
-                          ? "Exceptional \u2014 National/international-level achievements and near-perfect stats place you among the most competitive applicants."
-                          : (assessment.competitiveness_score ?? 0) >= 80
-                          ? "Very Competitive \u2014 Strong regional awards, high-impact leadership, and excellent academics make you a standout candidate."
-                          : (assessment.competitiveness_score ?? 0) >= 70
-                          ? "Competitive \u2014 Solid extracurriculars and good academics, but developing a national-level \"spike\" would strengthen your profile."
-                          : "Developing \u2014 Focus on building your narrative through meaningful extracurriculars, leadership roles, and academic growth."}
-                      </p>
+                      {(() => {
+                        const score = assessment.competitiveness_score ?? 0
+                        const tier = score >= 90
+                          ? { label: 'Exceptional', desc: 'National/international-level achievements and near-perfect stats place you among the top 1-2% of applicants.', example: 'Think: Intel ISEF finalist, published researcher, or national debate champion with a 1550+ SAT and 3.95+ GPA.' }
+                          : score >= 80
+                          ? { label: 'Very Competitive', desc: 'Strong regional awards, high-impact leadership, and excellent academics make you a standout candidate.', example: 'Think: State-level competition winner, club president with measurable impact, 1450+ SAT, and a clear "spike" forming.' }
+                          : score >= 70
+                          ? { label: 'Competitive', desc: 'Solid extracurriculars and good academics, but developing a national-level "spike" would strengthen your profile.', example: 'Think: Active in 3-4 clubs with some leadership, 1350+ SAT, good GPA, but lacking a standout achievement that makes admissions officers take notice.' }
+                          : { label: 'Developing', desc: 'Focus on building your narrative through meaningful extracurriculars, leadership roles, and academic growth.', example: 'Think: Involved in a few activities but no deep commitment or leadership yet. Academics are solid but testing and awards need attention.' }
+                        return (
+                          <div className="mt-3 text-center">
+                            <p className="text-white/70 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: secondaryColor }}>{tier.label}</p>
+                            <p className="text-white/50 text-[9px] sm:text-[10px] leading-snug mb-2">{tier.desc}</p>
+                            <p className="text-white/35 text-[8px] sm:text-[9px] leading-snug italic">{tier.example}</p>
+                          </div>
+                        )
+                      })()}
                     </div>
                   </div>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Competitiveness Score Breakdown */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6 sm:mb-8">
+              <Card className="border-[#e5e0d5]">
+                <CardHeader className="pb-2 p-4 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2" style={{ color: primaryColor }}>
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: secondaryColor }} />
+                    What Your Competitiveness Score Means
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">See where you stand compared to top applicants</CardDescription>
+                </CardHeader>
+                <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#e5e0d5]">
+                          <th className="text-left py-2 pr-3 text-xs font-semibold text-[#5a7a9a] uppercase tracking-wider">Score</th>
+                          <th className="text-left py-2 pr-3 text-xs font-semibold text-[#5a7a9a] uppercase tracking-wider">Tier</th>
+                          <th className="text-left py-2 text-xs font-semibold text-[#5a7a9a] uppercase tracking-wider">What This Looks Like</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { range: '90-100', label: 'Exceptional', color: '#10b981', example: 'Intel ISEF finalist, published researcher, or national debate champion with a 1550+ SAT and 3.95+ GPA. You have a clear "spike" and national/international recognition.' },
+                          { range: '80-89', label: 'Very Competitive', color: '#3b82f6', example: 'State-level competition winner, club president with measurable community impact, 1450+ SAT, and a clear narrative forming. Strong shot at T20 schools.' },
+                          { range: '70-79', label: 'Competitive', color: '#f59e0b', example: 'Active in 3-4 clubs with some leadership, 1350+ SAT, good GPA — but lacking a standout achievement that makes admissions officers take notice. Needs a "spike."' },
+                          { range: 'Below 70', label: 'Developing', color: '#ef4444', example: 'Involved in a few activities but no deep commitment or leadership yet. Academics are solid but testing and awards need attention. Time to build your story.' },
+                        ].map((tier) => {
+                          const isCurrentTier =
+                            (tier.range === '90-100' && (assessment.competitiveness_score ?? 0) >= 90) ||
+                            (tier.range === '80-89' && (assessment.competitiveness_score ?? 0) >= 80 && (assessment.competitiveness_score ?? 0) < 90) ||
+                            (tier.range === '70-79' && (assessment.competitiveness_score ?? 0) >= 70 && (assessment.competitiveness_score ?? 0) < 80) ||
+                            (tier.range === 'Below 70' && (assessment.competitiveness_score ?? 0) < 70)
+                          return (
+                            <tr key={tier.range} className={`border-b border-[#e5e0d5]/50 ${isCurrentTier ? 'bg-[#c9a227]/5' : ''}`}>
+                              <td className="py-3 pr-3 align-top">
+                                <span className="font-bold text-[#1e3a5f] text-sm whitespace-nowrap">{tier.range}</span>
+                              </td>
+                              <td className="py-3 pr-3 align-top">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: tier.color }} />
+                                  <span className="font-semibold text-[#1e3a5f] text-sm whitespace-nowrap">{tier.label}</span>
+                                  {isCurrentTier && <Badge className="text-[8px] px-1.5 py-0 ml-1" style={{ backgroundColor: `${secondaryColor}20`, color: secondaryColor }}>YOU</Badge>}
+                                </div>
+                              </td>
+                              <td className="py-3 align-top">
+                                <p className="text-[13px] text-[#5a7a9a] leading-snug">{tier.example}</p>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-12">

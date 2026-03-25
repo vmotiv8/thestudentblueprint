@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { GoogleGenAI } from '@google/genai'
 import Anthropic from '@anthropic-ai/sdk'
 import { webhookEvents } from '@/lib/organization/webhooks'
 import { buildResultsUrl } from '@/lib/url'
@@ -229,7 +230,6 @@ export async function POST(
   }
 }
 
-// Reuse the same Claude caller pattern from submit route
 interface CallClaudeSuccess {
   success: true
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -246,8 +246,37 @@ async function callClaude(
   timeoutMs: number,
   requiredFields: string[]
 ): Promise<CallClaudeSuccess | CallClaudeFailure> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  // Try Gemini first
+  const geminiKey = process.env.GEMINI_API_KEY
+  if (geminiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: geminiKey })
+      const response = await Promise.race([
+        ai.models.generateContent({
+          model: 'gemini-2.5-flash-lite',
+          contents: prompt,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Gemini timeout after ${timeoutMs / 1000}s`)), timeoutMs)
+        ),
+      ])
 
+      const content = response.text || ''
+      if (content.trim()) {
+        const result = parseClaudeResponse(content, requiredFields)
+        if (result.success) {
+          return { success: true, data: result.data }
+        }
+        console.error('[Phase2/Gemini] Parse failed:', result.error)
+      }
+    } catch (err) {
+      console.error('[Phase2/Gemini] Error:', err instanceof Error ? err.message : err)
+    }
+    console.warn('[Phase2] Gemini failed, falling back to Claude')
+  }
+
+  // Fallback to Claude
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return { success: false, error: 'AI analysis failed - no API key configured' }
   }

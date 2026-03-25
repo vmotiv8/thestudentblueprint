@@ -1076,7 +1076,7 @@ export default function AgencyDashboard() {
                                   <Eye className="w-4 h-4" />
                                 </Button>
                                 {(a.status === 'completed' || a.status === 'partial') && (
-                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:bg-gray-100 rounded-lg" title="View Results" onClick={() => router.push(`/results/${a.id}`)}>
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:bg-gray-100 rounded-lg" title="View Results" onClick={() => window.open(`/results/${a.id}`, '_blank')}>
                                     <FileText className="w-4 h-4" />
                                   </Button>
                                 )}
@@ -1843,7 +1843,7 @@ export default function AgencyDashboard() {
                     {/* Action Buttons */}
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-[#e5e0d5]">
                       {(a.status === 'completed' || a.status === 'partial') && (
-                        <Button size="sm" className="bg-[#1e3a5f] hover:bg-[#152a45] text-white" onClick={() => { setSelectedStudent(null); router.push(`/results/${a.id}`) }}>
+                        <Button size="sm" className="bg-[#1e3a5f] hover:bg-[#152a45] text-white" onClick={() => window.open(`/results/${a.id}`, '_blank')}>
                           <Eye className="w-3.5 h-3.5 mr-1.5" /> View Results
                         </Button>
                       )}

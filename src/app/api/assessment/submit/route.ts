@@ -9,11 +9,10 @@ import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 import {
   buildStudentProfileContext,
   sanitizeForPrompt,
-  parseClaudeResponse,
 } from '@/lib/assessment-prompts'
 
 // Allow up to 5 minutes for AI analysis
-export const maxDuration = 300
+export const maxDuration = 540
 
 export async function POST(request: Request) {
   try {
@@ -46,6 +45,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Payment required' }, { status: 402 })
       }
       formData = existing.responses
+      if (!formData || typeof formData !== 'object') {
+        return NextResponse.json({ error: 'Assessment has no saved responses' }, { status: 400 })
+      }
     } else if (!reanalyze) {
       const { data: paymentCheck } = await supabase.from('assessments').select('payment_status').eq('id', assessmentId).single()
       if (paymentCheck && paymentCheck.payment_status !== 'paid' && paymentCheck.payment_status !== 'free') {

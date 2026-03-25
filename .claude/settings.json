@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls /Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]/)"
+      "Bash(ls /Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]/)",
+      "Bash(grep -n \"\\) : \" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(grep -n \"Phase2Placeholder\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

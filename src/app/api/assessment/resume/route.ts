@@ -21,6 +21,7 @@ export async function POST(request: Request) {
         unique_code,
         assessments (
           id,
+          created_at,
           status,
           current_section,
           is_completed,
@@ -61,7 +62,9 @@ export async function POST(request: Request) {
       )
     }
 
-    const assessments = (student.assessments as unknown[]) || []
+    const assessments = ((student.assessments as unknown[]) || []).sort((a: any, b: any) =>
+      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    )
     // Prefer in-progress/partial assessment, then most recent
     const assessment = (
       assessments.find((a: unknown) => {

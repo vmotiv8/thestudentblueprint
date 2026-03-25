@@ -93,6 +93,7 @@ function AssessmentContent() {
   const [formData, setFormData] = useState(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
   const isSavingRef = useRef(false)
+  const formDataRef = useRef(formData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   const [uniqueCode, setUniqueCode] = useState<string | null>(null)
@@ -106,6 +107,8 @@ function AssessmentContent() {
   const [currentTestType, setCurrentTestType] = useState<"sat" | "act" | "psat" | null>(null)
   const [showLoadingScreen, setShowLoadingScreen] = useState(false)
   const [tenant, setTenant] = useState<any>(null)
+
+  useEffect(() => { formDataRef.current = formData }, [formData])
 
   // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
   const getOrgSlug = () => {
@@ -480,7 +483,8 @@ function AssessmentContent() {
   }
 
   const autoSave = useCallback(async (sectionOverride?: number) => {
-    if (!formData.basicInfo.fullName || !formData.basicInfo.email) return
+    const currentFormData = formDataRef.current
+    if (!currentFormData.basicInfo.fullName || !currentFormData.basicInfo.email) return
     if (isSavingRef.current) return
     isSavingRef.current = true
 
@@ -493,7 +497,7 @@ function AssessmentContent() {
         body: JSON.stringify({
           assessmentId,
           currentSection: sectionOverride ?? currentSection,
-          formData,
+          formData: currentFormData,
           couponCode,
           organization_slug: tenant?.slug
         })
@@ -516,12 +520,12 @@ function AssessmentContent() {
       isSavingRef.current = false
       setIsSaving(false)
     }
-  }, [assessmentId, currentSection, formData, tenant])
+  }, [assessmentId, currentSection, tenant])
 
   useEffect(() => {
     const timer = setTimeout(autoSave, 30000)
     return () => clearTimeout(timer)
-  }, [formData, autoSave])
+  }, [autoSave])
 
   const validateSection = (section: number): boolean => {
     const errors: Record<string, string> = {}

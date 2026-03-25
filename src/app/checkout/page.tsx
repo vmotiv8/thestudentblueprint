@@ -28,6 +28,8 @@ export default function CheckoutPage() {
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [couponCode, setCouponCode] = useState("")
+  const [resumeCode, setResumeCode] = useState("")
+  const [isResuming, setIsResuming] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
   const [isCheckingPayment, setIsCheckingPayment] = useState(true)
@@ -135,6 +137,33 @@ export default function CheckoutPage() {
       console.error("Payment error:", error)
       toast.error("Failed to initiate payment. Please try again.")
       setIsProcessing(false)
+    }
+  }
+
+  const handleResume = async () => {
+    if (!resumeCode.trim()) {
+      toast.error("Please enter your resume code")
+      return
+    }
+    setIsResuming(true)
+    try {
+      const response = await fetch("/api/assessment/resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: resumeCode.trim().toUpperCase() })
+      })
+      const data = await response.json()
+      if (data.success && data.assessment) {
+        sessionStorage.setItem("resumeAssessment", JSON.stringify(data))
+        const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}&resume=${data.assessment.id}` : `?resume=${data.assessment.id}`
+        router.push(`/assessment${orgParam}`)
+      } else {
+        toast.error(data.error || "Invalid resume code. Please check and try again.")
+      }
+    } catch {
+      toast.error("Failed to resume. Please try again.")
+    } finally {
+      setIsResuming(false)
     }
   }
 
@@ -304,6 +333,37 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                 <div className="flex items-center gap-2 text-xs text-[#5a7a9a] justify-center pt-2">
                   <Shield className="w-3.5 h-3.5" />
                   <span>Your information is private and secure</span>
+                </div>
+
+                <div className="relative pt-4">
+                  <div className="absolute inset-0 flex items-center pt-4">
+                    <span className="w-full border-t border-[#e5e0d5]" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-white px-3 text-[#5a7a9a]">or</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <Label style={{ color: primaryColor }}>Already started? Enter your resume code</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="e.g. K7PH3N"
+                      value={resumeCode}
+                      onChange={(e) => setResumeCode(e.target.value.toUpperCase())}
+                      className="border-[#e5e0d5] h-11 font-mono uppercase tracking-wider"
+                      maxLength={10}
+                    />
+                    <Button
+                      onClick={handleResume}
+                      disabled={isResuming}
+                      variant="outline"
+                      className="h-11 px-5 shrink-0"
+                      style={{ borderColor: primaryColor, color: primaryColor }}
+                    >
+                      {isResuming ? <Loader2 className="w-4 h-4 animate-spin" /> : "Resume"}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -97,7 +97,7 @@ export function buildOrgUrl(
  * Build a URL for an organization's assessment
  */
 export function buildOrgAssessmentUrl(orgSlug: string, path?: string, orgDomain?: string | null, freeAssessments?: boolean): string {
-  const assessmentPath = path || (freeAssessments ? 'assessment' : 'checkout')
+  const assessmentPath = path || 'checkout'
   if (orgDomain) {
     const cleanPath = assessmentPath.startsWith('/') ? assessmentPath : `/${assessmentPath}`
     return `https://${orgDomain}${cleanPath}`

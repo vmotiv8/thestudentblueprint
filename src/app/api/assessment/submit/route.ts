@@ -92,7 +92,7 @@ IMPORTANT GUIDELINES:
     const allResults: Record<string, any> = {}
 
     // ── PHASE 1: Core Analysis ──────────────────────────────────────────
-    const phase1 = await callClaude(`${SYSTEM}
+    const phase1 = await callGemini(`${SYSTEM}
 
 Analyze this student profile and produce a brutally honest, deeply insightful analysis:
 

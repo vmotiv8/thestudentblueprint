@@ -531,52 +531,72 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     return short
   })()
 
-    const Phase2Placeholder = () => (
-      <div className="text-center py-16 sm:py-20">
-        {retryingPhase2 || (isPhase2Loading && !phase2RetryAvailable) ? (
-          <>
-            <Loader2 className="w-8 h-8 animate-spin text-[#c9a227] mx-auto mb-3" />
-            <p className="text-[#5a7a9a] font-medium">
-              Generating your personalized recommendations...
-            </p>
-            <p className="text-sm text-[#5a7a9a]/60 mt-1">
-              This usually takes 1-2 minutes
-            </p>
-          </>
-        ) : phase2RetryAvailable ? (
-          <>
-            <AlertCircle className="w-8 h-8 text-[#c9a227] mx-auto mb-3" />
-            <p className="text-[#5a7a9a] font-medium mb-1">
-              Detailed recommendations are still being generated
-            </p>
-            <p className="text-sm text-[#5a7a9a]/60 mb-4">
-              This is taking longer than usual. You can retry or check back in a few minutes.
-            </p>
-            <Button
-              onClick={handleRetryPhase2}
-              disabled={retryingPhase2}
-              className="bg-[#1e3a5f] hover:bg-[#152a45] text-white"
-            >
-              {retryingPhase2 ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
-              ) : (
-                'Generate Recommendations'
-              )}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Clock className="w-8 h-8 text-[#c9a227] mx-auto mb-3" />
-            <p className="text-[#5a7a9a] font-medium">
-              We&apos;re still generating your personalized results...
-            </p>
-            <p className="text-sm text-[#5a7a9a]/60 mt-1">
-              Check again in a few minutes.
-            </p>
-          </>
-        )}
-      </div>
-    )
+    // Map each tab to its generation phase and conservative time estimate
+    const tabWaitTimes: Record<string, { phase: number; estimate: string }> = {
+      'academics': { phase: 2, estimate: '~3-5 minutes' },
+      'testing': { phase: 2, estimate: '~3-5 minutes' },
+      'college-match': { phase: 2, estimate: '~3-5 minutes' },
+      'scholarships': { phase: 2, estimate: '~3-5 minutes' },
+      'career-future': { phase: 2, estimate: '~3-5 minutes' },
+      'projects': { phase: 3, estimate: '~5-7 minutes' },
+      'leadership': { phase: 3, estimate: '~5-7 minutes' },
+      'network': { phase: 3, estimate: '~5-7 minutes' },
+      'research': { phase: 4, estimate: '~7-10 minutes' },
+      'activities': { phase: 4, estimate: '~7-10 minutes' },
+    }
+
+    const Phase2Placeholder = ({ tabKey }: { tabKey?: string }) => {
+      const waitInfo = tabKey ? tabWaitTimes[tabKey] : null
+      const estimate = waitInfo?.estimate || '~5-10 minutes'
+
+      return (
+        <div className="text-center py-16 sm:py-20">
+          {retryingPhase2 || (isPhase2Loading && !phase2RetryAvailable) ? (
+            <>
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: secondaryColor }} />
+              <p className="text-[#5a7a9a] font-medium">
+                Generating your personalized recommendations...
+              </p>
+              <p className="text-sm text-[#5a7a9a]/60 mt-1">
+                Estimated wait: {estimate} from submission
+              </p>
+            </>
+          ) : phase2RetryAvailable ? (
+            <>
+              <AlertCircle className="w-8 h-8 mx-auto mb-3" style={{ color: secondaryColor }} />
+              <p className="text-[#5a7a9a] font-medium mb-1">
+                Detailed recommendations are still being generated
+              </p>
+              <p className="text-sm text-[#5a7a9a]/60 mb-4">
+                This is taking longer than expected. You can retry or check back in a few minutes.
+              </p>
+              <Button
+                onClick={handleRetryPhase2}
+                disabled={retryingPhase2}
+                style={{ backgroundColor: primaryColor }}
+                className="text-white hover:opacity-90"
+              >
+                {retryingPhase2 ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                ) : (
+                  'Generate Recommendations'
+                )}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Clock className="w-8 h-8 mx-auto mb-3" style={{ color: secondaryColor }} />
+              <p className="text-[#5a7a9a] font-medium">
+                We&apos;re still generating your personalized results...
+              </p>
+              <p className="text-sm text-[#5a7a9a]/60 mt-1">
+                Estimated wait: {estimate} from submission. This page updates automatically.
+              </p>
+            </>
+          )}
+        </div>
+      )
+    }
 
     const RecommendationCard = ({
       title,
@@ -653,6 +673,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="min-h-screen bg-[#faf8f3] overflow-x-hidden">
+      <style>{`
+        [data-state=active].brand-tab { background-color: ${primaryColor} !important; color: ${secondaryColor} !important; }
+        .brand-tab { color: ${primaryColor}80; }
+        .brand-pulse { background-color: ${secondaryColor}; }
+      `}</style>
         <nav className="text-white border-b border-white/10 sticky top-0 z-50 shadow-xl backdrop-blur-md w-full" style={{ backgroundColor: primaryColor }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
             <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group transition-transform hover:scale-[1.02] active:scale-[0.98] min-w-0">
@@ -770,8 +795,8 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           <Radar
                             name="Score"
                             dataKey="score"
-                            stroke="#1e3a5f"
-                            fill="#c9a227"
+                            stroke={primaryColor}
+                            fill={secondaryColor}
                             fillOpacity={0.5}
                           />
                         </RadarChart>
@@ -932,13 +957,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-6 bg-gradient-to-r from-[#1e3a5f]/5 to-[#c9a227]/5 border border-[#c9a227]/20 rounded-xl p-4 flex items-center gap-3"
                   >
-                    <Loader2 className="w-5 h-5 animate-spin text-[#c9a227] flex-shrink-0" />
+                    <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" style={{ color: secondaryColor }} />
                     <div>
-                      <p className="text-sm font-medium text-[#1e3a5f]">
+                      <p className="text-sm font-medium" style={{ color: primaryColor }}>
                         Generating detailed recommendations...
                       </p>
                       <p className="text-xs text-[#5a7a9a]">
-                        Your core analysis is ready below. Detailed tabs will unlock automatically in 1-2 minutes.
+                        Your core analysis is ready below. Remaining tabs will unlock automatically over the next 5-10 minutes.
                       </p>
                     </div>
                   </motion.div>
@@ -963,7 +988,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         { value: "leadership", icon: Flag, label: "Leadership" },
                         { value: "essays", icon: PenLine, label: "Essays" },
                       ].map(({ value, icon: Icon, label }) => (
-                        <TabsTrigger key={value} value={value} className="data-[state=active]:bg-[#1e3a5f] data-[state=active]:text-[#c9a227] px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold text-[#1e3a5f]/50 flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0 relative">
+                        <TabsTrigger key={value} value={value} className="brand-tab px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0 relative">
                           <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                           <span className="text-[7px] sm:text-[10px] uppercase tracking-tight leading-tight truncate w-full text-center">{label}</span>
                           {isPhase2Loading && PHASE_2_TABS.has(value) && (
@@ -1175,7 +1200,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
                 <TabsContent value="projects" className="mt-6">
-                  {!assessment.passion_projects && isPhase2Loading ? <Phase2Placeholder /> : assessment.passion_projects && assessment.passion_projects.length > 0 ? (
+                  {!assessment.passion_projects && isPhase2Loading ? <Phase2Placeholder tabKey="projects" /> : assessment.passion_projects && assessment.passion_projects.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                       {assessment.passion_projects.map((project, index) => (
                         <motion.div
@@ -1274,7 +1299,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </TabsContent>
 
             <TabsContent value="research" className="mt-6">
-              {!assessment.research_publications_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="grid md:grid-cols-2 gap-6">
+              {!assessment.research_publications_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="research" /> : <div className="grid md:grid-cols-2 gap-6">
                 {/* Research Topics - Left Column */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
@@ -1356,7 +1381,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
                 <TabsContent value="career-future" className="mt-6">
-                  {!assessment.career_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
+                  {!assessment.career_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="career-future" /> : <div className="space-y-6">
                     <Card className="border-[#e5e0d5] bg-[#1e3a5f] text-white overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-10">
                         <Linkedin className="w-24 h-24" />
@@ -1435,7 +1460,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </TabsContent>
 
             <TabsContent value="academics" className="mt-6">
-              {!assessment.academic_courses_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="grid md:grid-cols-2 gap-5">
+              {!assessment.academic_courses_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="academics" /> : <div className="grid md:grid-cols-2 gap-5">
                 {[
                   { title: "AP Courses", icon: BookOpen, items: assessment.academic_courses_recommendations?.apCourses, color: "#6366f1", accent: "bg-indigo-50" },
                   { title: "IB Courses", icon: GraduationCap, items: assessment.academic_courses_recommendations?.ibCourses, color: "#8b5cf6", accent: "bg-violet-50" },
@@ -1506,7 +1531,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
             <TabsContent value="testing" className="mt-6">
-              {!assessment.sat_act_goals && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
+              {!assessment.sat_act_goals && isPhase2Loading ? <Phase2Placeholder tabKey="testing" /> : <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* SAT Goals */}
                   <Card className="border-[#e5e0d5]">
@@ -1711,7 +1736,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
             <TabsContent value="scholarships" className="mt-6">
-              {!assessment.scholarship_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
+              {!assessment.scholarship_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="scholarships" /> : <div className="space-y-6">
                 <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
                   <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
                     Scholarship Opportunities
@@ -1772,7 +1797,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
             <TabsContent value="activities" className="mt-6">
-              {!assessment.competitions_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-8">
+              {!assessment.competitions_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="activities" /> : <div className="space-y-8">
                 <div>
                   <h3 className="text-lg font-semibold text-[#1e3a5f] mb-4 flex items-center gap-2">
                     <Sun className="w-5 h-5 text-[#f59e0b]" />
@@ -1974,7 +1999,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
                 <TabsContent value="college-match" className="mt-6">
-                  {!assessment.college_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
+                  {!assessment.college_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="college-match" /> : <div className="space-y-6">
                     <div className="grid md:grid-cols-3 gap-6">
                       <Card className="border-[#e5e0d5]">
                         <CardHeader>
@@ -2059,7 +2084,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </TabsContent>
 
                     <TabsContent value="network" className="mt-6">
-                      {!assessment.mentor_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-4 sm:space-y-6">
+                      {!assessment.mentor_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="network" /> : <div className="space-y-4 sm:space-y-6">
                         <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-4 sm:p-8 rounded-xl sm:rounded-2xl text-white">
                           <h3 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                             Strategic Network Targets
@@ -2250,7 +2275,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </TabsContent>
 
             <TabsContent value="leadership" className="mt-6">
-              {!assessment.leadership_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="grid md:grid-cols-2 gap-6">
+              {!assessment.leadership_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="leadership" /> : <div className="grid md:grid-cols-2 gap-6">
                 <RecommendationCard
                   title="Club Leadership"
                   icon={Users}
@@ -2396,26 +2421,22 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-gradient-to-br from-[#1e3a5f] to-[#152a45] rounded-3xl p-8 md:p-12 text-center"
+            className="rounded-3xl p-8 md:p-12 text-center"
+            style={{ background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColor}dd)` }}
           >
             <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Ready to Start Your Journey?
+              Your Personalized Roadmap
             </h2>
             <p className="text-white/70 mb-8 max-w-2xl mx-auto">
-              Connect with our expert tutors and counselors to put your personalized roadmap into action.
+              Download your full report to keep your roadmap handy and share with your counselor.
             </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="https://thestudentblueprint.com/schedule" target="_blank">
-                  <Button size="lg" className="bg-[#c9a227] hover:bg-[#b8921f] text-[#1e3a5f] font-semibold">
-                    Schedule Consultation
-                  </Button>
-                </Link>
                 <Button
                   size="lg"
-                  className="bg-white text-[#1e3a5f] hover:bg-gray-100 font-semibold border-2 border-white"
+                  className="font-semibold border-2 border-white"
+                  style={{ backgroundColor: 'white', color: primaryColor }}
                   onClick={handleDownloadPDF}
                   disabled={downloading || assessment?.status !== 'completed'}
-                  style={{ opacity: assessment?.status !== 'completed' ? 0.5 : 1 }}
                 >
                   {downloading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

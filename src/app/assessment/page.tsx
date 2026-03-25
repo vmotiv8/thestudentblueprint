@@ -3215,13 +3215,13 @@ function AssessmentContent() {
                 <Loader2 className="w-16 h-16 animate-spin text-[#c9a227] mx-auto" />
               </div>
               <h2 className="text-2xl font-bold text-[#1e3a5f] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Analyzing Your Profile
+                Generating Your Report
               </h2>
               <p className="text-[#5a7a9a] mb-2">
-                Generating your core analysis... You&apos;ll be redirected to your results in about a minute.
+                Please stay on this page. Your personalized roadmap will be ready in 3-5 minutes.
               </p>
               <p className="text-sm text-[#5a7a9a]/70">
-                Your detailed recommendations will continue generating in the background and will appear automatically.
+                Our AI is running 4 rounds of analysis on your profile — core analysis, academic planning, leadership strategy, and extracurricular mapping.
               </p>
             </CardContent>
           </Card>

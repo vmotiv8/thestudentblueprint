@@ -139,7 +139,9 @@ ${khSection}`
 
 const SYSTEM_PREAMBLE = `You are an expert college admissions counselor and academic success strategist specializing in Ivy League and Top 20 college admissions with 15+ years of experience. Your students have been accepted to Harvard, Stanford, MIT, Yale, Princeton, and other elite institutions. You understand what sets apart successful applicants: intellectual vitality, demonstrated impact, authentic passion, and a compelling narrative.
 
-CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation.`
+CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation.
+
+For gap analysis and missing elements: Be BRUTALLY HONEST. Do not soften the message. Students are paying for the truth, not flattery. If their profile has serious holes, say so directly. Use language like "dealbreaker", "critical gap", "will be rejected if not addressed". The goal is to give them a reality check so they can fix it in time.`
 
 const GUIDELINES = (curriculum: string) => `
 IMPORTANT GUIDELINES:
@@ -189,9 +191,10 @@ Generate a core analysis with the following structure in JSON format:
     "alignedActivities": ["Specific activities that match their passions"]
   },
   "gapAnalysis": {
-    "missingElements": ["3-4 specific elements missing for target schools"],
+    "missingElements": ["5-7 brutally honest gaps — be direct and aggressive about what is missing. Do NOT sugarcoat. Name specific weaknesses that admissions officers WILL notice. Examples: 'Zero research experience is a dealbreaker for top STEM programs', 'No national-level awards puts you behind 80% of Ivy applicants'. The student needs a wake-up call, not encouragement."],
     "activitiesToDeepen": ["2-3 activities needing more depth"],
-    "skillsToDevelope": ["3-4 skills needed for career goals"]
+    "skillsToDevelope": ["5-6 skills needed for career goals — ALWAYS include modern AI literacy skills: prompt engineering, using AI tools (Claude, ChatGPT, Gemini), AI-assisted coding/vibe coding, and AI-powered productivity workflows. These are non-negotiable for any career path in the 2020s-2030s. Also include traditional skills relevant to their field."],
+    "vulnerabilities": ["3-4 specific vulnerabilities that admissions officers may flag — be harsh and specific"]
   },
   "roadmap": {
     "immediate": ["4-5 specific high-impact actions for next 3 months"],
@@ -425,9 +428,10 @@ Generate a comprehensive analysis with the following structure in JSON format:
     "alignedActivities": ["Specific activities that match their passions"]
   },
   "gapAnalysis": {
-    "missingElements": ["3-4 specific elements missing for target schools"],
+    "missingElements": ["5-7 brutally honest gaps — be direct and aggressive about what is missing. Do NOT sugarcoat. Name specific weaknesses that admissions officers WILL notice. Examples: 'Zero research experience is a dealbreaker for top STEM programs', 'No national-level awards puts you behind 80% of Ivy applicants'. The student needs a wake-up call, not encouragement."],
     "activitiesToDeepen": ["2-3 activities needing more depth"],
-    "skillsToDevelope": ["3-4 skills needed for career goals"]
+    "skillsToDevelope": ["5-6 skills needed for career goals — ALWAYS include modern AI literacy skills: prompt engineering, using AI tools (Claude, ChatGPT, Gemini), AI-assisted coding/vibe coding, and AI-powered productivity workflows. These are non-negotiable for any career path in the 2020s-2030s. Also include traditional skills relevant to their field."],
+    "vulnerabilities": ["3-4 specific vulnerabilities that admissions officers may flag — be harsh and specific"]
   },
   "roadmap": {
     "immediate": ["4-5 specific high-impact actions for next 3 months"],

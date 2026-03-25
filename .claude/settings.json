@@ -17,7 +17,11 @@
       "Bash(grep -n \"summer_ivy_programs_recommendations\\\\|sports_recommendations\\\\|competitions_recommendations\\\\|service_community_recommendations\\\\|internships_recommendations\\\\|culture_arts_recommendations\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
       "Bash(grep -n \"select.*summer_ivy\\\\|select.*sports_recommendations\\\\|select.*competitions_recommendations\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
       "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/supabase -type f -name *.sql)",
-      "Bash(grep -l \"summer_ivy\\\\|sports_recommendations\\\\|competitions_recommendations\\\\|culture_arts\" /Users/vish/Documents/Platforms/thestudentblueprint/migrations/*.sql)"
+      "Bash(grep -l \"summer_ivy\\\\|sports_recommendations\\\\|competitions_recommendations\\\\|culture_arts\" /Users/vish/Documents/Platforms/thestudentblueprint/migrations/*.sql)",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint -type f \\\\\\(-name *.sql -o -name *schema* -o -name *migration* \\\\\\))",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/src -type f -name *supabase* -o -name *client*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/src -type f -name *tenant* -o -name *resolv*)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

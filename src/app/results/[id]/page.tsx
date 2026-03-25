@@ -640,6 +640,47 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       return []
     }
 
+    const ScholarshipGenerator = ({ assessmentId, onGenerated }: { assessmentId: string, onGenerated: (data: any) => void }) => {
+      const [generating, setGenerating] = useState(false)
+      const [error, setError] = useState('')
+
+      const handleGenerate = async () => {
+        setGenerating(true)
+        setError('')
+        try {
+          const res = await fetch(`/api/assessment/${assessmentId}/generate-scholarships`, { method: 'POST' })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'Failed to generate scholarships')
+          onGenerated(data.scholarships || data)
+        } catch (e) {
+          setError(e instanceof Error ? e.message : 'Something went wrong')
+        } finally {
+          setGenerating(false)
+        }
+      }
+
+      return (
+        <div className="text-center py-16 px-6">
+          <DollarSign className="w-10 h-10 text-[#c9a227]/40 mx-auto mb-3" />
+          <p className="text-[#1e3a5f] font-medium mb-1">Scholarship recommendations not yet generated</p>
+          <p className="text-sm text-[#5a7a9a]/70 mb-5">Generate 20 personalized scholarship matches based on your profile.</p>
+          <Button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="text-white px-6 py-2.5"
+            style={{ backgroundColor: generating ? '#5a7a9a' : '#c9a227' }}
+          >
+            {generating ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating Scholarships...</>
+            ) : (
+              <><Sparkles className="w-4 h-4 mr-2" /> Generate Scholarships</>
+            )}
+          </Button>
+          {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
+        </div>
+      )
+    }
+
     const RecommendationCard = ({
       title,
       icon: Icon,
@@ -1853,55 +1894,56 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     Scholarship Opportunities
                   </h3>
                   <p className="text-white/70 text-sm">
-                    Curated scholarships matched to your profile, interests, and background. Regenerate your report to get the latest personalized recommendations.
+                    Curated scholarships matched to your profile, interests, and background.
                   </p>
                 </div>
                 {(() => {
                   const scholarships = assessment.scholarship_recommendations?.scholarships
-                  if (!Array.isArray(scholarships) || scholarships.length === 0) {
-                    return (
-                      <div className="text-center py-16 px-6">
-                        <DollarSign className="w-10 h-10 text-[#5a7a9a]/30 mx-auto mb-3" />
-                        <p className="text-[#5a7a9a] font-medium mb-1">Scholarship recommendations not yet generated</p>
-                        <p className="text-sm text-[#5a7a9a]/70">Regenerate your report to receive 20 personalized scholarship matches.</p>
-                      </div>
-                    )
-                  }
+                  const hasScholarships = Array.isArray(scholarships) && scholarships.length > 0
                   return (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {scholarships.map((s: any, i: number) => (
-                        <Card key={i} className="border-[#e5e0d5] hover:border-[#c9a227] transition-colors group flex flex-col">
-                          <CardContent className="p-4 flex flex-col flex-1">
-                            <div className="flex items-start gap-3 mb-3">
-                              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#c9a227]/10 text-[#c9a227] text-xs font-bold shrink-0">{i + 1}</span>
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-[#1e3a5f] leading-snug">{String(s.name || '')}</p>
-                                {s.organization && <p className="text-xs text-[#5a7a9a] mt-0.5">{String(s.organization)}</p>}
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              {s.amount && (
-                                <Badge className="bg-[#10b981]/10 text-[#10b981] border-0 text-xs font-semibold">{String(s.amount)}</Badge>
-                              )}
-                              {s.deadline && (
-                                <Badge variant="outline" className="text-[#5a7a9a] border-[#e5e0d5] text-xs">{String(s.deadline)}</Badge>
-                              )}
-                            </div>
-                            <p className="text-xs text-[#5a7a9a] leading-relaxed mb-3 flex-1 line-clamp-3">{String(s.why || s.description || '')}</p>
-                            {s.url && (
-                              <a
-                                href={String(s.url)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#c9a227] hover:text-[#b08a1f] transition-colors mt-auto"
-                              >
-                                Apply Now <ArrowRight className="w-3 h-3" />
-                              </a>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    <>
+                      {!hasScholarships && (
+                        <ScholarshipGenerator assessmentId={assessment.id} onGenerated={(data) => {
+                          setAssessment(prev => prev ? { ...prev, scholarship_recommendations: data } : prev)
+                        }} />
+                      )}
+                      {hasScholarships && (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {scholarships!.map((s: any, i: number) => (
+                            <Card key={i} className="border-[#e5e0d5] hover:border-[#c9a227] transition-colors group flex flex-col">
+                              <CardContent className="p-4 flex flex-col flex-1">
+                                <div className="flex items-start gap-3 mb-3">
+                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#c9a227]/10 text-[#c9a227] text-xs font-bold shrink-0">{i + 1}</span>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-[#1e3a5f] leading-snug">{String(s.name || '')}</p>
+                                    {s.organization && <p className="text-xs text-[#5a7a9a] mt-0.5">{String(s.organization)}</p>}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                  {s.amount && (
+                                    <Badge className="bg-[#10b981]/10 text-[#10b981] border-0 text-xs font-semibold">{String(s.amount)}</Badge>
+                                  )}
+                                  {s.deadline && (
+                                    <Badge variant="outline" className="text-[#5a7a9a] border-[#e5e0d5] text-xs">{String(s.deadline)}</Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-[#5a7a9a] leading-relaxed mb-3 flex-1 line-clamp-3">{String(s.why || s.description || '')}</p>
+                                {s.url && (
+                                  <a
+                                    href={String(s.url)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs font-medium text-[#c9a227] hover:text-[#b08a1f] transition-colors mt-auto"
+                                  >
+                                    Apply Now <ArrowRight className="w-3 h-3" />
+                                  </a>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )
                 })()}
               </div>}
@@ -2361,7 +2403,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           <GraduationCap className="w-5 h-5" style={{ color: secondaryColor }} />
                           Year-by-Year Roadmap
                         </h3>
-                        {/* Render existing timeline content inline */}
                         {(() => {
                           try {
                             const roadmap = assessment.grade_by_grade_roadmap as Record<string, unknown> | undefined
@@ -2371,7 +2412,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                             const allYears = currentGrade ? [currentGrade, ...nextYears] : nextYears
                             if (allYears.length === 0) return null
                             return (
-                              <div className="space-y-4">
+                              <Accordion type="multiple" defaultValue={["grade-0"]} className="space-y-3">
                                 {allYears.map((year: Record<string, unknown>, idx: number) => {
                                   if (!year || typeof year !== 'object') return null
                                   const grade = String(year.grade || year.year || `Year ${idx + 1}`)
@@ -2380,27 +2421,62 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                                   const extracurriculars = Array.isArray(year.extracurriculars) ? year.extracurriculars : []
                                   const testing = Array.isArray(year.testing) ? year.testing : []
                                   const leadership = Array.isArray(year.leadership) ? year.leadership : []
+                                  const research = Array.isArray(year.research) ? year.research : []
+                                  const passionProjects = Array.isArray(year.passionProjects) ? year.passionProjects : []
                                   const summerPlan = year.summerPlan ? String(year.summerPlan) : null
+                                  const sections = [
+                                    { label: 'Academics', items: academics, color: '#6366f1' },
+                                    { label: 'Extracurriculars', items: extracurriculars, color: '#c9a227' },
+                                    { label: 'Testing', items: testing, color: '#3b82f6' },
+                                    { label: 'Leadership', items: leadership, color: '#ef4444' },
+                                    { label: 'Research', items: research, color: '#06b6d4' },
+                                    { label: 'Passion Projects', items: passionProjects, color: '#f59e0b' },
+                                  ].filter(s => s.items.length > 0)
                                   return (
-                                    <Card key={idx} className="border-[#e5e0d5]">
-                                      <CardHeader className="pb-2">
-                                        <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                                    <AccordionItem key={idx} value={`grade-${idx}`} className="border border-[#e5e0d5] rounded-lg overflow-hidden">
+                                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-[#faf8f3]/50">
+                                        <div className="flex items-center gap-2 text-left">
                                           <GraduationCap className="w-4 h-4 text-[#c9a227]" />
-                                          {grade} {idx === 0 && <Badge className="bg-[#c9a227]/10 text-[#c9a227] text-[10px]">Current</Badge>}
-                                        </CardTitle>
-                                        {focus && <p className="text-sm text-[#5a7a9a]">{focus}</p>}
-                                      </CardHeader>
-                                      <CardContent className="grid sm:grid-cols-2 gap-3 text-sm">
-                                        {academics.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Academics</p>{academics.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
-                                        {extracurriculars.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Extracurriculars</p>{extracurriculars.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
-                                        {testing.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Testing</p>{testing.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
-                                        {leadership.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Leadership</p>{leadership.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {String(a)}</p>)}</div>}
-                                        {summerPlan && <div className="sm:col-span-2"><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Summer Plan</p><p className="text-[#5a7a9a] text-[13px]">{summerPlan}</p></div>}
-                                      </CardContent>
-                                    </Card>
+                                          <span className="text-base font-semibold text-[#1e3a5f]">{grade}</span>
+                                          {idx === 0 && <Badge className="bg-[#c9a227]/10 text-[#c9a227] text-[10px]">Current</Badge>}
+                                        </div>
+                                      </AccordionTrigger>
+                                      <AccordionContent className="px-4 pb-4">
+                                        {focus && <p className="text-sm text-[#5a7a9a] mb-3">{focus}</p>}
+                                        <Accordion type="multiple" defaultValue={sections.map((_, si) => `${idx}-section-${si}`)} className="space-y-2">
+                                          {sections.map((section, si) => (
+                                            <AccordionItem key={si} value={`${idx}-section-${si}`} className="border-none">
+                                              <AccordionTrigger className="py-1.5 hover:no-underline">
+                                                <span className="font-semibold text-[#1e3a5f] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: section.color }} />
+                                                  {section.label}
+                                                  <span className="text-[10px] font-bold text-[#5a7a9a]/40 ml-1">{section.items.length}</span>
+                                                </span>
+                                              </AccordionTrigger>
+                                              <AccordionContent className="pb-1 pl-3">
+                                                {section.items.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px] py-0.5">• {String(a)}</p>)}
+                                              </AccordionContent>
+                                            </AccordionItem>
+                                          ))}
+                                          {summerPlan && (
+                                            <AccordionItem value={`${idx}-section-summer`} className="border-none">
+                                              <AccordionTrigger className="py-1.5 hover:no-underline">
+                                                <span className="font-semibold text-[#1e3a5f] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                                  <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+                                                  Summer Plan
+                                                </span>
+                                              </AccordionTrigger>
+                                              <AccordionContent className="pb-1 pl-3">
+                                                <p className="text-[#5a7a9a] text-[13px]">{summerPlan}</p>
+                                              </AccordionContent>
+                                            </AccordionItem>
+                                          )}
+                                        </Accordion>
+                                      </AccordionContent>
+                                    </AccordionItem>
                                   )
                                 })}
-                              </div>
+                              </Accordion>
                             )
                           } catch (e) {
                             console.error('Timeline render error:', e)
@@ -2426,10 +2502,36 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                                 <span className="text-[10px] text-[#5a7a9a] ml-auto">{phase.subtitle}</span>
                               </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-1.5">
-                              {phase.items.map((item, i) => (
-                                <p key={i} className="text-[13px] text-[#5a7a9a] leading-snug">• {item}</p>
-                              ))}
+                            <CardContent>
+                              <Accordion type="multiple" className="space-y-0.5">
+                                {phase.items.map((item, i) => {
+                                  const colonIdx = item.indexOf(':')
+                                  const heading = colonIdx > 0 && colonIdx < 80 ? item.slice(0, colonIdx).trim() : item
+                                  const detail = colonIdx > 0 && colonIdx < 80 ? item.slice(colonIdx + 1).trim() : ''
+                                  return (
+                                    <AccordionItem key={i} value={`${phase.title}-${i}`} className="border-none">
+                                      {detail ? (
+                                        <>
+                                          <AccordionTrigger className="py-1.5 hover:no-underline">
+                                            <div className="flex items-start gap-2 text-left">
+                                              <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: phase.color }} />
+                                              <span className="text-[13px] font-medium text-[#1e3a5f] leading-snug">{heading}</span>
+                                            </div>
+                                          </AccordionTrigger>
+                                          <AccordionContent className="pb-1.5 pl-3.5">
+                                            <p className="text-xs text-[#5a7a9a] leading-relaxed">{detail}</p>
+                                          </AccordionContent>
+                                        </>
+                                      ) : (
+                                        <div className="flex items-start gap-2 py-1.5">
+                                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: phase.color }} />
+                                          <span className="text-[13px] text-[#5a7a9a] leading-snug">{heading}</span>
+                                        </div>
+                                      )}
+                                    </AccordionItem>
+                                  )
+                                })}
+                              </Accordion>
                             </CardContent>
                           </Card>
                         ))}
@@ -2445,14 +2547,18 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid md:grid-cols-2 gap-3">
+                          <Accordion type="multiple" className="space-y-1">
                             {assessment.waste_of_time_activities.activities.map((item, i) => (
-                              <div key={i} className="p-3 bg-red-50/60 rounded-lg">
-                                <p className="text-sm font-medium text-red-700 mb-1">{item.activity}</p>
-                                <p className="text-[13px] text-[#5a7a9a] leading-relaxed">{item.whyQuit}</p>
-                              </div>
+                              <AccordionItem key={i} value={`drop-${i}`} className="bg-red-50/60 rounded-lg border-none px-3">
+                                <AccordionTrigger className="py-2 hover:no-underline">
+                                  <span className="text-sm font-medium text-red-700 text-left">{item.activity}</span>
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-2">
+                                  <p className="text-[13px] text-[#5a7a9a] leading-relaxed">{item.whyQuit}</p>
+                                </AccordionContent>
+                              </AccordionItem>
                             ))}
-                          </div>
+                          </Accordion>
                         </CardContent>
                       </Card>
                     )}

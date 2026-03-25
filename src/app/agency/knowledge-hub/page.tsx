@@ -69,6 +69,7 @@ export default function KnowledgeHub() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [uploadingFile, setUploadingFile] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadedFileName, setUploadedFileName] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -114,25 +115,49 @@ export default function KnowledgeHub() {
     }
 
     setUploadingFile(true)
+    setUploadProgress(0)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await fetch('/api/agency/knowledge-hub/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (res.ok) {
-        setNewResource(prev => ({ ...prev, file_url: data.url }))
-        setUploadedFileName(file.name)
-        if (!newResource.title) {
-          setNewResource(prev => ({ ...prev, title: file.name.replace(/\.[^.]+$/, ''), file_url: data.url }))
-        }
-        toast.success("File uploaded")
-      } else {
-        toast.error(data.error || "Upload failed")
+      // Step 1: Get signed upload URL from server (fast — no file data sent)
+      const signRes = await fetch('/api/agency/knowledge-hub/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name, fileType: file.type }),
+      })
+      const signData = await signRes.json()
+      if (!signRes.ok) {
+        toast.error(signData.error || "Upload failed")
+        return
       }
+
+      // Step 2: Upload directly to Supabase storage with progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100))
+          }
+        })
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve()
+          else reject(new Error(`Upload failed with status ${xhr.status}`))
+        })
+        xhr.addEventListener('error', () => reject(new Error('Upload failed')))
+        xhr.open('PUT', signData.signedUrl)
+        xhr.setRequestHeader('Content-Type', file.type)
+        xhr.send(file)
+      })
+
+      setNewResource(prev => ({ ...prev, file_url: signData.publicUrl }))
+      setUploadedFileName(file.name)
+      if (!newResource.title) {
+        setNewResource(prev => ({ ...prev, title: file.name.replace(/\.[^.]+$/, ''), file_url: signData.publicUrl }))
+      }
+      toast.success("File uploaded")
     } catch {
       toast.error("Upload failed")
     } finally {
       setUploadingFile(false)
+      setUploadProgress(0)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -308,9 +333,16 @@ export default function KnowledgeHub() {
                         onClick={() => fileInputRef.current?.click()}
                       >
                         {uploadingFile ? (
-                          <div className="flex items-center justify-center gap-2 py-2">
-                            <Loader2 className="w-5 h-5 animate-spin text-[#5a7a9a]" />
-                            <span className="text-sm text-[#5a7a9a]">Uploading...</span>
+                          <div className="flex flex-col items-center gap-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <Loader2 className="w-5 h-5 animate-spin text-[#5a7a9a]" />
+                              <span className="text-sm text-[#5a7a9a]">Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}</span>
+                            </div>
+                            {uploadProgress > 0 && (
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div className="bg-[#1e3a5f] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                              </div>
+                            )}
                           </div>
                         ) : uploadedFileName ? (
                           <div className="flex items-center justify-center gap-2 py-2">

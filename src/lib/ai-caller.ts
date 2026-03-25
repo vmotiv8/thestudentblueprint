@@ -24,9 +24,17 @@ export async function callAI(
     const result = await callGemini(prompt, timeoutMs)
     if (result.success) return result
     console.warn('[AI] Gemini failed, falling back to Claude')
+  } else {
+    console.warn('[AI] No GEMINI_API_KEY set')
   }
 
   // Fallback to Claude
+  const anthropicKey = process.env.ANTHROPIC_API_KEY
+  if (!anthropicKey && !geminiKey) {
+    console.error('[AI] CRITICAL: Neither GEMINI_API_KEY nor ANTHROPIC_API_KEY is configured')
+    return { success: false, error: 'AI service not configured. Please contact support.' }
+  }
+
   return callClaude(prompt, maxTokens, timeoutMs)
 }
 

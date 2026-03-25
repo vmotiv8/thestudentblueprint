@@ -41,7 +41,8 @@
       "Bash(echo \"Updated $f\")",
       "Bash(done)",
       "Bash(sed -i '' '/QSTASH_URL/d' /Users/vish/Documents/Platforms/thestudentblueprint/.env.local)",
-      "Bash(sed -i '' '/QStash EU region/d' /Users/vish/Documents/Platforms/thestudentblueprint/.env.local)"
+      "Bash(sed -i '' '/QStash EU region/d' /Users/vish/Documents/Platforms/thestudentblueprint/.env.local)",
+      "Bash(npx vercel:*)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

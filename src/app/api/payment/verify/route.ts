@@ -5,7 +5,7 @@ import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 import { applyRateLimit } from '@/lib/rate-limit'
 
 export async function GET(request: Request) {
-  const rateLimitResponse = applyRateLimit(request, 'standard', 'payment-verify')
+  const rateLimitResponse = await applyRateLimit(request, 'standard', 'payment-verify')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

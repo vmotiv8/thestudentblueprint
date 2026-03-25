@@ -40,6 +40,27 @@ export async function GET(
       return NextResponse.json({ error: 'Assessment data is incomplete' }, { status: 400 })
     }
 
+    // Check for cached PDF in Supabase Storage
+    const pdfPath = `pdfs/${id}.pdf`
+    const pdfGeneratedAt = assessment.pdf_generated_at ? new Date(assessment.pdf_generated_at).getTime() : 0
+    const assessmentUpdatedAt = assessment.updated_at ? new Date(assessment.updated_at).getTime() : 0
+
+    if (pdfGeneratedAt > 0 && pdfGeneratedAt >= assessmentUpdatedAt) {
+      const { data: cachedPdf } = await supabase.storage.from('knowledge-hub').download(pdfPath)
+      if (cachedPdf) {
+        const buffer = Buffer.from(await cachedPdf.arrayBuffer())
+        const studentName = assessment.students?.full_name || 'Student'
+        const safeName = studentName.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_')
+        return new NextResponse(buffer, {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${safeName}_Blueprint.pdf"`,
+            'Cache-Control': 'private, max-age=3600',
+          },
+        })
+      }
+    }
+
       const pdf = new jsPDF('p', 'mm', 'a4') as JsPDFWithAutoTable
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
@@ -1298,10 +1319,22 @@ The user assumes sole responsibility for any actions or decisions that are made 
 
     const pdfBuffer = Buffer.from(pdf.output('arraybuffer'))
 
+    // Cache the PDF in Supabase Storage for future downloads
+    try {
+      await supabase.storage.from('knowledge-hub').upload(pdfPath, pdfBuffer, {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+      await supabase.from('assessments').update({ pdf_generated_at: new Date().toISOString() }).eq('id', id)
+    } catch (cacheErr) {
+      console.warn('[PDF] Cache upload failed (non-fatal):', cacheErr)
+    }
+
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${studentName.replace(/[^a-zA-Z0-9]/g, '-')}-StudentBlueprint-Report.pdf"`
+        'Content-Disposition': `attachment; filename="${studentName.replace(/[^a-zA-Z0-9]/g, '-')}-StudentBlueprint-Report.pdf"`,
+        'Cache-Control': 'private, max-age=3600',
       }
     })
 

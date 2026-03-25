@@ -8,7 +8,7 @@ import { applyRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   // Apply standard rate limiting for checkout (30 per minute per IP)
-  const rateLimitResponse = applyRateLimit(request, 'standard', 'checkout')
+  const rateLimitResponse = await applyRateLimit(request, 'standard', 'checkout')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

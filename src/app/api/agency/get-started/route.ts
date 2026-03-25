@@ -19,7 +19,7 @@ function getPricePerStudent(qty: number): number {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = applyRateLimit(request, 'strict', 'agency-get-started')
+  const rateLimitResponse = await applyRateLimit(request, 'strict', 'agency-get-started')
   if (rateLimitResponse) return rateLimitResponse
 
   try {

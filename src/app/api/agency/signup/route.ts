@@ -8,7 +8,7 @@ import { buildAgencyUrl } from "@/lib/url"
 
 export async function POST(request: NextRequest) {
   // Rate limit signup attempts
-  const rateLimitResponse = applyRateLimit(request, 'strict', 'agency-signup')
+  const rateLimitResponse = await applyRateLimit(request, 'strict', 'agency-signup')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

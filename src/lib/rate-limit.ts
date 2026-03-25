@@ -1,72 +1,55 @@
-import { NextResponse } from 'next/server'
-
-interface RateLimitConfig {
-  windowMs: number // Time window in milliseconds
-  maxRequests: number // Max requests per window
-}
-
-interface RateLimitEntry {
-  count: number
-  resetAt: number
-}
-
-// In-memory store for rate limiting
-// In production, consider using Redis for distributed rate limiting
-const rateLimitStore = new Map<string, RateLimitEntry>()
-
-// Clean up expired entries periodically
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetAt < now) {
-      rateLimitStore.delete(key)
-    }
-  }
-}, 60000) // Clean up every minute
-
 /**
- * Check if a request should be rate limited
- * @param identifier - Unique identifier for the rate limit (e.g., IP address, user ID)
- * @param config - Rate limit configuration
- * @returns Object indicating if rate limited and remaining requests
+ * Distributed rate limiting using Upstash Redis.
+ * Works correctly across serverless invocations (unlike in-memory Map).
  */
-export function checkRateLimit(
-  identifier: string,
-  config: RateLimitConfig
-): { limited: boolean; remaining: number; resetAt: number } {
-  const now = Date.now()
-  const key = identifier
-  const entry = rateLimitStore.get(key)
+import { NextResponse } from 'next/server'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
-  if (!entry || entry.resetAt < now) {
-    // Create new entry or reset expired one
-    rateLimitStore.set(key, {
-      count: 1,
-      resetAt: now + config.windowMs,
-    })
-    return {
-      limited: false,
-      remaining: config.maxRequests - 1,
-      resetAt: now + config.windowMs,
-    }
-  }
+// Lazy-init Redis client (only when env vars are present)
+let _redis: Redis | null = null
+function getRedis(): Redis | null {
+  if (_redis) return _redis
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return null
+  _redis = new Redis({ url, token })
+  return _redis
+}
 
-  if (entry.count >= config.maxRequests) {
-    return {
-      limited: true,
-      remaining: 0,
-      resetAt: entry.resetAt,
-    }
-  }
+// Pre-configured rate limiters (created lazily)
+const limiters = new Map<string, Ratelimit>()
 
-  entry.count++
-  rateLimitStore.set(key, entry)
+function getLimiter(tier: keyof typeof rateLimitConfigs): Ratelimit | null {
+  const redis = getRedis()
+  if (!redis) return null
 
-  return {
-    limited: false,
-    remaining: config.maxRequests - entry.count,
-    resetAt: entry.resetAt,
-  }
+  if (limiters.has(tier)) return limiters.get(tier)!
+
+  const config = rateLimitConfigs[tier]
+  const limiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(config.maxRequests, `${config.windowMs}ms`),
+    prefix: `ratelimit:${tier}`,
+  })
+  limiters.set(tier, limiter)
+  return limiter
+}
+
+// Pre-configured rate limit tiers
+export const rateLimitConfigs = {
+  // Strict: 5 requests per minute (OTP, login)
+  strict: { windowMs: 60_000, maxRequests: 5 },
+  // Standard: 30 requests per minute (general API)
+  standard: { windowMs: 60_000, maxRequests: 30 },
+  // Lenient: 100 requests per minute (read operations)
+  lenient: { windowMs: 60_000, maxRequests: 100 },
+  // Bulk: 10 requests per 5 minutes (bulk operations)
+  bulk: { windowMs: 300_000, maxRequests: 10 },
+  // Assessment: 5 per minute per IP (expensive AI calls)
+  assessment: { windowMs: 60_000, maxRequests: 5 },
+  // Scholarship: 3 per minute per IP
+  scholarship: { windowMs: 60_000, maxRequests: 3 },
 }
 
 /**
@@ -74,15 +57,9 @@ export function checkRateLimit(
  */
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) {
-    return forwarded.split(',')[0].trim()
-  }
-
+  if (forwarded) return forwarded.split(',')[0].trim()
   const realIp = request.headers.get('x-real-ip')
-  if (realIp) {
-    return realIp
-  }
-
+  if (realIp) return realIp
   return 'unknown'
 }
 
@@ -91,12 +68,8 @@ export function getClientIp(request: Request): string {
  */
 export function rateLimitResponse(resetAt: number): NextResponse {
   const retryAfter = Math.ceil((resetAt - Date.now()) / 1000)
-
   return NextResponse.json(
-    {
-      error: 'Too many requests. Please try again later.',
-      retryAfter,
-    },
+    { error: 'Too many requests. Please try again later.', retryAfter },
     {
       status: 429,
       headers: {
@@ -107,51 +80,43 @@ export function rateLimitResponse(resetAt: number): NextResponse {
   )
 }
 
-// Pre-configured rate limiters for common use cases
-export const rateLimitConfigs = {
-  // Strict: 5 requests per minute (for sensitive operations like OTP, login)
-  strict: {
-    windowMs: 60 * 1000, // 1 minute
-    maxRequests: 5,
-  },
-  // Standard: 30 requests per minute (for general API operations)
-  standard: {
-    windowMs: 60 * 1000, // 1 minute
-    maxRequests: 30,
-  },
-  // Lenient: 100 requests per minute (for read operations)
-  lenient: {
-    windowMs: 60 * 1000, // 1 minute
-    maxRequests: 100,
-  },
-  // Bulk: 10 requests per 5 minutes (for bulk operations)
-  bulk: {
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    maxRequests: 10,
-  },
-}
-
 /**
- * Convenience wrapper for rate limiting in API routes
- * @param request - The request object
- * @param configType - Pre-configured rate limit type
- * @param additionalIdentifier - Additional identifier to combine with IP (e.g., route name)
- * @returns NextResponse if rate limited, null otherwise
+ * Apply rate limiting to a request.
+ * Returns a 429 response if limited, null if allowed.
+ * Falls back to allowing all requests if Redis is not configured.
  */
-export function applyRateLimit(
+export async function applyRateLimit(
   request: Request,
   configType: keyof typeof rateLimitConfigs,
   additionalIdentifier?: string
-): NextResponse | null {
+): Promise<NextResponse | null> {
+  const limiter = getLimiter(configType)
+  if (!limiter) {
+    // Redis not configured — allow all (log warning in production)
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[RateLimit] Upstash Redis not configured — rate limiting disabled')
+    }
+    return null
+  }
+
   const ip = getClientIp(request)
   const identifier = additionalIdentifier ? `${ip}:${additionalIdentifier}` : ip
-  const config = rateLimitConfigs[configType]
 
-  const { limited, resetAt } = checkRateLimit(identifier, config)
+  const { success, reset } = await limiter.limit(identifier)
 
-  if (limited) {
-    return rateLimitResponse(resetAt)
+  if (!success) {
+    return rateLimitResponse(reset)
   }
 
   return null
+}
+
+// Legacy sync wrapper for backward compatibility — checks nothing if Redis not configured
+export function checkRateLimit(
+  _identifier: string,
+  _config: { windowMs: number; maxRequests: number }
+): { limited: boolean; remaining: number; resetAt: number } {
+  // Distributed rate limiting is now async via applyRateLimit()
+  // This sync function exists only for backward compatibility and does nothing
+  return { limited: false, remaining: 999, resetAt: Date.now() + 60000 }
 }

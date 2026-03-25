@@ -32,7 +32,7 @@ async function getAuthenticatedAdmin(supabase: ReturnType<typeof createServerSup
 
 export async function POST(request: Request) {
   // Rate limit: 5 domain verification attempts per minute
-  const rateLimitResponse = applyRateLimit(request, 'strict', 'verify-domain')
+  const rateLimitResponse = await applyRateLimit(request, 'strict', 'verify-domain')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

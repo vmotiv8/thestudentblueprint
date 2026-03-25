@@ -5,7 +5,7 @@ import { applyRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   // Apply strict rate limiting for OTP verification (5 per minute per IP)
-  const rateLimitResponse = applyRateLimit(request, 'strict', 'otp-verify')
+  const rateLimitResponse = await applyRateLimit(request, 'strict', 'otp-verify')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

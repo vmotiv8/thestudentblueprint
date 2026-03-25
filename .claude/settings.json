@@ -35,7 +35,11 @@
       "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const fs = require\\(''fs''\\); console.log\\(PDFParse.toString\\(\\).slice\\(0, 200\\)\\)\")",
       "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const fs = require\\(''fs''\\); const buf = fs.readFileSync\\(''package.json''\\); try { const p = new PDFParse\\({data: buf}\\); console.log\\(typeof p.getText, typeof p.parse, typeof p.loadPDF\\); } catch\\(e\\) { console.log\\(''err:'', e.message\\); }\")",
       "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const p = new PDFParse\\({data: new Uint8Array\\(10\\)}\\); const methods = Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(p\\)\\); console.log\\(methods\\)\")",
-      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const p = new PDFParse\\({data: new Uint8Array\\(10\\)}\\); p.load\\(\\).then\\(\\(\\) => p.getText\\(\\)\\).then\\(r => console.log\\(typeof r, JSON.stringify\\(r\\).slice\\(0,200\\)\\)\\).catch\\(e => console.log\\(''err'', e.message\\)\\)\")"
+      "Bash(node --input-type=commonjs -e \"const { PDFParse } = require\\(''pdf-parse''\\); const p = new PDFParse\\({data: new Uint8Array\\(10\\)}\\); p.load\\(\\).then\\(\\(\\) => p.getText\\(\\)\\).then\\(r => console.log\\(typeof r, JSON.stringify\\(r\\).slice\\(0,200\\)\\)\\).catch\\(e => console.log\\(''err'', e.message\\)\\)\")",
+      "Bash(for f:*)",
+      "Bash(do sed:*)",
+      "Bash(echo \"Updated $f\")",
+      "Bash(done)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

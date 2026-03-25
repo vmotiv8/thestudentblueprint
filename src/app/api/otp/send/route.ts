@@ -12,7 +12,7 @@ function generateOTP(): string {
 
 export async function POST(request: Request) {
   // Apply strict rate limiting for OTP requests (5 per minute per IP)
-  const rateLimitResponse = applyRateLimit(request, 'strict', 'otp-send')
+  const rateLimitResponse = await applyRateLimit(request, 'strict', 'otp-send')
   if (rateLimitResponse) {
     return rateLimitResponse
   }

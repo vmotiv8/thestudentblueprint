@@ -92,6 +92,7 @@ function AssessmentContent() {
   const [currentSection, setCurrentSection] = useState(1)
   const [formData, setFormData] = useState(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
+  const isSavingRef = useRef(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   const [uniqueCode, setUniqueCode] = useState<string | null>(null)
@@ -443,6 +444,8 @@ function AssessmentContent() {
 
   const autoSave = useCallback(async (sectionOverride?: number) => {
     if (!formData.basicInfo.fullName || !formData.basicInfo.email) return
+    if (isSavingRef.current) return
+    isSavingRef.current = true
 
     setIsSaving(true)
     const couponCode = localStorage.getItem("studentblueprint_coupon")
@@ -473,6 +476,7 @@ function AssessmentContent() {
       console.error("[AutoSave] Network error:", error)
       toast.error("Unable to save — check your internet connection", { duration: 4000 })
     } finally {
+      isSavingRef.current = false
       setIsSaving(false)
     }
   }, [assessmentId, currentSection, formData, tenant])

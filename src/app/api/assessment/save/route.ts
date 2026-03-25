@@ -105,42 +105,51 @@ export async function POST(request: Request) {
       }
 
       if (assessment?.student_id && formData.basicInfo) {
-        const fullName = String(formData.basicInfo.fullName || '')
-        const nameParts = fullName.trim().split(/\s+/)
-        const firstName = formData.basicInfo.firstName || nameParts[0] || null
-        const lastName = formData.basicInfo.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : null)
+        try {
+          const fullName = String(formData.basicInfo.fullName || '')
+          const nameParts = fullName.trim().split(/\s+/)
+          const firstName = formData.basicInfo.firstName || nameParts[0] || null
+          const lastName = formData.basicInfo.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : null)
 
-        await supabase
-          .from('students')
-          .update({
-            first_name: firstName,
-            last_name: lastName,
-            full_name: fullName || null,
-            email: formData.basicInfo.email,
-            phone: formData.basicInfo.phone || null,
-            grade_level: formData.basicInfo.currentGrade || formData.basicInfo.gradeLevel || null,
-            current_grade: formData.basicInfo.currentGrade || null,
-            school_name: formData.basicInfo.schoolName || null,
-            parent_email: formData.basicInfo.parentEmail || null,
-            parent_phone: formData.basicInfo.parentPhone || null,
-            metadata: {
-              parentName: formData.basicInfo.parentName,
-              dateOfBirth: formData.basicInfo.dateOfBirth,
-              address: formData.basicInfo.address,
-              city: formData.basicInfo.city,
-              state: formData.basicInfo.state,
-              country: formData.basicInfo.country,
-              gender: formData.basicInfo.gender,
-              ethnicity: formData.basicInfo.ethnicity,
-              targetCollegeYear: formData.basicInfo.targetCollegeYear,
-              dreamSchools: formData.basicInfo.dreamSchools,
-              curriculum: formData.basicInfo.curriculum,
-              studyAbroad: formData.basicInfo.studyAbroad,
-              targetCountries: formData.basicInfo.targetCountries
-            },
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', assessment.student_id)
+          const { error: studentError } = await supabase
+            .from('students')
+            .update({
+              first_name: firstName,
+              last_name: lastName,
+              full_name: fullName || null,
+              email: formData.basicInfo.email || undefined,
+              phone: formData.basicInfo.phone || null,
+              grade_level: formData.basicInfo.currentGrade || formData.basicInfo.gradeLevel || null,
+              current_grade: formData.basicInfo.currentGrade || null,
+              school_name: formData.basicInfo.schoolName || null,
+              parent_email: formData.basicInfo.parentEmail || null,
+              parent_phone: formData.basicInfo.parentPhone || null,
+              metadata: {
+                parentName: formData.basicInfo.parentName,
+                dateOfBirth: formData.basicInfo.dateOfBirth,
+                address: formData.basicInfo.address,
+                city: formData.basicInfo.city,
+                state: formData.basicInfo.state,
+                country: formData.basicInfo.country,
+                gender: formData.basicInfo.gender,
+                ethnicity: formData.basicInfo.ethnicity,
+                targetCollegeYear: formData.basicInfo.targetCollegeYear,
+                dreamSchools: formData.basicInfo.dreamSchools,
+                curriculum: formData.basicInfo.curriculum,
+                studyAbroad: formData.basicInfo.studyAbroad,
+                targetCountries: formData.basicInfo.targetCountries
+              },
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', assessment.student_id)
+
+          if (studentError) {
+            console.error('[AssessmentSave] Student update failed (non-fatal):', studentError.message, studentError.code)
+          }
+        } catch (studentErr) {
+          // Don't fail the whole save if student metadata update fails
+          console.error('[AssessmentSave] Student update error (non-fatal):', studentErr)
+        }
       }
   
       return NextResponse.json({
@@ -219,6 +228,7 @@ export async function POST(request: Request) {
 
     // Increment student count so this self-serve student is tracked
     await supabase.rpc('increment_students_count', { org_id: organization.id, amount: 1 })
+      .then(({ error: rpcErr }) => { if (rpcErr) console.error('[AssessmentSave] increment_students_count failed (non-fatal):', rpcErr.message) })
 
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')

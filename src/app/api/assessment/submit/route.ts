@@ -148,8 +148,6 @@ export async function POST(request: Request) {
     // Save Phase 1 results to DB immediately
     const phase1Update: Record<string, unknown> = {
       status: 'partial',
-      generation_phase: 1,
-      phase2_started_at: new Date().toISOString(),
       scores: {
         competitivenessScore: phase1.competitivenessScore,
         archetypeScores: phase1.archetypeScores,
@@ -165,9 +163,17 @@ export async function POST(request: Request) {
       updated_at: new Date().toISOString(),
     }
 
+    // Try to set new columns if migration has been run (graceful fallback)
+    let useNewColumns = true
+    const phase1UpdateWithNewCols = {
+      ...phase1Update,
+      generation_phase: 1,
+      phase2_started_at: new Date().toISOString(),
+    }
+
     let phase1Query = supabase
       .from('assessments')
-      .update(phase1Update)
+      .update(phase1UpdateWithNewCols)
       .eq('id', assessmentId)
 
     if (!reanalyze && organization) {
@@ -177,23 +183,22 @@ export async function POST(request: Request) {
     const { error: phase1SaveError } = await phase1Query
 
     if (phase1SaveError) {
-      console.error('[Submit] Failed to save Phase 1 (attempt 1):', { message: phase1SaveError.message, code: phase1SaveError.code, details: phase1SaveError.details })
-      // If it failed because of missing columns (migration not run), retry without them
-      if (phase1SaveError.message?.includes('column') || phase1SaveError.code === '42703') {
-        console.log('[Submit] Retrying Phase 1 save without new columns')
-        delete phase1Update.generation_phase
-        delete phase1Update.phase2_started_at
-        const { error: retryError } = await supabase
-          .from('assessments')
-          .update(phase1Update)
-          .eq('id', assessmentId)
-        if (retryError) {
-          console.error('[Submit] Phase 1 retry also failed:', retryError.message)
-          throw retryError
-        }
-      } else {
-        throw phase1SaveError
+      console.error('[Submit] Failed to save Phase 1 (attempt 1):', { message: phase1SaveError.message, code: phase1SaveError.code })
+      // Retry without new columns if they don't exist
+      useNewColumns = false
+      let retryQuery = supabase
+        .from('assessments')
+        .update(phase1Update)
+        .eq('id', assessmentId)
+      if (!reanalyze && organization) {
+        retryQuery = retryQuery.eq('organization_id', organization.id)
       }
+      const { error: retryError } = await retryQuery
+      if (retryError) {
+        console.error('[Submit] Phase 1 save failed completely:', retryError.message)
+        throw retryError
+      }
+      console.log('[Submit] Phase 1 saved without new columns (run migration 009)')
     }
 
     console.log('[Submit] Phase 1 saved successfully, starting Phase 2 in background')
@@ -219,11 +224,12 @@ export async function POST(request: Request) {
 
         if (!phase2Result.success) {
           console.error('[Submit] Phase 2 failed:', phase2Result.error)
-          // Clear phase2_started_at so retry endpoint knows it failed
-          await supabase
-            .from('assessments')
-            .update({ phase2_started_at: null })
-            .eq('id', assessmentId)
+          if (useNewColumns) {
+            await supabase
+              .from('assessments')
+              .update({ phase2_started_at: null })
+              .eq('id', assessmentId)
+          }
           return
         }
 
@@ -235,8 +241,7 @@ export async function POST(request: Request) {
         const phase2Update: Record<string, unknown> = {
           status: 'completed',
           completed_at: new Date().toISOString(),
-          generation_phase: 2,
-          phase2_started_at: null,
+          ...(useNewColumns && { generation_phase: 2, phase2_started_at: null }),
           report_data: fullReportData,
           passion_projects: phase2.passionProjects || null,
           academic_courses_recommendations: phase2.academicCoursesRecommendations || null,
@@ -331,13 +336,14 @@ export async function POST(request: Request) {
         }
       } catch (err) {
         console.error('[Submit] Phase 2 background error:', err)
-        // Clear phase2_started_at so retry can work
-        try {
-          await supabase
-            .from('assessments')
-            .update({ phase2_started_at: null })
-            .eq('id', assessmentId)
-        } catch { /* ignore cleanup errors */ }
+        if (useNewColumns) {
+          try {
+            await supabase
+              .from('assessments')
+              .update({ phase2_started_at: null })
+              .eq('id', assessmentId)
+          } catch { /* ignore cleanup errors */ }
+        }
       }
     })
     } catch (afterErr) {

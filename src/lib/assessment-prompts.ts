@@ -266,8 +266,9 @@ ${GUIDELINES(curriculum)}
 Generate detailed recommendations with the following structure in JSON format:
 {
   "academicCoursesRecommendations": {
-    "apCourses": ["4-5 specific AP courses with reasoning"],
-    "ibCourses": ["IB courses if applicable"],
+    "apCourses": ["4-5 specific AP courses with reasoning — ONLY if student is on AP or US curriculum, otherwise leave as empty array"],
+    "ibCourses": ["IB courses — ONLY if student is on IB curriculum, otherwise leave as empty array"],
+    "curriculumSpecificCourses": {"label": "The student's curriculum name (e.g. CBSE, A-Levels, IGCSE, etc.)", "courses": ["4-6 advanced/recommended courses specific to the student's curriculum — ONLY populate if the student is NOT on AP or IB curriculum, otherwise leave courses as empty array"]},
     "honorsCourses": ["3-4 Advanced/Honors courses"],
     "electivesRecommended": ["3-4 strategic electives"]
   },
@@ -292,46 +293,46 @@ Generate detailed recommendations with the following structure in JSON format:
     "leadershipDevelopment": ["4-5 specific skills and experiences"]
   },
   "serviceCommunityRecommendations": {
-    "localOpportunities": ["4-5 community service opportunities"],
-    "nationalPrograms": ["3-4 national service programs"],
-    "internationalService": ["2-3 international volunteer opportunities"],
-    "sustainedCommitment": ["3-4 strategies for impact metrics"]
+    "localOpportunities": [{"name": "Opportunity name", "description": "What it involves and expected commitment", "dates": "Application deadline or availability window", "relevance": "Why this matters for this specific student's goals"}],
+    "nationalPrograms": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline or program dates", "relevance": "Why this matters for this student"}],
+    "internationalService": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline or program dates", "relevance": "Why this matters for this student"}],
+    "sustainedCommitment": [{"name": "Strategy name", "description": "What it involves and how to build impact metrics", "dates": "Timeline for implementation", "relevance": "Why this matters for this student"}]
   },
   "summerIvyProgramsRecommendations": {
-    "preFreshmanPrograms": ["3-4 prestigious pre-college programs"],
-    "competitivePrograms": ["4-5 selective summer programs"],
-    "researchPrograms": ["4-5 summer research opportunities"],
-    "enrichmentPrograms": ["3-4 academic enrichment programs"]
+    "preFreshmanPrograms": [{"name": "Program name", "description": "What the program offers and involves", "dates": "Application deadline and program dates", "relevance": "Why this program fits this student's profile and goals"}],
+    "competitivePrograms": [{"name": "Program name", "description": "What the program offers and involves", "dates": "Application deadline and program dates", "relevance": "Why this program fits this student"}],
+    "researchPrograms": [{"name": "Program name", "description": "What the research opportunity involves", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
+    "enrichmentPrograms": [{"name": "Program name", "description": "What the program offers", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}]
   },
   "sportsRecommendations": {
-    "varsitySports": ["2-3 sports recommendations"],
-    "clubSports": ["2-3 club/travel team opportunities"],
-    "recruitingStrategy": ["3-4 athletic recruiting tips"],
-    "fitnessLeadership": ["2-3 leadership opportunities in fitness"]
+    "varsitySports": [{"name": "Sport name", "description": "Specific recommendations and goals", "dates": "Season dates and tryout timeline", "relevance": "Why this sport matters for this student's profile"}],
+    "clubSports": [{"name": "Club/team name", "description": "What it involves", "dates": "Season or availability", "relevance": "Why this matters for this student"}],
+    "recruitingStrategy": [{"name": "Strategy name", "description": "Specific steps to take", "dates": "Timeline for this strategy", "relevance": "Why this matters for this student"}],
+    "fitnessLeadership": [{"name": "Opportunity name", "description": "What it involves", "dates": "Timeline or availability", "relevance": "Why this matters for this student"}]
   },
   "competitionsRecommendations": {
-    "academicCompetitions": ["5-6 competitions"],
-    "businessCompetitions": ["4-5 business competitions"],
-    "artsCompetitions": ["4-5 arts competitions"],
-    "debateSpeech": ["4-5 debate/speech competitions"]
+    "academicCompetitions": [{"name": "Competition name", "description": "What it involves, categories, and target placement", "dates": "Registration deadline and competition dates", "relevance": "Why this competition fits this student"}],
+    "businessCompetitions": [{"name": "Competition name", "description": "What it involves", "dates": "Registration deadline and competition dates", "relevance": "Why this fits this student"}],
+    "artsCompetitions": [{"name": "Competition name", "description": "What it involves", "dates": "Submission deadline and competition dates", "relevance": "Why this fits this student"}],
+    "debateSpeech": [{"name": "Competition name", "description": "What it involves and recommended events", "dates": "Season dates and registration deadlines", "relevance": "Why this fits this student"}]
   },
   "studentGovernmentRecommendations": {
-    "schoolGovernment": ["3-4 student council positions"],
-    "districtStateRoles": ["2-3 district/state advisory roles"],
-    "youthGovernment": ["3-4 youth government programs"],
-    "advocacyRoles": ["3-4 student advocacy positions"]
+    "schoolGovernment": [{"name": "Position or initiative", "description": "What it involves and how to pursue it", "dates": "Election timeline or availability", "relevance": "Why this matters for this student"}],
+    "districtStateRoles": [{"name": "Role or program", "description": "What it involves", "dates": "Application deadline", "relevance": "Why this matters for this student"}],
+    "youthGovernment": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline and program dates", "relevance": "Why this matters for this student"}],
+    "advocacyRoles": [{"name": "Role or initiative", "description": "What it involves", "dates": "Timeline or availability", "relevance": "Why this matters for this student"}]
   },
   "internshipsRecommendations": {
-    "industryInternships": ["4-5 specific internships"],
-    "researchInternships": ["4-5 lab/research positions"],
-    "nonprofitInternships": ["3-4 nonprofit opportunities"],
-    "virtualOpportunities": ["3-4 remote internships"]
+    "industryInternships": [{"name": "Internship or organization", "description": "What the role involves", "dates": "Application deadline and internship dates", "relevance": "Why this fits this student"}],
+    "researchInternships": [{"name": "Lab or program name", "description": "What the research involves", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
+    "nonprofitInternships": [{"name": "Organization name", "description": "What the role involves", "dates": "Application deadline or availability", "relevance": "Why this fits this student"}],
+    "virtualOpportunities": [{"name": "Opportunity name", "description": "What it involves", "dates": "Availability or enrollment period", "relevance": "Why this fits this student"}]
   },
   "cultureArtsRecommendations": {
-    "performingArts": ["3-4 performing arts opportunities"],
-    "visualArts": ["3-4 visual arts projects"],
-    "creativeWriting": ["4-5 publications and literary magazines"],
-    "culturalClubs": ["3-4 heritage/cultural organizations"]
+    "performingArts": [{"name": "Opportunity name", "description": "What it involves", "dates": "Audition or participation dates", "relevance": "Why this fits this student"}],
+    "visualArts": [{"name": "Project or opportunity", "description": "What it involves", "dates": "Submission deadline or timeline", "relevance": "Why this fits this student"}],
+    "creativeWriting": [{"name": "Publication or opportunity", "description": "What it involves", "dates": "Submission deadline", "relevance": "Why this fits this student"}],
+    "culturalClubs": [{"name": "Organization name", "description": "What it involves", "dates": "Meeting schedule or membership timeline", "relevance": "Why this fits this student"}]
   },
   "passionProjects": [
     {
@@ -379,7 +380,7 @@ Generate detailed recommendations with the following structure in JSON format:
   }
 }
 
-Generate at least 3 passion projects with detailed implementation steps.
+Generate exactly 3 passion projects (no more, no less) with detailed implementation steps.
 Generate at least 6 school matches with match scores.
 Generate at least 4 scholarship recommendations.
 
@@ -457,8 +458,9 @@ Generate a comprehensive analysis with the following structure in JSON format:
     ]
   },
   "academicCoursesRecommendations": {
-    "apCourses": ["4-5 specific AP courses with reasoning"],
-    "ibCourses": ["IB courses if applicable"],
+    "apCourses": ["4-5 specific AP courses with reasoning — ONLY if student is on AP or US curriculum, otherwise leave as empty array"],
+    "ibCourses": ["IB courses — ONLY if student is on IB curriculum, otherwise leave as empty array"],
+    "curriculumSpecificCourses": {"label": "The student's curriculum name (e.g. CBSE, A-Levels, IGCSE, etc.)", "courses": ["4-6 advanced/recommended courses specific to the student's curriculum — ONLY populate if the student is NOT on AP or IB curriculum, otherwise leave courses as empty array"]},
     "honorsCourses": ["3-4 Advanced/Honors courses"],
     "electivesRecommended": ["3-4 strategic electives"]
   },
@@ -483,46 +485,46 @@ Generate a comprehensive analysis with the following structure in JSON format:
     "leadershipDevelopment": ["4-5 specific skills and experiences"]
   },
   "serviceCommunityRecommendations": {
-    "localOpportunities": ["4-5 community service opportunities"],
-    "nationalPrograms": ["3-4 national service programs"],
-    "internationalService": ["2-3 international volunteer opportunities"],
-    "sustainedCommitment": ["3-4 strategies for impact metrics"]
+    "localOpportunities": [{"name": "Opportunity name", "description": "What it involves and expected commitment", "dates": "Application deadline or availability window", "relevance": "Why this matters for this specific student's goals"}],
+    "nationalPrograms": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline or program dates", "relevance": "Why this matters for this student"}],
+    "internationalService": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline or program dates", "relevance": "Why this matters for this student"}],
+    "sustainedCommitment": [{"name": "Strategy name", "description": "What it involves and how to build impact metrics", "dates": "Timeline for implementation", "relevance": "Why this matters for this student"}]
   },
   "summerIvyProgramsRecommendations": {
-    "preFreshmanPrograms": ["3-4 prestigious pre-college programs"],
-    "competitivePrograms": ["4-5 selective summer programs"],
-    "researchPrograms": ["4-5 summer research opportunities"],
-    "enrichmentPrograms": ["3-4 academic enrichment programs"]
+    "preFreshmanPrograms": [{"name": "Program name", "description": "What the program offers and involves", "dates": "Application deadline and program dates", "relevance": "Why this program fits this student's profile and goals"}],
+    "competitivePrograms": [{"name": "Program name", "description": "What the program offers and involves", "dates": "Application deadline and program dates", "relevance": "Why this program fits this student"}],
+    "researchPrograms": [{"name": "Program name", "description": "What the research opportunity involves", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
+    "enrichmentPrograms": [{"name": "Program name", "description": "What the program offers", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}]
   },
   "sportsRecommendations": {
-    "varsitySports": ["2-3 sports recommendations"],
-    "clubSports": ["2-3 club/travel team opportunities"],
-    "recruitingStrategy": ["3-4 athletic recruiting tips"],
-    "fitnessLeadership": ["2-3 leadership opportunities in fitness"]
+    "varsitySports": [{"name": "Sport name", "description": "Specific recommendations and goals", "dates": "Season dates and tryout timeline", "relevance": "Why this sport matters for this student's profile"}],
+    "clubSports": [{"name": "Club/team name", "description": "What it involves", "dates": "Season or availability", "relevance": "Why this matters for this student"}],
+    "recruitingStrategy": [{"name": "Strategy name", "description": "Specific steps to take", "dates": "Timeline for this strategy", "relevance": "Why this matters for this student"}],
+    "fitnessLeadership": [{"name": "Opportunity name", "description": "What it involves", "dates": "Timeline or availability", "relevance": "Why this matters for this student"}]
   },
   "competitionsRecommendations": {
-    "academicCompetitions": ["5-6 competitions"],
-    "businessCompetitions": ["4-5 business competitions"],
-    "artsCompetitions": ["4-5 arts competitions"],
-    "debateSpeech": ["4-5 debate/speech competitions"]
+    "academicCompetitions": [{"name": "Competition name", "description": "What it involves, categories, and target placement", "dates": "Registration deadline and competition dates", "relevance": "Why this competition fits this student"}],
+    "businessCompetitions": [{"name": "Competition name", "description": "What it involves", "dates": "Registration deadline and competition dates", "relevance": "Why this fits this student"}],
+    "artsCompetitions": [{"name": "Competition name", "description": "What it involves", "dates": "Submission deadline and competition dates", "relevance": "Why this fits this student"}],
+    "debateSpeech": [{"name": "Competition name", "description": "What it involves and recommended events", "dates": "Season dates and registration deadlines", "relevance": "Why this fits this student"}]
   },
   "studentGovernmentRecommendations": {
-    "schoolGovernment": ["3-4 student council positions"],
-    "districtStateRoles": ["2-3 district/state advisory roles"],
-    "youthGovernment": ["3-4 youth government programs"],
-    "advocacyRoles": ["3-4 student advocacy positions"]
+    "schoolGovernment": [{"name": "Position or initiative", "description": "What it involves and how to pursue it", "dates": "Election timeline or availability", "relevance": "Why this matters for this student"}],
+    "districtStateRoles": [{"name": "Role or program", "description": "What it involves", "dates": "Application deadline", "relevance": "Why this matters for this student"}],
+    "youthGovernment": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline and program dates", "relevance": "Why this matters for this student"}],
+    "advocacyRoles": [{"name": "Role or initiative", "description": "What it involves", "dates": "Timeline or availability", "relevance": "Why this matters for this student"}]
   },
   "internshipsRecommendations": {
-    "industryInternships": ["4-5 specific internships"],
-    "researchInternships": ["4-5 lab/research positions"],
-    "nonprofitInternships": ["3-4 nonprofit opportunities"],
-    "virtualOpportunities": ["3-4 remote internships"]
+    "industryInternships": [{"name": "Internship or organization", "description": "What the role involves", "dates": "Application deadline and internship dates", "relevance": "Why this fits this student"}],
+    "researchInternships": [{"name": "Lab or program name", "description": "What the research involves", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
+    "nonprofitInternships": [{"name": "Organization name", "description": "What the role involves", "dates": "Application deadline or availability", "relevance": "Why this fits this student"}],
+    "virtualOpportunities": [{"name": "Opportunity name", "description": "What it involves", "dates": "Availability or enrollment period", "relevance": "Why this fits this student"}]
   },
   "cultureArtsRecommendations": {
-    "performingArts": ["3-4 performing arts opportunities"],
-    "visualArts": ["3-4 visual arts projects"],
-    "creativeWriting": ["4-5 publications and literary magazines"],
-    "culturalClubs": ["3-4 heritage/cultural organizations"]
+    "performingArts": [{"name": "Opportunity name", "description": "What it involves", "dates": "Audition or participation dates", "relevance": "Why this fits this student"}],
+    "visualArts": [{"name": "Project or opportunity", "description": "What it involves", "dates": "Submission deadline or timeline", "relevance": "Why this fits this student"}],
+    "creativeWriting": [{"name": "Publication or opportunity", "description": "What it involves", "dates": "Submission deadline", "relevance": "Why this fits this student"}],
+    "culturalClubs": [{"name": "Organization name", "description": "What it involves", "dates": "Meeting schedule or membership timeline", "relevance": "Why this fits this student"}]
   },
   "passionProjects": [
     {

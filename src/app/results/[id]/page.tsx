@@ -69,6 +69,15 @@ import {
 const PHASE_1_TABS = new Set(['roadmap', 'gaps', 'essays'])
 const PHASE_2_TABS = new Set(['projects', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match'])
 
+interface ActivityItem {
+  name: string
+  description: string
+  dates?: string
+  relevance?: string
+}
+
+type ActivityEntry = string | ActivityItem
+
 interface Assessment {
   id: string
   status: string
@@ -147,6 +156,7 @@ interface Assessment {
   academic_courses_recommendations: {
     apCourses: string[]
     ibCourses: string[]
+    curriculumSpecificCourses?: { label: string; courses: string[] }
     honorsCourses: string[]
     electivesRecommended: string[]
   }
@@ -171,46 +181,46 @@ interface Assessment {
     leadershipDevelopment: string[]
   }
   service_community_recommendations: {
-    localOpportunities: string[]
-    nationalPrograms: string[]
-    internationalService: string[]
-    sustainedCommitment: string[]
+    localOpportunities: ActivityEntry[]
+    nationalPrograms: ActivityEntry[]
+    internationalService: ActivityEntry[]
+    sustainedCommitment: ActivityEntry[]
   }
   summer_ivy_programs_recommendations: {
-    preFreshmanPrograms: string[]
-    competitivePrograms: string[]
-    researchPrograms: string[]
-    enrichmentPrograms: string[]
+    preFreshmanPrograms: ActivityEntry[]
+    competitivePrograms: ActivityEntry[]
+    researchPrograms: ActivityEntry[]
+    enrichmentPrograms: ActivityEntry[]
   }
   sports_recommendations: {
-    varsitySports: string[]
-    clubSports: string[]
-    recruitingStrategy: string[]
-    fitnessLeadership: string[]
+    varsitySports: ActivityEntry[]
+    clubSports: ActivityEntry[]
+    recruitingStrategy: ActivityEntry[]
+    fitnessLeadership: ActivityEntry[]
   }
   competitions_recommendations: {
-    academicCompetitions: string[]
-    businessCompetitions: string[]
-    artsCompetitions: string[]
-    debateSpeech: string[]
+    academicCompetitions: ActivityEntry[]
+    businessCompetitions: ActivityEntry[]
+    artsCompetitions: ActivityEntry[]
+    debateSpeech: ActivityEntry[]
   }
   student_government_recommendations: {
-    schoolGovernment: string[]
-    districtStateRoles: string[]
-    youthGovernment: string[]
-    advocacyRoles: string[]
+    schoolGovernment: ActivityEntry[]
+    districtStateRoles: ActivityEntry[]
+    youthGovernment: ActivityEntry[]
+    advocacyRoles: ActivityEntry[]
   }
   internships_recommendations: {
-    industryInternships: string[]
-    researchInternships: string[]
-    nonprofitInternships: string[]
-    virtualOpportunities: string[]
+    industryInternships: ActivityEntry[]
+    researchInternships: ActivityEntry[]
+    nonprofitInternships: ActivityEntry[]
+    virtualOpportunities: ActivityEntry[]
   }
     culture_arts_recommendations: {
-      performingArts: string[]
-      visualArts: string[]
-      creativeWriting: string[]
-      culturalClubs: string[]
+      performingArts: ActivityEntry[]
+      visualArts: ActivityEntry[]
+      creativeWriting: ActivityEntry[]
+      culturalClubs: ActivityEntry[]
     }
     career_recommendations: {
       jobTitles: string[]
@@ -638,7 +648,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     }: {
       title: string
       icon: React.ElementType
-      items: string[] | undefined
+      items: ActivityEntry[] | undefined
       color: string
     }) => {
       if (!items || !Array.isArray(items) || items.length === 0) return null
@@ -655,7 +665,49 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           <CardContent className="pt-0">
             <Accordion type="multiple" className="space-y-0.5">
               {items.map((item, index) => {
-                const text = typeof item === 'string' ? item : (typeof item === 'object' && item !== null ? JSON.stringify(item) : String(item))
+                // Handle structured activity objects (new format from AI)
+                if (typeof item === 'object' && item !== null && 'name' in item) {
+                  const obj = item as ActivityItem
+                  const hasDetails = obj.description || obj.dates || obj.relevance
+                  return (
+                    <AccordionItem key={index} value={`${title}-${index}`} className="border-none">
+                      {hasDetails ? (
+                        <>
+                          <AccordionTrigger className="py-1.5 hover:no-underline">
+                            <div className="flex items-start gap-2 text-left">
+                              <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: color }} />
+                              <span className="text-[13px] font-medium text-[#1e3a5f] leading-snug">{obj.name}</span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-2 pl-3.5">
+                            <div className="space-y-1.5">
+                              {obj.description && (
+                                <p className="text-xs text-[#5a7a9a] leading-relaxed">{obj.description}</p>
+                              )}
+                              {obj.dates && (
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="w-3 h-3 text-[#5a7a9a]/60 flex-shrink-0" />
+                                  <span className="text-[11px] text-[#5a7a9a]/80 font-medium">{obj.dates}</span>
+                                </div>
+                              )}
+                              {obj.relevance && (
+                                <p className="text-[11px] text-[#1e3a5f]/60 italic leading-relaxed">{obj.relevance}</p>
+                              )}
+                            </div>
+                          </AccordionContent>
+                        </>
+                      ) : (
+                        <div className="flex items-start gap-2 py-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: color }} />
+                          <span className="text-[13px] text-[#5a7a9a] leading-snug">{obj.name}</span>
+                        </div>
+                      )}
+                    </AccordionItem>
+                  )
+                }
+
+                // Handle string items (demo data / legacy format)
+                const text = typeof item === 'string' ? item : (typeof item === 'object' && item !== null ? Object.values(item).join(' — ') : String(item))
                 const colonIdx = text.indexOf(':')
                 const dashIdx = text.indexOf(' \u2013 ')
                 let heading: string
@@ -1339,9 +1391,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         <RecommendationCard title="Where to Publish" icon={FileText} items={toArray(assessment.research_publications_recommendations.publicationOpportunities)} color="#8b5cf6" />
                         <RecommendationCard title="Finding Mentors" icon={Users} items={toArray(assessment.research_publications_recommendations.mentorshipSuggestions)} color="#f59e0b" />
                       </div>
-                      {assessment.research_publications_recommendations.timeline && (
-                        <Card className="border-[#e5e0d5]"><CardContent className="p-4"><p className="text-sm font-semibold text-[#1e3a5f] mb-1">Research Timeline</p><p className="text-sm text-[#5a7a9a]">{assessment.research_publications_recommendations.timeline}</p></CardContent></Card>
-                      )}
                     </div>
                   ) : isPhase2Loading ? <Phase2Placeholder tabKey="research" /> : null}
                 </TabsContent>
@@ -1485,10 +1534,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       </div>
 
                       <div className="space-y-4">
-                        <h3 className="text-xl font-bold text-[#1e3a5f] flex items-center gap-2">
-                          <Compass className="w-6 h-6 text-[#c9a227]" />
-                          Blue Ocean Industries
-                        </h3>
+                        <div>
+                          <h3 className="text-xl font-bold text-[#1e3a5f] flex items-center gap-2">
+                            <Compass className="w-6 h-6 text-[#c9a227]" />
+                            Blue Ocean Industries
+                          </h3>
+                          <p className="text-sm text-[#5a7a9a] mt-1 ml-8">Emerging industries with little competition and resilient to AI replacing entry-level roles.</p>
+                        </div>
                         <div className="grid md:grid-cols-2 gap-6">
                           {assessment.career_recommendations?.blueOceanIndustries?.map((industry, i) => (
                             <Card key={i} className="border-[#e5e0d5]">
@@ -1536,25 +1588,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 {[
                   { title: "AP Courses", icon: BookOpen, items: toArray(assessment.academic_courses_recommendations?.apCourses), color: "#6366f1", accent: "bg-indigo-50" },
                   { title: "IB Courses", icon: GraduationCap, items: toArray(assessment.academic_courses_recommendations?.ibCourses), color: "#8b5cf6", accent: "bg-violet-50" },
+                  ...(assessment.academic_courses_recommendations?.curriculumSpecificCourses?.courses?.length
+                    ? [{ title: assessment.academic_courses_recommendations.curriculumSpecificCourses.label + " Courses", icon: BookOpen, items: toArray(assessment.academic_courses_recommendations.curriculumSpecificCourses.courses), color: "#6366f1", accent: "bg-indigo-50" }]
+                    : []),
                   { title: "Honors Courses", icon: Award, items: toArray(assessment.academic_courses_recommendations?.honorsCourses), color: "#ec4899", accent: "bg-pink-50" },
                   { title: "Strategic Electives", icon: Lightbulb, items: toArray(assessment.academic_courses_recommendations?.electivesRecommended), color: "#f59e0b", accent: "bg-amber-50" },
                 ].map(({ title, icon: SectionIcon, items, color, accent }) => {
-                  if (!items || items.length === 0) {
-                    if (title === "IB Courses") return (
-                      <Card key={title} className="border-[#e5e0d5]">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-lg text-[#1e3a5f] flex items-center gap-2">
-                            <SectionIcon className="w-5 h-5" style={{ color }} />
-                            {title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-[#5a7a9a] italic">No IB courses recommended based on your profile. Focus on AP and Honors courses instead.</p>
-                        </CardContent>
-                      </Card>
-                    )
-                    return null
-                  }
+                  if (!items || items.length === 0) return null
                   return (
                     <Card key={title} className="border-[#e5e0d5]">
                       <CardHeader className="pb-2">
@@ -2459,7 +2499,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         <ul className="space-y-1">
                           {assessment.student_government_recommendations?.schoolGovernment?.map((item, i) => (
                             <li key={i} className="text-sm text-[#5a7a9a] flex items-start gap-1">
-                              <span className="text-[#8b5cf6]">&bull;</span> {item}
+                              <span className="text-[#8b5cf6]">&bull;</span> {typeof item === 'string' ? item : (item as ActivityItem).name}
                             </li>
                           ))}
                         </ul>
@@ -2469,7 +2509,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         <ul className="space-y-1">
                           {assessment.student_government_recommendations?.districtStateRoles?.map((item, i) => (
                             <li key={i} className="text-sm text-[#5a7a9a] flex items-start gap-1">
-                              <span className="text-[#8b5cf6]">&bull;</span> {item}
+                              <span className="text-[#8b5cf6]">&bull;</span> {typeof item === 'string' ? item : (item as ActivityItem).name}
                             </li>
                           ))}
                         </ul>
@@ -2479,7 +2519,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         <ul className="space-y-1">
                           {assessment.student_government_recommendations?.youthGovernment?.map((item, i) => (
                             <li key={i} className="text-sm text-[#5a7a9a] flex items-start gap-1">
-                              <span className="text-[#8b5cf6]">&bull;</span> {item}
+                              <span className="text-[#8b5cf6]">&bull;</span> {typeof item === 'string' ? item : (item as ActivityItem).name}
                             </li>
                           ))}
                         </ul>
@@ -2489,7 +2529,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         <ul className="space-y-1">
                           {assessment.student_government_recommendations?.advocacyRoles?.map((item, i) => (
                             <li key={i} className="text-sm text-[#5a7a9a] flex items-start gap-1">
-                              <span className="text-[#8b5cf6]">&bull;</span> {item}
+                              <span className="text-[#8b5cf6]">&bull;</span> {typeof item === 'string' ? item : (item as ActivityItem).name}
                             </li>
                           ))}
                         </ul>

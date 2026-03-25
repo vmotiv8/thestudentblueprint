@@ -45,6 +45,13 @@ export async function GET(
               school_name,
               target_college_year,
               unique_code
+            ),
+            organizations (
+              name,
+              slug,
+              logo_url,
+              primary_color,
+              secondary_color
             )
           `)
           .eq('id', id)
@@ -81,6 +88,13 @@ export async function GET(
             school_name,
             target_college_year,
             unique_code
+          ),
+          organizations (
+            name,
+            slug,
+            logo_url,
+            primary_color,
+            secondary_color
           )
         `)
         .eq('id', id)

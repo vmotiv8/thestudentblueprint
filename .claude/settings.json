@@ -8,7 +8,16 @@
       "Bash(npm install:*)",
       "Bash(grep -r \"password\\\\|token\\\\|secret\" /Users/vish/Documents/Platforms/thestudentblueprint/.env*)",
       "Bash(curl -s -w \"\\\\nHTTP_STATUS: %{http_code}\\\\n\" http://localhost:3000/api/pdf/2379201f-1783-4923-ad99-ce90b2563fb1 -o /dev/null)",
-      "Bash(curl -s http://localhost:3000/api/pdf/2379201f-1783-4923-ad99-ce90b2563fb1)"
+      "Bash(curl -s http://localhost:3000/api/pdf/2379201f-1783-4923-ad99-ce90b2563fb1)",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/src/components -type f -name *.tsx -o -name *.ts)",
+      "Bash(grep -n \"activities\\\\|Activities\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(wc -l /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(grep -n \"Summer Ivy\\\\|Sports\\\\|Pre-Freshman\\\\|Competitive\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(grep -n \"function RecommendationCard\\\\|const RecommendationCard\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(grep -n \"summer_ivy_programs_recommendations\\\\|sports_recommendations\\\\|competitions_recommendations\\\\|service_community_recommendations\\\\|internships_recommendations\\\\|culture_arts_recommendations\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(grep -n \"select.*summer_ivy\\\\|select.*sports_recommendations\\\\|select.*competitions_recommendations\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint/supabase -type f -name *.sql)",
+      "Bash(grep -l \"summer_ivy\\\\|sports_recommendations\\\\|competitions_recommendations\\\\|culture_arts\" /Users/vish/Documents/Platforms/thestudentblueprint/migrations/*.sql)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

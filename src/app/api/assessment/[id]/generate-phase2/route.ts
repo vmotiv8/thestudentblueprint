@@ -11,7 +11,7 @@ import {
   PHASE_2_REQUIRED_FIELDS,
 } from '@/lib/assessment-prompts'
 
-export const maxDuration = 540
+export const maxDuration = 300
 
 export async function POST(
   request: Request,

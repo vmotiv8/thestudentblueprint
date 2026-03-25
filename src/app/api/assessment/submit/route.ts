@@ -12,7 +12,7 @@ import {
 } from '@/lib/assessment-prompts'
 
 // Allow up to 5 minutes for AI analysis
-export const maxDuration = 540
+export const maxDuration = 300
 
 export async function POST(request: Request) {
   try {
@@ -110,7 +110,7 @@ Generate JSON with these fields:
   "essayBrainstorm": [{ "title": "5-8 words", "hook": "vivid opening sentence", "narrative": "3-4 sentence arc", "connectingThreads": ["3-5 profile elements"], "whyItWorks": "2-3 sentences" }]
 }
 
-Generate exactly 5 essay ideas. Each must connect 3+ aspects of the student's profile.`, 8000, 120000)
+Generate exactly 5 essay ideas. Each must connect 3+ aspects of the student's profile.`, 8000, 60000)
 
     if (!phase1.success) {
       console.error('[Submit] Phase 1 failed:', phase1.error)
@@ -139,7 +139,7 @@ Generate JSON with ONLY these fields:
   "careerRecommendations": { "jobTitles": ["3"], "blueOceanIndustries": [{ "industry": "", "why": "" }], "salaryPotential": "", "linkedInBioHeadline": "" }
 }
 
-Generate at least 6 school matches and 4 scholarships.`, 8000, 120000)
+Generate at least 6 school matches and 4 scholarships.`, 8000, 60000)
 
     if (phase2.success) {
       Object.assign(allResults, phase2.data)
@@ -167,7 +167,7 @@ Generate JSON with ONLY these fields:
   "wasteOfTimeActivities": { "activities": [{ "activity": "", "whyQuit": "" }] }
 }
 
-Generate at least 3 passion projects.`, 8000, 120000)
+Generate at least 3 passion projects.`, 8000, 60000)
 
     if (phase3.success) {
       Object.assign(allResults, phase3.data)
@@ -193,7 +193,7 @@ Generate JSON with ONLY these fields:
   "competitionsRecommendations": { "academicCompetitions": ["5-6"], "businessCompetitions": ["4-5"], "artsCompetitions": ["4-5"], "debateSpeech": ["4-5"] },
   "internshipsRecommendations": { "industryInternships": ["4-5"], "researchInternships": ["4-5"], "nonprofitInternships": ["3-4"], "virtualOpportunities": ["3-4"] },
   "cultureArtsRecommendations": { "performingArts": ["3-4"], "visualArts": ["3-4"], "creativeWriting": ["4-5"], "culturalClubs": ["3-4"] }
-}`, 8000, 120000)
+}`, 8000, 60000)
 
     if (phase4.success) {
       Object.assign(allResults, phase4.data)
@@ -338,7 +338,7 @@ async function callClaude(
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return { success: false, error: 'No API key configured' }
 
-  const MAX_RETRIES = 2
+  const MAX_RETRIES = 1
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {

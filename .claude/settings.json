@@ -6,7 +6,9 @@
       "Bash(grep -n \"Phase2Placeholder\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
       "WebFetch(domain:ai.google.dev)",
       "Bash(npm install:*)",
-      "Bash(grep -r \"password\\\\|token\\\\|secret\" /Users/vish/Documents/Platforms/thestudentblueprint/.env*)"
+      "Bash(grep -r \"password\\\\|token\\\\|secret\" /Users/vish/Documents/Platforms/thestudentblueprint/.env*)",
+      "Bash(curl -s -w \"\\\\nHTTP_STATUS: %{http_code}\\\\n\" http://localhost:3000/api/pdf/2379201f-1783-4923-ad99-ce90b2563fb1 -o /dev/null)",
+      "Bash(curl -s http://localhost:3000/api/pdf/2379201f-1783-4923-ad99-ce90b2563fb1)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

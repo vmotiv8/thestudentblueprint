@@ -113,8 +113,25 @@ export async function GET(
         yPos += 10
       }
 
-          const addBulletPoints = (items: string[] | undefined, maxItems = 20) => {
-            if (!items || items.length === 0) return
+          const addBulletPoints = (rawItems: unknown, maxItems = 20) => {
+            // Safely coerce to string array — handles Gemini returning objects/strings instead of arrays
+            let items: string[]
+            if (!rawItems) return
+            if (Array.isArray(rawItems)) {
+              items = rawItems.map((v: unknown) => {
+                if (typeof v === 'string') return v
+                if (typeof v === 'object' && v !== null) {
+                  const obj = v as Record<string, unknown>
+                  return String(obj.name || obj.title || obj.description || obj.activity || obj.sport || obj.program || Object.values(obj).find(val => typeof val === 'string') || JSON.stringify(v))
+                }
+                return String(v)
+              })
+            } else if (typeof rawItems === 'string') {
+              items = rawItems.split('\n').filter(Boolean)
+            } else {
+              return
+            }
+            if (items.length === 0) return
             pdf.setTextColor(90, 122, 154)
             pdf.setFontSize(10)
             pdf.setFont('helvetica', 'normal')
@@ -1289,7 +1306,9 @@ The user assumes sole responsibility for any actions or decisions that are made 
     })
 
   } catch (error) {
-    console.error('Error generating PDF:', error)
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 })
+    const msg = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : ''
+    console.error('Error generating PDF:', msg, stack)
+    return NextResponse.json({ error: `Failed to generate PDF: ${msg}` }, { status: 500 })
   }
 }

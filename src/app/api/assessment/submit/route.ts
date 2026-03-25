@@ -118,8 +118,18 @@ export async function POST(request: Request) {
     }
 
     // ── Phase 1: Core Analysis ──────────────────────────────────────────
+    console.log('[Submit] Starting Phase 1 for assessment', assessmentId, 'formData keys:', Object.keys(formData || {}))
+
+    let phase1Prompt: string
+    try {
+      phase1Prompt = buildPhase1Prompt(formData, knowledgeHubResources)
+    } catch (promptErr) {
+      console.error('[Submit] Failed to build Phase 1 prompt:', promptErr)
+      return NextResponse.json({ error: 'Failed to build analysis prompt' }, { status: 500 })
+    }
+
     const phase1Result = await callClaude(
-      buildPhase1Prompt(formData, knowledgeHubResources),
+      phase1Prompt,
       8000,
       90000,
       PHASE_1_REQUIRED_FIELDS
@@ -167,11 +177,29 @@ export async function POST(request: Request) {
     const { error: phase1SaveError } = await phase1Query
 
     if (phase1SaveError) {
-      console.error('[Submit] Failed to save Phase 1:', phase1SaveError)
-      throw phase1SaveError
+      console.error('[Submit] Failed to save Phase 1 (attempt 1):', { message: phase1SaveError.message, code: phase1SaveError.code, details: phase1SaveError.details })
+      // If it failed because of missing columns (migration not run), retry without them
+      if (phase1SaveError.message?.includes('column') || phase1SaveError.code === '42703') {
+        console.log('[Submit] Retrying Phase 1 save without new columns')
+        delete phase1Update.generation_phase
+        delete phase1Update.phase2_started_at
+        const { error: retryError } = await supabase
+          .from('assessments')
+          .update(phase1Update)
+          .eq('id', assessmentId)
+        if (retryError) {
+          console.error('[Submit] Phase 1 retry also failed:', retryError.message)
+          throw retryError
+        }
+      } else {
+        throw phase1SaveError
+      }
     }
 
+    console.log('[Submit] Phase 1 saved successfully, starting Phase 2 in background')
+
     // ── Phase 2: Run in background via after() ──────────────────────────
+    try {
     after(async () => {
       try {
         console.log(`[Submit] Starting Phase 2 for assessment ${assessmentId}`)
@@ -312,6 +340,11 @@ export async function POST(request: Request) {
         } catch { /* ignore cleanup errors */ }
       }
     })
+    } catch (afterErr) {
+      console.error('[Submit] after() failed, Phase 2 will not run in background:', afterErr)
+      // Phase 1 is already saved — student can still see partial results
+      // Phase 2 can be triggered via the retry endpoint
+    }
 
     // Return immediately after Phase 1 — client redirects to results
     return NextResponse.json({
@@ -321,9 +354,11 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('Error submitting assessment:', error)
+    const err = error as { message?: string; code?: string; details?: string }
+    const msg = err.message || (error instanceof Error ? error.message : JSON.stringify(error))
+    console.error('[Submit] Error:', { message: msg, code: err.code, details: err.details })
     return NextResponse.json(
-      { error: 'Failed to submit assessment' },
+      { error: `Failed to submit: ${msg}` },
       { status: 500 }
     )
   }

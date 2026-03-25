@@ -120,7 +120,6 @@ export async function POST(request: Request) {
               first_name: firstName,
               last_name: lastName,
               full_name: fullName || null,
-              email: formData.basicInfo.email || undefined,
               phone: formData.basicInfo.phone || null,
               grade_level: formData.basicInfo.currentGrade || formData.basicInfo.gradeLevel || null,
               current_grade: formData.basicInfo.currentGrade || null,
@@ -193,51 +192,140 @@ export async function POST(request: Request) {
     }
     const newUniqueCode = generateCode()
 
-    const { data: student, error: studentError } = await supabase
-      .from('students')
-      .insert({
-        organization_id: organization.id,
-        email: formData.basicInfo?.email || '',
-        first_name: firstName,
-        last_name: lastName,
-        full_name: fullName || null,
-        unique_code: newUniqueCode,
-        phone: formData.basicInfo?.phone || null,
-        grade_level: formData.basicInfo?.currentGrade || formData.basicInfo?.gradeLevel || null,
-        current_grade: formData.basicInfo?.currentGrade || null,
-        school_name: formData.basicInfo?.schoolName || null,
-        parent_email: formData.basicInfo?.parentEmail || null,
-        parent_phone: formData.basicInfo?.parentPhone || null,
-        metadata: {
-          parentName: formData.basicInfo?.parentName,
-          dateOfBirth: formData.basicInfo?.dateOfBirth,
-          address: formData.basicInfo?.address,
-          city: formData.basicInfo?.city,
-          state: formData.basicInfo?.state,
-          country: formData.basicInfo?.country,
-          gender: formData.basicInfo?.gender,
-          ethnicity: formData.basicInfo?.ethnicity,
-          targetCollegeYear: formData.basicInfo?.targetCollegeYear,
-          dreamSchools: formData.basicInfo?.dreamSchools,
-          curriculum: formData.basicInfo?.curriculum,
-          studyAbroad: formData.basicInfo?.studyAbroad,
-          targetCountries: formData.basicInfo?.targetCountries
+    // Check if student already exists in this org (e.g., created via invite)
+    const studentEmail = formData.basicInfo?.email || ''
+    let student: { id: string; unique_code?: string } | null = null
+    let isExistingStudent = false
+
+    if (studentEmail) {
+      const { data: existing } = await supabase
+        .from('students')
+        .select('id, unique_code')
+        .eq('organization_id', organization.id)
+        .eq('email', studentEmail)
+        .maybeSingle()
+
+      if (existing) {
+        student = existing
+        isExistingStudent = true
+        // Update existing student with latest info
+        await supabase
+          .from('students')
+          .update({
+            first_name: firstName,
+            last_name: lastName,
+            full_name: fullName || null,
+            unique_code: existing.unique_code || newUniqueCode,
+            phone: formData.basicInfo?.phone || null,
+            grade_level: formData.basicInfo?.currentGrade || formData.basicInfo?.gradeLevel || null,
+            current_grade: formData.basicInfo?.currentGrade || null,
+            school_name: formData.basicInfo?.schoolName || null,
+            parent_email: formData.basicInfo?.parentEmail || null,
+            parent_phone: formData.basicInfo?.parentPhone || null,
+            metadata: {
+              parentName: formData.basicInfo?.parentName,
+              dateOfBirth: formData.basicInfo?.dateOfBirth,
+              address: formData.basicInfo?.address,
+              city: formData.basicInfo?.city,
+              state: formData.basicInfo?.state,
+              country: formData.basicInfo?.country,
+              gender: formData.basicInfo?.gender,
+              ethnicity: formData.basicInfo?.ethnicity,
+              targetCollegeYear: formData.basicInfo?.targetCollegeYear,
+              dreamSchools: formData.basicInfo?.dreamSchools,
+              curriculum: formData.basicInfo?.curriculum,
+              studyAbroad: formData.basicInfo?.studyAbroad,
+              targetCountries: formData.basicInfo?.targetCountries
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+      }
+    }
+
+    if (!student) {
+      const { data: newStudent, error: studentError } = await supabase
+        .from('students')
+        .insert({
+          organization_id: organization.id,
+          email: studentEmail,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: fullName || null,
+          unique_code: newUniqueCode,
+          phone: formData.basicInfo?.phone || null,
+          grade_level: formData.basicInfo?.currentGrade || formData.basicInfo?.gradeLevel || null,
+          current_grade: formData.basicInfo?.currentGrade || null,
+          school_name: formData.basicInfo?.schoolName || null,
+          parent_email: formData.basicInfo?.parentEmail || null,
+          parent_phone: formData.basicInfo?.parentPhone || null,
+          metadata: {
+            parentName: formData.basicInfo?.parentName,
+            dateOfBirth: formData.basicInfo?.dateOfBirth,
+            address: formData.basicInfo?.address,
+            city: formData.basicInfo?.city,
+            state: formData.basicInfo?.state,
+            country: formData.basicInfo?.country,
+            gender: formData.basicInfo?.gender,
+            ethnicity: formData.basicInfo?.ethnicity,
+            targetCollegeYear: formData.basicInfo?.targetCollegeYear,
+            dreamSchools: formData.basicInfo?.dreamSchools,
+            curriculum: formData.basicInfo?.curriculum,
+            studyAbroad: formData.basicInfo?.studyAbroad,
+            targetCountries: formData.basicInfo?.targetCountries
+          }
+        })
+        .select()
+        .single()
+
+      if (studentError) throw studentError
+      student = newStudent
+    }
+
+    // Only increment student count for genuinely new students
+    if (!isExistingStudent) {
+      await supabase.rpc('increment_students_count', { org_id: organization.id, amount: 1 })
+        .then(({ error: rpcErr }) => { if (rpcErr) console.error('[AssessmentSave] increment_students_count failed (non-fatal):', rpcErr.message) })
+    }
+
+    // If existing student, check if they already have an in-progress assessment
+    if (isExistingStudent && student) {
+      const { data: existingAssessment } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('student_id', student.id)
+        .eq('organization_id', organization.id)
+        .in('status', ['in_progress', 'partial'])
+        .maybeSingle()
+
+      if (existingAssessment) {
+        // Update existing assessment instead of creating a new one
+        const updateData: Record<string, unknown> = {
+          responses: formData,
+          current_section: currentSection || 1,
+          updated_at: new Date().toISOString(),
         }
-      })
-      .select()
-      .single()
+        if (organization.free_assessments) updateData.payment_status = 'free'
 
-    if (studentError) throw studentError
+        await supabase
+          .from('assessments')
+          .update(updateData)
+          .eq('id', existingAssessment.id)
 
-    // Increment student count so this self-serve student is tracked
-    await supabase.rpc('increment_students_count', { org_id: organization.id, amount: 1 })
-      .then(({ error: rpcErr }) => { if (rpcErr) console.error('[AssessmentSave] increment_students_count failed (non-fatal):', rpcErr.message) })
+        return NextResponse.json({
+          success: true,
+          assessmentId: existingAssessment.id,
+          studentId: student.id,
+          uniqueCode: student.unique_code || newUniqueCode
+        })
+      }
+    }
 
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
       .insert({
         organization_id: organization.id,
-        student_id: student.id,
+        student_id: student!.id,
         status: 'in_progress',
         responses: formData,
         current_section: currentSection || 1,
@@ -255,8 +343,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       assessmentId: assessment.id,
-      studentId: student.id,
-      uniqueCode: newUniqueCode
+      studentId: student!.id,
+      uniqueCode: (student as { unique_code?: string })?.unique_code || newUniqueCode
     })
 
   } catch (error) {

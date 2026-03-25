@@ -139,7 +139,7 @@ Generate JSON with ONLY these fields:
   "careerRecommendations": { "jobTitles": ["3"], "blueOceanIndustries": [{ "industry": "", "why": "" }], "salaryPotential": "", "linkedInBioHeadline": "" }
 }
 
-Generate at least 6 school matches and 4 scholarships.`, 6000, 90000)
+Generate at least 6 school matches and 4 scholarships.`, 8000, 120000)
 
     if (phase2.success) {
       Object.assign(allResults, phase2.data)
@@ -167,7 +167,7 @@ Generate JSON with ONLY these fields:
   "wasteOfTimeActivities": { "activities": [{ "activity": "", "whyQuit": "" }] }
 }
 
-Generate at least 3 passion projects.`, 6000, 90000)
+Generate at least 3 passion projects.`, 8000, 120000)
 
     if (phase3.success) {
       Object.assign(allResults, phase3.data)
@@ -193,7 +193,7 @@ Generate JSON with ONLY these fields:
   "competitionsRecommendations": { "academicCompetitions": ["5-6"], "businessCompetitions": ["4-5"], "artsCompetitions": ["4-5"], "debateSpeech": ["4-5"] },
   "internshipsRecommendations": { "industryInternships": ["4-5"], "researchInternships": ["4-5"], "nonprofitInternships": ["3-4"], "virtualOpportunities": ["3-4"] },
   "cultureArtsRecommendations": { "performingArts": ["3-4"], "visualArts": ["3-4"], "creativeWriting": ["4-5"], "culturalClubs": ["3-4"] }
-}`, 6000, 90000)
+}`, 8000, 120000)
 
     if (phase4.success) {
       Object.assign(allResults, phase4.data)
@@ -338,7 +338,7 @@ async function callClaude(
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return { success: false, error: 'No API key configured' }
 
-  const MAX_RETRIES = 1
+  const MAX_RETRIES = 2
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -356,15 +356,20 @@ async function callClaude(
 
       const textBlock = response.content.find(b => b.type === 'text')
       const content = textBlock?.text || ''
+
+      if (response.stop_reason === 'max_tokens') {
+        console.warn(`[Claude] Output truncated at max_tokens (attempt ${attempt + 1}), ${content.length} chars`)
+      }
+
       if (!content.trim()) { console.error(`[Claude] Empty (attempt ${attempt + 1})`); continue }
 
       const jsonMatch = content.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) { console.error(`[Claude] Non-JSON (attempt ${attempt + 1})`); continue }
+      if (!jsonMatch) { console.error(`[Claude] Non-JSON (attempt ${attempt + 1}):`, content.slice(0, 200)); continue }
 
       try {
         return { success: true, data: JSON.parse(jsonMatch[0]) }
       } catch {
-        console.error(`[Claude] Bad JSON (attempt ${attempt + 1})`)
+        console.error(`[Claude] Bad JSON (attempt ${attempt + 1}), length: ${jsonMatch[0].length}`)
         continue
       }
     } catch (error) {

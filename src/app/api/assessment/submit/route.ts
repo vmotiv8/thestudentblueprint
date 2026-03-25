@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import { webhookEvents } from '@/lib/organization/webhooks'
 import { buildResultsUrl } from '@/lib/url'
 import { sendStudentResultsEmail, sendParentEmail } from '@/lib/resend'
@@ -154,7 +155,7 @@ CRITICAL: Generate exactly 5 essay ideas. Each MUST be deeply personal and conne
     await savePartialResults(supabase, assessmentId, organization?.id, reanalyze, allResults, 'partial')
 
     // ── PHASE 2: Academics, Testing, Colleges, Career ───────────────────
-    const phase2 = await callClaude(`${SYSTEM}
+    const phase2 = await callGemini(`${SYSTEM}
 
 Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Competitiveness: ${allResults.competitivenessScore}/100)
 
@@ -196,7 +197,7 @@ Generate DETAILED JSON:
   }
 }
 
-CRITICAL: Generate at least 12 schoolMatches with detailed why. Generate at least 6 scholarships with real names. Be specific — name real programs, real amounts, real deadlines.`, 12000, 60000)
+CRITICAL: Generate at least 12 schoolMatches with detailed why. Generate at least 20 scholarships with real names, real amounts, and real deadlines. Be specific — name real programs.`, 16000, 60000)
 
     if (phase2.success) {
       Object.assign(allResults, phase2.data)
@@ -207,7 +208,7 @@ CRITICAL: Generate at least 12 schoolMatches with detailed why. Generate at leas
     }
 
     // ── PHASE 3: Projects, Mentors, Research ────────────────────────────
-    const phase3 = await callClaude(`${SYSTEM}
+    const phase3 = await callGemini(`${SYSTEM}
 
 Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Competitiveness: ${allResults.competitivenessScore}/100)
 
@@ -259,7 +260,7 @@ CRITICAL: Generate 4-5 passion projects that are genuinely ambitious (startup-le
     }
 
     // ── PHASE 4: Activities, Competitions, Summer Programs ──────────────
-    const phase4 = await callClaude(`${SYSTEM}
+    const phase4 = await callGemini(`${SYSTEM}
 
 Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Competitiveness: ${allResults.competitivenessScore}/100)
 
@@ -495,4 +496,59 @@ async function callClaude(
   }
 
   return { success: false, error: 'AI analysis failed. Please try again in a moment.' }
+}
+
+// ── Gemini API caller with retry (for Phases 2-4) ──────────────────────
+
+async function callGemini(
+  prompt: string,
+  _maxTokens: number,
+  timeoutMs: number,
+): Promise<{ success: true; data: Record<string, unknown> } | { success: false; error: string }> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    console.warn('[Gemini] No GEMINI_API_KEY, falling back to Claude')
+    return callClaude(prompt, _maxTokens, timeoutMs)
+  }
+
+  const MAX_RETRIES = 1
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const ai = new GoogleGenAI({ apiKey })
+      const response = await Promise.race([
+        ai.models.generateContent({
+          model: 'gemini-2.5-flash-lite',
+          contents: prompt,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after ${timeoutMs / 1000}s`)), timeoutMs)
+        ),
+      ])
+
+      const content = response.text || ''
+
+      if (!content.trim()) { console.error(`[Gemini] Empty (attempt ${attempt + 1})`); continue }
+
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) { console.error(`[Gemini] Non-JSON (attempt ${attempt + 1}):`, content.slice(0, 200)); continue }
+
+      try {
+        return { success: true, data: JSON.parse(jsonMatch[0]) }
+      } catch {
+        console.error(`[Gemini] Bad JSON (attempt ${attempt + 1}), length: ${jsonMatch[0].length}`)
+        continue
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      console.error(`[Gemini] Error (attempt ${attempt + 1}):`, msg)
+      const isTransient = /429|500|503|timeout|network|ECONNRESET/.test(msg)
+      if (!isTransient || attempt === MAX_RETRIES) break
+      await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+    }
+  }
+
+  // Fallback to Claude if Gemini fails completely
+  console.warn('[Gemini] All attempts failed, falling back to Claude')
+  return callClaude(prompt, _maxTokens, timeoutMs)
 }

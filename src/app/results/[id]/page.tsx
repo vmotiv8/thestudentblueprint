@@ -66,8 +66,8 @@ import {
   ResponsiveContainer
 } from "recharts"
 
-const PHASE_1_TABS = new Set(['timeline', 'gaps', 'roadmap', 'essays'])
-const PHASE_2_TABS = new Set(['projects', 'research', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match', 'network'])
+const PHASE_1_TABS = new Set(['roadmap', 'gaps', 'essays'])
+const PHASE_2_TABS = new Set(['projects', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match'])
 
 interface Assessment {
   id: string
@@ -969,22 +969,19 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   </motion.div>
                 )}
 
-                <Tabs defaultValue="timeline" className="mb-8 sm:mb-12 w-full">
+                <Tabs defaultValue="roadmap" className="mb-8 sm:mb-12 w-full">
                   <div className="sm:max-w-full sm:overflow-x-auto scrollbar-hide sm:-mx-0 sm:px-0">
                     <TabsList className="bg-white/40 backdrop-blur-2xl border border-white/20 p-1.5 sm:p-2 grid grid-cols-4 sm:grid-cols-7 h-auto gap-1 sm:gap-2 shadow-2xl shadow-[#1e3a5f]/5 rounded-xl sm:rounded-[2.5rem] w-full scrollbar-hide mb-2">
                       {[
-                        { value: "timeline", icon: GraduationCap, label: "Timeline" },
+                        { value: "roadmap", icon: Calendar, label: "Roadmap" },
                         { value: "gaps", icon: AlertCircle, label: "Gaps" },
                         { value: "projects", icon: Lightbulb, label: "Projects" },
-                        { value: "research", icon: FlaskConical, label: "Research" },
                         { value: "career-future", icon: Compass, label: "Career" },
                         { value: "academics", icon: BookOpen, label: "Academics" },
                         { value: "testing", icon: Target, label: "Testing" },
                         { value: "scholarships", icon: DollarSign, label: "Scholarships" },
                         { value: "activities", icon: Trophy, label: "Activities" },
                         { value: "college-match", icon: Building, label: "Colleges" },
-                        { value: "network", icon: Users, label: "Network" },
-                        { value: "roadmap", icon: Calendar, label: "Action" },
                         { value: "essays", icon: PenLine, label: "Essays" },
                       ].map(({ value, icon: Icon, label }) => (
                         <TabsTrigger key={value} value={value} className="brand-tab px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0 relative">
@@ -1295,6 +1292,24 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       </CardContent>
                     </Card>
                   )}
+
+                  {/* Research section (merged into Projects tab) */}
+                  {assessment.research_publications_recommendations ? (
+                    <div className="mt-8 space-y-4">
+                      <h3 className="text-lg font-bold text-[#1e3a5f] flex items-center gap-2 pb-2 border-b border-[#e5e0d5]">
+                        <FlaskConical className="w-5 h-5 text-[#06b6d4]" />
+                        Research & Publications
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <RecommendationCard title="Research Topics" icon={FlaskConical} items={assessment.research_publications_recommendations.researchTopics} color="#06b6d4" />
+                        <RecommendationCard title="Where to Publish" icon={FileText} items={assessment.research_publications_recommendations.publicationOpportunities} color="#8b5cf6" />
+                        <RecommendationCard title="Finding Mentors" icon={Users} items={assessment.research_publications_recommendations.mentorshipSuggestions} color="#f59e0b" />
+                      </div>
+                      {assessment.research_publications_recommendations.timeline && (
+                        <Card className="border-[#e5e0d5]"><CardContent className="p-4"><p className="text-sm font-semibold text-[#1e3a5f] mb-1">Research Timeline</p><p className="text-sm text-[#5a7a9a]">{assessment.research_publications_recommendations.timeline}</p></CardContent></Card>
+                      )}
+                    </div>
+                  ) : isPhase2Loading ? <Phase2Placeholder tabKey="research" /> : null}
                 </TabsContent>
 
             <TabsContent value="research" className="mt-6">
@@ -1456,6 +1471,30 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         </div>
                       </div>
                   </div>}
+
+                  {/* Network/Mentors section (merged into Career tab) */}
+                  {assessment.mentor_recommendations?.mentors?.length > 0 ? (
+                    <div className="mt-8 space-y-4">
+                      <h3 className="text-lg font-bold text-[#1e3a5f] flex items-center gap-2 pb-2 border-b border-[#e5e0d5]">
+                        <Users className="w-5 h-5 text-[#8b5cf6]" />
+                        Strategic Network & Mentors
+                      </h3>
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {assessment.mentor_recommendations.mentors.map((mentor: { name: string; university: string; department: string; why: string }, idx: number) => (
+                          <Card key={idx} className="border-[#e5e0d5]">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm text-[#1e3a5f]">{mentor.name}</CardTitle>
+                              <CardDescription className="text-xs">{mentor.university}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <Badge className="mb-2 text-[10px]" variant="outline">{mentor.department}</Badge>
+                              <p className="text-xs text-[#5a7a9a]"><strong>Why?</strong> {mentor.why}</p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ) : isPhase2Loading && !assessment.mentor_recommendations ? <Phase2Placeholder tabKey="network" /> : null}
                 </TabsContent>
 
             <TabsContent value="academics" className="mt-6">
@@ -2193,7 +2232,45 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   </TabsContent>
 
                 <TabsContent value="roadmap" className="mt-6">
-                  <div className="space-y-6">
+                  <div className="space-y-8">
+                    {/* Grade-by-Grade Timeline (from old timeline tab) */}
+                    {assessment.grade_by_grade_roadmap && (
+                      <div className="space-y-6">
+                        <div className="bg-gradient-to-r from-[#1e3a5f] to-[#c9a227] text-white rounded-xl p-4 sm:p-6">
+                          <h3 className="text-lg sm:text-2xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>Grade-by-Grade Timeline</h3>
+                          <p className="text-white/70 text-sm">Your personalized year-by-year roadmap to college success</p>
+                        </div>
+                        {/* Render existing timeline content inline */}
+                        {(() => {
+                          const roadmap = assessment.grade_by_grade_roadmap
+                          const allYears = [roadmap.currentGrade, ...(roadmap.nextYears || [])]
+                          return (
+                            <div className="space-y-4">
+                              {allYears.map((year, idx) => (
+                                <Card key={idx} className="border-[#e5e0d5]">
+                                  <CardHeader className="pb-2">
+                                    <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                                      <GraduationCap className="w-4 h-4 text-[#c9a227]" />
+                                      {year.grade} {idx === 0 && <Badge className="bg-[#c9a227]/10 text-[#c9a227] text-[10px]">Current</Badge>}
+                                    </CardTitle>
+                                    {year.focus && <p className="text-sm text-[#5a7a9a]">{year.focus}</p>}
+                                  </CardHeader>
+                                  <CardContent className="grid sm:grid-cols-2 gap-3 text-sm">
+                                    {year.academics?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Academics</p>{year.academics.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
+                                    {year.extracurriculars?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Extracurriculars</p>{year.extracurriculars.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
+                                    {year.testing?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Testing</p>{year.testing.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
+                                    {year.leadership?.length > 0 && <div><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Leadership</p>{year.leadership.map((a: string, i: number) => <p key={i} className="text-[#5a7a9a] text-[13px]">• {a}</p>)}</div>}
+                                    {year.summerPlan && <div className="sm:col-span-2"><p className="font-semibold text-[#1e3a5f] text-xs uppercase mb-1">Summer Plan</p><p className="text-[#5a7a9a] text-[13px]">{year.summerPlan}</p></div>}
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Action Items (immediate/short/medium/long term) */}
                     <div className="grid md:grid-cols-2 gap-5">
                       {[
                         { title: "Immediate Actions", subtitle: "Next 3 months", items: assessment.roadmap_data?.immediate, color: "#ef4444", accent: "bg-red-50" },

@@ -6,7 +6,11 @@ export function getQStashClient(): Client {
   if (!_client) {
     const token = process.env.QSTASH_TOKEN
     if (!token) throw new Error('QSTASH_TOKEN environment variable is required')
-    _client = new Client({ token })
+    _client = new Client({
+      token,
+      // Use QSTASH_URL env var if set (for EU region: https://qstash.upstash.io)
+      ...(process.env.QSTASH_URL ? { baseUrl: process.env.QSTASH_URL } : {}),
+    })
   }
   return _client
 }

@@ -30,8 +30,14 @@ export async function savePhaseResults(
   if (results.studentArchetype) update.student_archetype = results.studentArchetype
   if (results.archetypeScores) update.archetype_scores = results.archetypeScores
   if (results.competitivenessScore != null) {
-    update.competitiveness_score = results.competitivenessScore
-    update.scores = { competitivenessScore: results.competitivenessScore, archetypeScores: results.archetypeScores }
+    // AI sometimes returns a string like "High" instead of a number — coerce to number
+    const score = typeof results.competitivenessScore === 'number'
+      ? results.competitivenessScore
+      : parseInt(String(results.competitivenessScore), 10)
+    if (!isNaN(score)) {
+      update.competitiveness_score = Math.max(0, Math.min(100, score))
+      update.scores = { competitivenessScore: update.competitiveness_score, archetypeScores: results.archetypeScores }
+    }
   }
   if (results.roadmap) update.roadmap_data = results.roadmap
   if (results.strengthsAnalysis) update.strengths_analysis = results.strengthsAnalysis

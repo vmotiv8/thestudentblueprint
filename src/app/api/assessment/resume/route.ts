@@ -21,10 +21,12 @@ export async function POST(request: Request) {
         unique_code,
         assessments (
           id,
+          status,
           current_section,
           is_completed,
           payment_status,
           coupon_code_used,
+          responses,
           basic_info,
           academic_profile,
           testing_info,
@@ -59,8 +61,16 @@ export async function POST(request: Request) {
       )
     }
 
-    const assessment = (student.assessments as unknown[])?.[0] as Record<string, unknown> | undefined
-    
+    const assessments = (student.assessments as unknown[]) || []
+    // Prefer in-progress/partial assessment, then most recent
+    const assessment = (
+      assessments.find((a: unknown) => {
+        const s = (a as Record<string, unknown>).status
+        return s === 'in_progress' || s === 'partial'
+      }) ||
+      assessments[assessments.length - 1]
+    ) as Record<string, unknown> | undefined
+
     if (!assessment) {
       return NextResponse.json(
         { error: 'No assessment found' },

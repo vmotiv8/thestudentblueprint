@@ -146,6 +146,7 @@ export async function POST(request: Request) {
     const phase1 = phase1Result.data
 
     // Save Phase 1 results to DB immediately
+    // NOTE: 'partial' requires CHECK constraint update: ALTER TABLE assessments DROP CONSTRAINT assessments_status_check; ALTER TABLE assessments ADD CONSTRAINT assessments_status_check CHECK (status IN ('pending', 'in_progress', 'completed', 'expired', 'partial'));
     const phase1Update: Record<string, unknown> = {
       status: 'partial',
       scores: {
@@ -184,8 +185,9 @@ export async function POST(request: Request) {
 
     if (phase1SaveError) {
       console.error('[Submit] Failed to save Phase 1 (attempt 1):', { message: phase1SaveError.message, code: phase1SaveError.code })
-      // Retry without new columns if they don't exist
+      // Retry: use 'in_progress' status (in case 'partial' violates CHECK constraint) and drop new columns
       useNewColumns = false
+      phase1Update.status = 'in_progress'
       let retryQuery = supabase
         .from('assessments')
         .update(phase1Update)
@@ -198,7 +200,7 @@ export async function POST(request: Request) {
         console.error('[Submit] Phase 1 save failed completely:', retryError.message)
         throw retryError
       }
-      console.log('[Submit] Phase 1 saved without new columns (run migration 009)')
+      console.log('[Submit] Phase 1 saved with in_progress status (add partial to CHECK constraint)')
     }
 
     console.log('[Submit] Phase 1 saved successfully, starting Phase 2 in background')

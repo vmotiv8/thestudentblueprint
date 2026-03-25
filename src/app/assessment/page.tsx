@@ -257,10 +257,15 @@ function AssessmentContent() {
           })
           const data = await response.json()
           if (data.success && data.assessment) {
+            // Student has an existing assessment — resume it
             setIsPaid(true)
             verified = true
             if (data.student?.uniqueCode) setUniqueCode(data.student.uniqueCode)
             loadAssessmentData(data.assessment)
+          } else if (data.success && !data.assessment) {
+            // Student exists but no assessment yet — still allow if free org
+            verified = true
+            setIsPaid(true)
           } else if (!verified) {
             const verifyResponse = await fetch(`/api/payment/verify?email=${encodeURIComponent(savedEmail)}`)
             const verifyData = await verifyResponse.json()
@@ -338,12 +343,23 @@ function AssessmentContent() {
     setAssessmentId(assessment.id as string)
     setCurrentSection((assessment.current_section as number) || 1)
     setIsNewAssessment(false)
-    
+
+    // For in-progress assessments, the raw form data is in `responses`
+    // Individual section columns (basic_info, academic_profile, etc.) are only populated after AI analysis
+    const responses = (assessment.responses || {}) as Record<string, unknown>
+    const hasResponses = responses && Object.keys(responses).length > 0
+
+    // If responses has the full form data (in-progress), use it directly
+    if (hasResponses && responses.basicInfo) {
+      setFormData(responses as unknown as typeof initialFormData)
+      return
+    }
+
     const mergeWithDefaults = <T extends object>(data: unknown, defaults: T): T => {
       if (!data || typeof data !== 'object') return defaults
       return { ...defaults, ...(data as T) }
     }
-    
+
     const academicProfileData = mergeWithDefaults(assessment.academic_profile, initialFormData.academicProfile)
     
     // Handle migration from string to array for courses

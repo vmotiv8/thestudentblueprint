@@ -76,6 +76,7 @@ import {
   Rocket,
   Upload,
   ExternalLink,
+  Link2,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -105,6 +106,11 @@ import {
   CartesianGrid,
   LineChart,
   Line,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts"
 
 interface Admin {
@@ -141,14 +147,25 @@ interface Assessment {
     email: string
     first_name: string
     last_name: string
+    full_name: string | null
     phone: string | null
+    unique_code: string | null
     grade_level: string | null
     school_name: string | null
+    parent_email: string | null
+    parent_phone: string | null
+    metadata: Record<string, unknown> | null
   } | null
   coupon_code?: string
   current_section?: number | null
   scores: any
   report_data: any
+  responses: any
+  student_archetype: string | null
+  competitiveness_score: number | null
+  archetype_scores: Record<string, number> | null
+  strengths_analysis: { competitiveAdvantages?: string[]; uniqueDifferentiators?: string[]; alignedActivities?: string[] } | null
+  gap_analysis: { missingElements?: string[]; activitiesToDeepen?: string[]; skillsToDevelope?: string[] } | null
 }
 
 interface AtRiskStudent {
@@ -201,6 +218,8 @@ export default function AgencyDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showInviteDialog, setShowInviteDialog] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Assessment | null>(null)
+  const [studentDetailTab, setStudentDetailTab] = useState<'analysis' | 'raw'>('analysis')
   const [showCouponDialog, setShowCouponDialog] = useState(false)
   const [showAdminInviteDialog, setShowAdminInviteDialog] = useState(false)
   const [inviteEmail, setInviteEmail] = useState("")
@@ -971,18 +990,19 @@ export default function AgencyDashboard() {
                   <Table>
                     <TableHeader className="bg-[#faf8f3]">
                       <TableRow className="border-[#e5e0d5]">
-                        <TableHead className="px-8 font-bold text-[#0a192f]">Student</TableHead>
+                        <TableHead className="px-6 font-bold text-[#0a192f]">Student</TableHead>
+                        <TableHead className="font-bold text-[#0a192f]">Grade</TableHead>
                         <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
                         <TableHead className="font-bold text-[#0a192f]">Score</TableHead>
                         <TableHead className="font-bold text-[#0a192f]">Payment</TableHead>
-                        <TableHead className="font-bold text-[#0a192f]">Completed</TableHead>
-                        <TableHead className="px-8 text-right font-bold text-[#0a192f]">Actions</TableHead>
+                        <TableHead className="font-bold text-[#0a192f]">Date</TableHead>
+                        <TableHead className="font-bold text-[#0a192f]">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredAssessments.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="h-64 text-center">
+                          <TableCell colSpan={7} className="h-64 text-center">
                             <div className="flex flex-col items-center justify-center text-[#5a7a9a]">
                               <Users className="w-12 h-12 mb-4 opacity-20" />
                               <p className="text-lg font-medium">No students found</p>
@@ -993,20 +1013,23 @@ export default function AgencyDashboard() {
                       ) : (
                         filteredAssessments.map((a) => (
                           <TableRow key={a.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50 transition-colors">
-                            <TableCell className="px-8 py-4">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#1e3a5f] font-bold">
+                            <TableCell className="px-6 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1e3a5f] font-bold text-sm">
                                   {(a.student?.first_name || 'S')[0]}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-[#0a192f]">{a.student?.first_name} {a.student?.last_name}</p>
-                                  <p className="text-xs text-[#5a7a9a]">{a.student?.email}</p>
+                                  <p className="font-bold text-[#0a192f] text-sm">{a.student?.first_name} {a.student?.last_name}</p>
+                                  <p className="text-[11px] text-[#5a7a9a]">{a.student?.email}</p>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
+                              <span className="text-sm text-[#0a192f]">{a.student?.grade_level || '-'}</span>
+                            </TableCell>
+                            <TableCell>
                               <div>
-                                <Badge className={`rounded-lg px-3 py-1 font-bold text-[10px] uppercase tracking-wider ${
+                                <Badge className={`rounded-lg px-2.5 py-0.5 font-bold text-[10px] uppercase tracking-wider ${
                                   a.status === 'completed' ? 'bg-green-50 text-green-700 border border-green-100' :
                                   a.status === 'partial' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
                                   a.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
@@ -1014,44 +1037,94 @@ export default function AgencyDashboard() {
                                 }`}>
                                   {a.status === 'partial' ? 'Generating...' : (a.status || 'pending').replace('_', ' ')}
                                 </Badge>
-                                {a.status === 'in_progress' && a.current_section && (
-                                  <p className="text-[11px] text-[#5a7a9a] mt-1.5">
-                                    Section {a.current_section}/15 &middot; {['Basic Info', 'Academics', 'Testing', 'Activities', 'Leadership', 'Competitions', 'Passions', 'Career', 'Research', 'Summer', 'Talents', 'Family', 'Personality', 'Stories', 'Time'][a.current_section - 1] || ''}
+                                {(a.status === 'in_progress' || a.status === 'partial') && a.current_section && (
+                                  <p className="text-[10px] text-[#5a7a9a] mt-1">
+                                    Section {a.current_section}/15
                                   </p>
                                 )}
                               </div>
                             </TableCell>
                             <TableCell>
-                              <span className="font-bold text-[#0a192f]">
-                                {a.scores?.overall_score || '-'}
-                              </span>
+                              {a.competitiveness_score ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-[#0a192f] text-sm">{a.competitiveness_score}</span>
+                                  <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div className="h-full bg-[#1e3a5f] rounded-full" style={{ width: `${a.competitiveness_score}%` }} />
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-[#5a7a9a]">&mdash;</span>
+                              )}
                             </TableCell>
                             <TableCell>
-                              <Badge className={`rounded-lg px-3 py-1 font-bold text-[10px] uppercase tracking-wider ${
-                                a.payment_status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-gray-50 text-gray-700'
+                              <Badge className={`rounded-lg px-2.5 py-0.5 font-bold text-[10px] uppercase tracking-wider ${
+                                a.payment_status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                                a.payment_status === 'free' ? 'bg-green-50 text-green-700 border border-green-100' :
+                                'bg-gray-50 text-gray-700'
                               }`}>
-                                {a.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+                                {a.coupon_code || a.payment_status}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <span className="text-sm text-[#5a7a9a] font-medium">
-                                {a.completed_at ? new Date(a.completed_at).toLocaleDateString() : 'N/A'}
+                              <span className="text-sm text-[#5a7a9a]">
+                                {(a.completed_at || a.created_at) ? new Date(a.completed_at || a.created_at).toLocaleDateString() : 'N/A'}
                               </span>
                             </TableCell>
-                            <TableCell className="px-8 text-right">
-                              <div className="flex justify-end gap-2">
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#1e3a5f] hover:bg-blue-50 rounded-lg" title="Student Details" onClick={() => { setSelectedStudent(a); setStudentDetailTab('analysis') }}>
+                                  <Eye className="w-4 h-4" />
+                                </Button>
                                 {(a.status === 'completed' || a.status === 'partial') && (
-                                  <Button size="sm" variant="ghost" className="rounded-xl h-10 w-10 p-0 text-[#1e3a5f] hover:bg-blue-50" onClick={() => router.push(`/results/${a.id}`)}>
-                                    <Eye className="w-4 h-4" />
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:bg-gray-100 rounded-lg" title="View Results" onClick={() => router.push(`/results/${a.id}`)}>
+                                    <FileText className="w-4 h-4" />
                                   </Button>
                                 )}
-                                <Button size="sm" variant="ghost" className="rounded-xl h-10 w-10 p-0 text-[#5a7a9a] hover:bg-gray-100" onClick={() => copyToClipboard(a.student?.email || '')}>
-                                  <Mail className="w-4 h-4" />
+                                {a.status === 'completed' && (
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:bg-gray-100 rounded-lg" title="Download PDF" onClick={async () => {
+                                    try {
+                                      const res = await fetch(`/api/pdf/${a.id}`)
+                                      if (!res.ok) throw new Error()
+                                      const blob = await res.blob()
+                                      const url = window.URL.createObjectURL(blob)
+                                      const link = document.createElement('a')
+                                      link.href = url
+                                      link.download = `${a.student?.full_name || 'Student'}-Report.pdf`
+                                      link.click()
+                                      window.URL.revokeObjectURL(url)
+                                      toast.success('PDF downloaded')
+                                    } catch { toast.error('Failed to download PDF') }
+                                  }}>
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:bg-gray-100 rounded-lg" title="Copy Resume Code" onClick={() => { copyToClipboard(a.student?.unique_code || ''); toast.success('Resume code copied') }}>
+                                  <Link2 className="w-4 h-4" />
                                 </Button>
+                                {a.status !== 'completed' && a.student?.email && (
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:bg-blue-50 rounded-lg" title="Send Resume Reminder Email" onClick={async () => {
+                                    try {
+                                      const res = await fetch('/api/admin/send-resume-reminder', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ assessmentId: a.id }),
+                                      })
+                                      const data = await res.json()
+                                      if (res.ok) {
+                                        toast.success(`Resume reminder sent to ${data.sentTo}`)
+                                      } else {
+                                        toast.error(data.error || 'Failed to send email')
+                                      }
+                                    } catch { toast.error('Failed to send email') }
+                                  }}>
+                                    <Mail className="w-4 h-4" />
+                                  </Button>
+                                )}
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="rounded-xl h-10 w-10 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                  className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                  title="Delete"
                                   onClick={async () => {
                                     if (!confirm(`Delete ${a.student?.first_name || 'this student'}'s assessment? This cannot be undone.`)) return
                                     try {
@@ -1621,6 +1694,262 @@ export default function AgencyDashboard() {
           </Tabs>
         </motion.div>
       </main>
+
+      {/* Student Details Dialog */}
+      <Dialog open={!!selectedStudent} onOpenChange={(open) => { if (!open) setSelectedStudent(null) }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-[#faf8f3]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl text-[#1e3a5f]">
+              <GraduationCap className="w-5 h-5" />
+              Student Details
+            </DialogTitle>
+            <DialogDescription>Comprehensive profile and analysis for this student</DialogDescription>
+          </DialogHeader>
+
+          {selectedStudent && (() => {
+            const a = selectedStudent
+            const meta = a.student?.metadata || {} as Record<string, unknown>
+            const responses = a.responses || {}
+            const sectionTitles = ['Basic Information', 'Academic Profile', 'Standardized Testing', 'Extracurricular Activities', 'Leadership Experience', 'Competitions & Recognition', 'Passions & Interests', 'Career Aspirations', 'Research Experience', 'Summer Programs', 'Special Talents', 'Family Context', 'Personality & Strengths', 'Personal Stories', 'Time Commitment']
+            const sectionKeys = ['basicInfo', 'academicProfile', 'testingInfo', 'extracurriculars', 'leadership', 'competitions', 'passions', 'careerAspirations', 'researchExperience', 'summerPrograms', 'specialTalents', 'familyContext', 'personality', 'personalStories', 'timeCommitment']
+
+            return (
+              <>
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setStudentDetailTab('analysis')}
+                    className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${studentDetailTab === 'analysis' ? 'bg-white shadow-sm border border-[#e5e0d5] text-[#1e3a5f]' : 'text-[#5a7a9a] hover:bg-white/50'}`}
+                  >
+                    Analysis & Profile
+                  </button>
+                  <button
+                    onClick={() => setStudentDetailTab('raw')}
+                    className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${studentDetailTab === 'raw' ? 'bg-white shadow-sm border border-[#e5e0d5] text-[#1e3a5f]' : 'text-[#5a7a9a] hover:bg-white/50'}`}
+                  >
+                    Raw Answers
+                  </button>
+                </div>
+
+                {studentDetailTab === 'analysis' ? (
+                  <div className="space-y-4">
+                    {/* Student Info Grid */}
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                      {[
+                        ['Full Name', a.student?.full_name || `${a.student?.first_name || ''} ${a.student?.last_name || ''}`.trim()],
+                        ['Email', a.student?.email],
+                        ['Parent Name', meta.parentName as string],
+                        ['Parent Email', a.student?.parent_email],
+                        ['Parent Phone', a.student?.parent_phone],
+                        ['Date of Birth', meta.dateOfBirth as string],
+                        ['Gender', meta.gender as string],
+                        ['Grade', a.student?.grade_level],
+                        ['Target Year', meta.targetCollegeYear as string],
+                        ['School', a.student?.school_name],
+                        ['Address', [meta.address, meta.city, meta.state, meta.country].filter(Boolean).join(', ')],
+                        ['Ethnicity', meta.ethnicity as string],
+                      ].map(([label, value]) => value ? (
+                        <div key={label as string}>
+                          <p className="text-[11px] font-semibold text-[#c9a227] uppercase tracking-wider">{label}</p>
+                          <p className="text-sm text-[#0a192f] font-medium">{value as string}</p>
+                        </div>
+                      ) : null)}
+                    </div>
+
+                    {/* Archetype & Score */}
+                    {a.student_archetype && (
+                      <div className="grid grid-cols-2 gap-4 mt-2">
+                        <div className="bg-[#1e3a5f] rounded-xl p-4">
+                          <p className="text-[11px] text-white/60 uppercase tracking-wider mb-1">Student Archetype</p>
+                          <p className="text-lg font-bold text-[#c9a227]">{a.student_archetype}</p>
+                        </div>
+                        <div className="bg-[#faf8f3] border border-[#e5e0d5] rounded-xl p-4">
+                          <p className="text-[11px] text-[#5a7a9a] uppercase tracking-wider mb-1">Competitiveness Score</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-bold text-[#1e3a5f]">{a.competitiveness_score ?? '-'}</span>
+                            <span className="text-sm text-[#5a7a9a]">/ 100</span>
+                          </div>
+                          {a.competitiveness_score && (
+                            <div className="w-full h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                              <div className="h-full bg-[#1e3a5f] rounded-full" style={{ width: `${a.competitiveness_score}%` }} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status & Payment */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white border border-[#e5e0d5] rounded-xl p-3">
+                        <p className="text-[11px] text-[#5a7a9a] uppercase tracking-wider mb-1">Status</p>
+                        <Badge className={`${a.status === 'completed' ? 'bg-green-50 text-green-700' : a.status === 'partial' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'}`}>
+                          {a.status === 'partial' ? 'Generating...' : a.status?.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                      <div className="bg-white border border-[#e5e0d5] rounded-xl p-3">
+                        <p className="text-[11px] text-[#5a7a9a] uppercase tracking-wider mb-1">Payment</p>
+                        <Badge className={`${a.payment_status === 'paid' || a.payment_status === 'free' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-700'}`}>
+                          {a.coupon_code || a.payment_status}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Radar Chart */}
+                    {a.archetype_scores && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-[#c9a227] uppercase tracking-wider mb-2">Archetype Scores</p>
+                        <div className="bg-white border border-[#e5e0d5] rounded-xl p-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <RadarChart data={Object.entries(a.archetype_scores).map(([k, v]) => ({ subject: k, score: v as number, fullMark: 100 }))}>
+                              <PolarGrid stroke="#e5e0d5" />
+                              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#5a7a9a' }} />
+                              <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 9 }} />
+                              <Radar name="Score" dataKey="score" stroke="#c9a227" fill="#c9a227" fillOpacity={0.3} />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Strengths */}
+                    {a.strengths_analysis?.competitiveAdvantages && a.strengths_analysis.competitiveAdvantages.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-[#c9a227] uppercase tracking-wider mb-2">Strengths Analysis</p>
+                        <div className="bg-green-50/50 border border-green-100 rounded-xl p-4 space-y-2">
+                          {[...(a.strengths_analysis.competitiveAdvantages || []), ...(a.strengths_analysis.uniqueDifferentiators || []), ...(a.strengths_analysis.alignedActivities || [])].map((s, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-[#0a192f]">{s}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Gap Analysis */}
+                    {a.gap_analysis?.missingElements && a.gap_analysis.missingElements.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-[#c9a227] uppercase tracking-wider mb-2">Gap Analysis</p>
+                        <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 space-y-2">
+                          {[...(a.gap_analysis.missingElements || []), ...(a.gap_analysis.activitiesToDeepen || []), ...(a.gap_analysis.skillsToDevelope || [])].map((g, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-[#0a192f]">{g}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[#e5e0d5]">
+                      {(a.status === 'completed' || a.status === 'partial') && (
+                        <Button size="sm" className="bg-[#1e3a5f] hover:bg-[#152a45] text-white" onClick={() => { setSelectedStudent(null); router.push(`/results/${a.id}`) }}>
+                          <Eye className="w-3.5 h-3.5 mr-1.5" /> View Results
+                        </Button>
+                      )}
+                      {a.status === 'completed' && (
+                        <Button size="sm" variant="outline" className="border-[#e5e0d5]" onClick={async () => {
+                          try {
+                            const res = await fetch(`/api/pdf/${a.id}`)
+                            if (!res.ok) throw new Error()
+                            const blob = await res.blob()
+                            const url = window.URL.createObjectURL(blob)
+                            const link = document.createElement('a')
+                            link.href = url
+                            link.download = `${a.student?.full_name || 'Student'}-Report.pdf`
+                            link.click()
+                            window.URL.revokeObjectURL(url)
+                          } catch { toast.error('Failed to download PDF') }
+                        }}>
+                          <Download className="w-3.5 h-3.5 mr-1.5" /> Download PDF
+                        </Button>
+                      )}
+                      {a.status === 'completed' && (
+                        <Button size="sm" variant="outline" className="border-[#e5e0d5] text-orange-600 hover:bg-orange-50" onClick={async () => {
+                          try {
+                            const res = await fetch('/api/assessment/submit', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ assessmentId: a.id, reanalyze: true }),
+                            })
+                            if (res.ok) {
+                              toast.success('Report regeneration started')
+                              fetchData()
+                            } else {
+                              toast.error('Failed to regenerate')
+                            }
+                          } catch { toast.error('Failed to regenerate') }
+                        }}>
+                          <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Regenerate Report
+                        </Button>
+                      )}
+                      {a.student?.unique_code && (
+                        <Button size="sm" variant="outline" className="border-[#e5e0d5]" onClick={() => { copyToClipboard(a.student?.unique_code || ''); toast.success('Resume code copied') }}>
+                          <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy Resume Code
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Raw Answers Tab */
+                  <div className="space-y-6">
+                    {sectionKeys.map((key, idx) => {
+                      const sectionData = responses[key] as Record<string, unknown> | undefined
+                      if (!sectionData || Object.keys(sectionData).length === 0) return null
+                      return (
+                        <div key={key}>
+                          <h3 className="text-sm font-bold text-[#1e3a5f] mb-3 pb-1 border-b border-[#c9a227]/30">
+                            Section {idx + 1}: {sectionTitles[idx]}
+                          </h3>
+                          <div className="space-y-2">
+                            {Object.entries(sectionData).map(([field, value]) => {
+                              if (value === null || value === undefined || value === '') return null
+                              const label = field.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()
+                              let displayValue: string
+                              if (Array.isArray(value)) {
+                                if (value.length === 0) return null
+                                if (typeof value[0] === 'object') {
+                                  displayValue = value.map((item, i) => {
+                                    if (typeof item === 'object' && item !== null) {
+                                      return Object.entries(item).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(', ')
+                                    }
+                                    return String(item)
+                                  }).join('\n')
+                                } else {
+                                  displayValue = value.filter(Boolean).join(', ')
+                                }
+                              } else if (typeof value === 'object') {
+                                displayValue = Object.entries(value as Record<string, unknown>).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(', ')
+                              } else if (typeof value === 'boolean') {
+                                displayValue = value ? 'Yes' : 'No'
+                              } else {
+                                displayValue = String(value)
+                              }
+                              if (!displayValue.trim()) return null
+                              return (
+                                <div key={field} className="bg-white border border-[#e5e0d5] rounded-xl p-3">
+                                  <p className="text-[10px] font-semibold text-[#5a7a9a] uppercase tracking-wider mb-0.5">{label}</p>
+                                  <p className="text-sm text-[#0a192f] whitespace-pre-wrap">{displayValue}</p>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {Object.keys(responses).length === 0 && (
+                      <div className="text-center py-12 text-[#5a7a9a]">
+                        <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                        <p>No raw answers available for this assessment</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* Dialogs */}
       <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>

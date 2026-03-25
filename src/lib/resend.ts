@@ -1172,3 +1172,133 @@ export async function sendAdminInviteEmail(to: string, role: string, tempPasswor
     return { success: false, error }
   }
 }
+
+export async function sendResumeReminderEmail(props: {
+  to: string
+  studentName: string
+  resumeCode: string
+  assessmentUrl: string
+  currentSection: number | null
+  orgName: string
+  logoUrl: string | null
+  primaryColor: string
+  secondaryColor: string
+  fromName?: string
+  replyTo?: string | null
+}) {
+  const { to, studentName, resumeCode, assessmentUrl, currentSection, orgName, logoUrl, primaryColor, secondaryColor, fromName, replyTo } = props
+
+  const safePrimaryColor = isValidHexColor(primaryColor) ? primaryColor : '#1e3a5f'
+  const safeSecondaryColor = isValidHexColor(secondaryColor) ? secondaryColor : '#c9a227'
+  const safeOrgName = escapeHtml(orgName)
+  const safeName = escapeHtml(studentName)
+  const safeLogoUrl = logoUrl && isValidUrl(logoUrl) ? logoUrl : null
+  const sectionNames = ['Basic Info', 'Academics', 'Testing', 'Activities', 'Leadership', 'Competitions', 'Passions', 'Career', 'Research', 'Summer', 'Talents', 'Family', 'Personality', 'Stories', 'Time']
+  const progressPercent = currentSection ? Math.round((currentSection / 15) * 100) : 0
+  const sectionLabel = currentSection ? `Section ${currentSection}/15 — ${sectionNames[currentSection - 1] || ''}` : ''
+
+  const fromEmail = fromName
+    ? `${escapeHtml(fromName)} ${FROM_EMAIL.includes('<') ? FROM_EMAIL.substring(FROM_EMAIL.indexOf('<')) : `<${FROM_EMAIL}>`}`
+    : FROM_EMAIL
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Continue Your Assessment - ${safeOrgName}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #faf8f3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e0d5; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color: ${safePrimaryColor}; padding: 40px; text-align: center;">
+              ${safeLogoUrl ?
+                `<img src="${safeLogoUrl}" alt="${safeOrgName}" style="max-width: 150px; max-height: 60px; margin-bottom: 20px;">` :
+                `<div style="font-size: 28px; color: ${safeSecondaryColor}; font-weight: bold; margin-bottom: 10px;">${safeOrgName}</div>`
+              }
+              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800;">Continue Your Assessment</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 16px; color: ${safePrimaryColor}; font-size: 22px; font-weight: 700;">Hi ${safeName}!</h2>
+              <p style="margin: 0 0 24px; color: #5a7a9a; font-size: 16px; line-height: 1.6;">
+                You've made great progress on your assessment. Pick up right where you left off and complete your personalized college roadmap.
+              </p>
+
+              ${currentSection ? `
+                <!-- Progress -->
+                <div style="background-color: #faf8f3; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                  <p style="margin: 0 0 8px; color: ${safePrimaryColor}; font-size: 13px; font-weight: 700;">${sectionLabel}</p>
+                  <div style="width: 100%; height: 8px; background-color: #e5e0d5; border-radius: 4px; overflow: hidden;">
+                    <div style="width: ${progressPercent}%; height: 100%; background-color: ${safePrimaryColor}; border-radius: 4px;"></div>
+                  </div>
+                  <p style="margin: 8px 0 0; color: #5a7a9a; font-size: 12px;">${progressPercent}% complete</p>
+                </div>
+              ` : ''}
+
+              <!-- Resume Code -->
+              <div style="background-color: ${safeSecondaryColor}15; border: 2px solid ${safeSecondaryColor}40; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                <p style="margin: 0 0 8px; color: ${safePrimaryColor}; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Your Resume Code</p>
+                <p style="margin: 0; color: ${safePrimaryColor}; font-size: 36px; font-weight: 800; letter-spacing: 6px; font-family: monospace;">${escapeHtml(resumeCode)}</p>
+                <p style="margin: 12px 0 0; color: #5a7a9a; font-size: 13px;">Use this code to resume your assessment from any device</p>
+              </div>
+
+              <div style="text-align: center; margin-top: 32px;">
+                <a href="${assessmentUrl}" style="display: inline-block; background-color: ${safePrimaryColor}; color: #ffffff; padding: 18px 40px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px;">
+                  Continue My Assessment →
+                </a>
+                <p style="margin: 16px 0 0; color: #5a7a9a; font-size: 13px;">You can save and resume anytime. Your progress is always saved.</p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #faf8f3; padding: 30px; text-align: center; border-top: 1px solid #e5e0d5;">
+              <p style="margin: 0; color: #5a7a9a; font-size: 14px;">&copy; ${new Date().getFullYear()} ${safeOrgName}. All rights reserved.</p>
+              <p style="margin: 8px 0 0; color: #5a7a9a; font-size: 12px;">Powered by The Student Blueprint Platform</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `
+
+  try {
+    console.log(`[Email:resume-reminder] Sending to ${to} for org "${orgName}"`)
+
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      ...(replyTo ? { replyTo } : {}),
+      subject: `Continue Your Assessment - ${safeOrgName}`,
+      html
+    })
+
+    if (error) {
+      console.error(`[Email:resume-reminder] Resend API error for ${to}:`, error)
+      await logEmailSend('resume_reminder', to, false, error)
+      return { success: false, error }
+    }
+
+    console.log(`[Email:resume-reminder] Successfully sent to ${to}, id: ${data?.id}`)
+    await logEmailSend('resume_reminder', to, true)
+    return { success: true, data }
+  } catch (error) {
+    console.error(`[Email:resume-reminder] Exception sending to ${to}:`, error)
+    await logEmailSend('resume_reminder', to, false, error)
+    return { success: false, error }
+  }
+}

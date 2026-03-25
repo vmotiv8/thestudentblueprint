@@ -185,8 +185,10 @@ function AssessmentContent() {
     const loadAssessment = async () => {
       setIsLoading(true)
 
-      // Check if this org offers free assessments — skip payment verification if so
       const orgSlug = getOrgSlug()
+      let isFreeOrg = false
+
+      // Check if this org offers free assessments
       if (orgSlug || tenant?.free_assessments) {
         try {
           const orgParam = orgSlug ? `?org=${encodeURIComponent(orgSlug)}` : ''
@@ -194,9 +196,8 @@ function AssessmentContent() {
           if (tenantRes.ok) {
             const tenantData = await tenantRes.json()
             if (tenantData.free_assessments) {
+              isFreeOrg = true
               setIsPaid(true)
-              setIsLoading(false)
-              return
             }
           }
         } catch (e) {
@@ -209,8 +210,9 @@ function AssessmentContent() {
       const resumeCode = searchParams.get("code")
       const couponUsed = localStorage.getItem("studentblueprint_coupon")
 
-      let verified = false
-      
+      let verified = isFreeOrg
+      let dataLoaded = false
+
       if (sessionId) {
         const response = await fetch(`/api/payment/verify?session_id=${sessionId}`)
         const data = await response.json()
@@ -220,12 +222,13 @@ function AssessmentContent() {
           localStorage.setItem("studentblueprint_paid_email", data.email || "")
         }
       }
-      
+
       if (couponUsed) {
         setIsPaid(true)
         verified = true
       }
-      
+
+      // Try resuming by code (from URL ?code=XXXXX)
       if (resumeCode) {
         try {
           const response = await fetch("/api/assessment/resume", {
@@ -237,49 +240,18 @@ function AssessmentContent() {
           if (data.success && data.assessment) {
             setIsPaid(true)
             verified = true
+            dataLoaded = true
             setUniqueCode(data.student.uniqueCode)
             loadAssessmentData(data.assessment)
-            setIsLoading(false)
-            return
           }
         } catch (e) {
           console.error("Error loading by code:", e)
         }
       }
-      
-      const savedEmail = localStorage.getItem("studentblueprint_paid_email")
-      if (savedEmail) {
-        try {
-          const response = await fetch("/api/assessment/resume", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: savedEmail })
-          })
-          const data = await response.json()
-          if (data.success && data.assessment) {
-            // Student has an existing assessment — resume it
-            setIsPaid(true)
-            verified = true
-            if (data.student?.uniqueCode) setUniqueCode(data.student.uniqueCode)
-            loadAssessmentData(data.assessment)
-          } else if (data.success && !data.assessment) {
-            // Student exists but no assessment yet — still allow if free org
-            verified = true
-            setIsPaid(true)
-          } else if (!verified) {
-            const verifyResponse = await fetch(`/api/payment/verify?email=${encodeURIComponent(savedEmail)}`)
-            const verifyData = await verifyResponse.json()
-            if (verifyData.paid) {
-              setIsPaid(true)
-              verified = true
-            }
-          }
-        } catch (e) {
-          console.error("Error checking payment status:", e)
-        }
-      }
-      
-      if (resumeId) {
+
+      // Try resuming by assessment ID (from URL ?resume=<id>)
+      if (!dataLoaded && resumeId) {
+        // First check sessionStorage (set by checkout page)
         const resumeData = sessionStorage.getItem("resumeAssessment")
         if (resumeData) {
           try {
@@ -287,6 +259,8 @@ function AssessmentContent() {
             if (data.assessment) {
               setIsPaid(true)
               verified = true
+              dataLoaded = true
+              if (data.student?.uniqueCode) setUniqueCode(data.student.uniqueCode)
               loadAssessmentData(data.assessment)
             }
             sessionStorage.removeItem("resumeAssessment")
@@ -294,8 +268,55 @@ function AssessmentContent() {
             console.error("Error loading resume data:", e)
           }
         }
+
+        // If sessionStorage was empty, fetch directly from API
+        if (!dataLoaded) {
+          try {
+            const response = await fetch(`/api/assessment/${resumeId}`)
+            const data = await response.json()
+            if (data.assessment) {
+              setIsPaid(true)
+              verified = true
+              dataLoaded = true
+              loadAssessmentData(data.assessment)
+            }
+          } catch (e) {
+            console.error("Error fetching assessment by ID:", e)
+          }
+        }
       }
-      
+
+      // Try resuming by saved email
+      if (!dataLoaded) {
+        const savedEmail = localStorage.getItem("studentblueprint_paid_email")
+        if (savedEmail) {
+          try {
+            const response = await fetch("/api/assessment/resume", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: savedEmail })
+            })
+            const data = await response.json()
+            if (data.success && data.assessment) {
+              setIsPaid(true)
+              verified = true
+              dataLoaded = true
+              if (data.student?.uniqueCode) setUniqueCode(data.student.uniqueCode)
+              loadAssessmentData(data.assessment)
+            } else if (!verified) {
+              const verifyResponse = await fetch(`/api/payment/verify?email=${encodeURIComponent(savedEmail)}`)
+              const verifyData = await verifyResponse.json()
+              if (verifyData.paid) {
+                setIsPaid(true)
+                verified = true
+              }
+            }
+          } catch (e) {
+            console.error("Error checking payment status:", e)
+          }
+        }
+      }
+
       if (!verified) {
         const orgParam = orgSlug ? `?org=${encodeURIComponent(orgSlug)}` : ''
         router.replace(`/checkout${orgParam}`)

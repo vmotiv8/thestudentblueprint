@@ -1891,58 +1891,142 @@ export default function AgencyDashboard() {
                     </div>
                   </div>
                 ) : (
-                  /* Raw Answers Tab */
+                  /* Raw Answers Tab — fields in exact assessment form order */
                   <div className="space-y-6">
-                    {sectionKeys.map((key, idx) => {
-                      const sectionData = responses[key] as Record<string, unknown> | undefined
-                      if (!sectionData || Object.keys(sectionData).length === 0) return null
+                    {(() => {
+                      const orderedSections: { title: string; key: string; fields: [string, string][] }[] = [
+                        { title: 'Basic Information', key: 'basicInfo', fields: [
+                          ['fullName', 'Student Full Name'], ['email', 'Student Email'], ['phone', 'Student Phone Number'],
+                          ['parentName', 'Parent Name'], ['parentEmail', 'Parent Email'], ['parentPhone', 'Parent Phone Number'],
+                          ['dateOfBirth', 'Date of Birth'], ['currentGrade', 'Current Grade Level'], ['schoolName', 'Current School Name'],
+                          ['address', 'Address'], ['city', 'City'], ['state', 'State'], ['country', 'Country'],
+                          ['targetCollegeYear', 'Target College Entry Year'], ['gender', 'Gender'], ['ethnicity', 'Ethnicity'],
+                          ['dreamSchools', 'Dream Schools'], ['studyAbroad', 'Planning to Study Abroad'], ['targetCountries', 'Target Countries'], ['curriculum', 'Curriculum'],
+                        ]},
+                        { title: 'Academic Profile', key: 'academicProfile', fields: [
+                          ['curriculum', 'Curriculum'], ['gpaScale', 'GPA Scale'], ['gpaUnweighted', 'Unweighted GPA'], ['gpaWeighted', 'Weighted GPA'],
+                          ['coursesTaken', 'Advanced Courses Taken'], ['coursesPlanned', 'Advanced Courses Planned'],
+                          ['regularCoursesTaken', 'Regular Courses Taken'], ['regularCoursesPlanned', 'Regular Courses Planned'],
+                          ['classRank', 'Class Rank'], ['favoriteSubjects', 'Favorite Subjects'], ['leastFavoriteSubjects', 'Least Favorite Subjects'],
+                          ['academicAwards', 'Academic Awards'],
+                        ]},
+                        { title: 'Standardized Testing', key: 'testingInfo', fields: [
+                          ['notTakenYet', 'Not Taken Yet'],
+                          ['psatScore', 'PSAT Score'], ['psatMath', 'PSAT Math'], ['psatReading', 'PSAT Reading'],
+                          ['satScore', 'SAT Score'], ['satMath', 'SAT Math'], ['satReading', 'SAT Reading'],
+                          ['actScore', 'ACT Score'], ['actEnglish', 'ACT English'], ['actMath', 'ACT Math'], ['actReading', 'ACT Reading'], ['actScience', 'ACT Science'],
+                          ['apScores', 'AP/IB Exam Scores'], ['testingTimeline', 'Testing Timeline'], ['preferredTestFormat', 'Preferred Test Format'],
+                        ]},
+                        { title: 'Extracurricular Activities', key: 'extracurriculars', fields: [
+                          ['activities', 'Activities'], ['noExtracurriculars', 'No Extracurriculars'],
+                        ]},
+                        { title: 'Leadership Experience', key: 'leadership', fields: [
+                          ['entries', 'Leadership Positions'], ['noLeadershipExperience', 'No Leadership Experience'],
+                        ]},
+                        { title: 'Competitions & Recognition', key: 'competitions', fields: [
+                          ['entries', 'Competitions'], ['noCompetitions', 'No Competitions'],
+                        ]},
+                        { title: 'Passions & Interests', key: 'passions', fields: [
+                          ['topicsYouLove', 'Topics You Love'], ['industriesCurious', 'Industries Curious About'],
+                          ['hobbiesSkills', 'Hobbies & Skills'], ['worldProblem', 'World Problem to Solve'],
+                        ]},
+                        { title: 'Career Aspirations', key: 'careerAspirations', fields: [
+                          ['career1', 'Career Interest 1'], ['career2', 'Career Interest 2'], ['career3', 'Career Interest 3'],
+                          ['dreamJobTitle', 'Dream Job Title'], ['bestFitStatement', 'Best Fit Statement'],
+                        ]},
+                        { title: 'Research Experience', key: 'researchExperience', fields: [
+                          ['entries', 'Experience Entries'], ['noResearchExperience', 'No Research Experience'],
+                        ]},
+                        { title: 'Summer Programs', key: 'summerPrograms', fields: [
+                          ['entries', 'Summer Programs'], ['noSummerPrograms', 'No Summer Programs'],
+                        ]},
+                        { title: 'Special Talents', key: 'specialTalents', fields: [
+                          ['musicInstruments', 'Music & Instruments'], ['visualArts', 'Visual Arts'],
+                          ['performanceArts', 'Performance Arts'], ['athletics', 'Athletics'],
+                        ]},
+                        { title: 'Family Context', key: 'familyContext', fields: [
+                          ['fatherProfession', "Father's Profession"], ['motherProfession', "Mother's Profession"],
+                          ['siblingProfessions', 'Sibling Professions'], ['legacyEntries', 'Legacy Connections'],
+                          ['financialAidNeeded', 'Financial Aid Needed'], ['meritScholarshipInterest', 'Merit Scholarship Interest'],
+                        ]},
+                        { title: 'Personality & Strengths', key: 'personality', fields: [
+                          ['topStrengths', 'Top Strengths'], ['topWeaknesses', 'Top Weaknesses'],
+                          ['archetypes', 'Self-Identified Archetypes'], ['introvertExtrovert', 'Introvert / Extrovert'],
+                        ]},
+                        { title: 'Personal Stories', key: 'personalStories', fields: [
+                          ['lifeChallenge', 'Life Challenge'], ['leadershipMoment', 'Leadership Moment'],
+                          ['failureLesson', 'Failure & Lesson Learned'], ['proudMoment', 'Proudest Moment'],
+                        ]},
+                        { title: 'Time Commitment', key: 'timeCommitment', fields: [
+                          ['hoursSchoolYear', 'Hours Per Week (School Year)'], ['hoursSummer', 'Hours Per Week (Summer)'],
+                          ['preferredPace', 'Preferred Pace'],
+                        ]},
+                      ]
+
+                      const formatValue = (value: unknown): string | null => {
+                        if (value === null || value === undefined || value === '') return null
+                        if (Array.isArray(value)) {
+                          if (value.length === 0) return null
+                          if (typeof value[0] === 'object' && value[0] !== null) {
+                            return value.map((item) => {
+                              const entries = Object.entries(item as Record<string, unknown>).filter(([, v]) => v && v !== '')
+                              return entries.map(([k, v]) => {
+                                const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()
+                                return `${label}: ${v}`
+                              }).join(' | ')
+                            }).filter(Boolean).join('\n')
+                          }
+                          return value.filter(Boolean).join(', ')
+                        }
+                        if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+                        if (typeof value === 'object') {
+                          return Object.entries(value as Record<string, unknown>).filter(([, v]) => v && v !== '').map(([k, v]) => `${k}: ${v}`).join(', ')
+                        }
+                        return String(value)
+                      }
+
+                      let hasAnyData = false
+
                       return (
-                        <div key={key}>
-                          <h3 className="text-sm font-bold text-[#1e3a5f] mb-3 pb-1 border-b border-[#c9a227]/30">
-                            Section {idx + 1}: {sectionTitles[idx]}
-                          </h3>
-                          <div className="space-y-2">
-                            {Object.entries(sectionData).map(([field, value]) => {
-                              if (value === null || value === undefined || value === '') return null
-                              const label = field.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()
-                              let displayValue: string
-                              if (Array.isArray(value)) {
-                                if (value.length === 0) return null
-                                if (typeof value[0] === 'object') {
-                                  displayValue = value.map((item, i) => {
-                                    if (typeof item === 'object' && item !== null) {
-                                      return Object.entries(item).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(', ')
-                                    }
-                                    return String(item)
-                                  }).join('\n')
-                                } else {
-                                  displayValue = value.filter(Boolean).join(', ')
-                                }
-                              } else if (typeof value === 'object') {
-                                displayValue = Object.entries(value as Record<string, unknown>).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(', ')
-                              } else if (typeof value === 'boolean') {
-                                displayValue = value ? 'Yes' : 'No'
-                              } else {
-                                displayValue = String(value)
-                              }
-                              if (!displayValue.trim()) return null
-                              return (
-                                <div key={field} className="bg-white border border-[#e5e0d5] rounded-xl p-3">
-                                  <p className="text-[10px] font-semibold text-[#5a7a9a] uppercase tracking-wider mb-0.5">{label}</p>
-                                  <p className="text-sm text-[#0a192f] whitespace-pre-wrap">{displayValue}</p>
+                        <>
+                          {orderedSections.map((section, idx) => {
+                            const sectionData = responses[section.key] as Record<string, unknown> | undefined
+                            if (!sectionData) return null
+                            const renderedFields = section.fields
+                              .map(([field, label]) => {
+                                const val = sectionData[field]
+                                const display = formatValue(val)
+                                if (!display) return null
+                                return { field, label, display }
+                              })
+                              .filter(Boolean) as { field: string; label: string; display: string }[]
+                            if (renderedFields.length === 0) return null
+                            hasAnyData = true
+                            return (
+                              <div key={section.key}>
+                                <h3 className="text-sm font-bold text-[#1e3a5f] mb-3 pb-1 border-b border-[#c9a227]/30">
+                                  Section {idx + 1}: {section.title}
+                                </h3>
+                                <div className="space-y-2">
+                                  {renderedFields.map(({ field, label, display }) => (
+                                    <div key={field} className="bg-white border border-[#e5e0d5] rounded-xl p-3">
+                                      <p className="text-[10px] font-semibold text-[#5a7a9a] uppercase tracking-wider mb-0.5">{label}</p>
+                                      <p className="text-sm text-[#0a192f] whitespace-pre-wrap">{display}</p>
+                                    </div>
+                                  ))}
                                 </div>
-                              )
-                            })}
-                          </div>
-                        </div>
+                              </div>
+                            )
+                          })}
+                          {!hasAnyData && (
+                            <div className="text-center py-12 text-[#5a7a9a]">
+                              <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                              <p>No raw answers available for this assessment</p>
+                            </div>
+                          )}
+                        </>
                       )
-                    })}
-                    {Object.keys(responses).length === 0 && (
-                      <div className="text-center py-12 text-[#5a7a9a]">
-                        <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                        <p>No raw answers available for this assessment</p>
-                      </div>
-                    )}
+                    })()}
                   </div>
                 )}
               </>

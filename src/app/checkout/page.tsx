@@ -67,6 +67,39 @@ export default function CheckoutPage() {
     fetchTenant()
   }, [])
 
+  // Auto-resume if ?code= is in the URL (from email link)
+  useEffect(() => {
+    if (!tenantLoaded) return
+    const params = new URLSearchParams(window.location.search)
+    const codeFromUrl = params.get('code')
+    if (codeFromUrl) {
+      // Automatically trigger resume with this code
+      const autoResume = async () => {
+        setIsResuming(true)
+        try {
+          const response = await fetch("/api/assessment/resume", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: codeFromUrl.trim().toUpperCase() })
+          })
+          const data = await response.json()
+          if (data.success && data.assessment) {
+            sessionStorage.setItem("resumeAssessment", JSON.stringify(data))
+            const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}&code=${codeFromUrl.trim().toUpperCase()}` : `?code=${codeFromUrl.trim().toUpperCase()}`
+            router.push(`/assessment${orgParam}`)
+            return
+          }
+        } catch (e) {
+          console.error("Auto-resume failed:", e)
+        }
+        setIsResuming(false)
+        // If auto-resume failed, pre-fill the code field so user can try manually
+        setResumeCode(codeFromUrl.toUpperCase())
+      }
+      autoResume()
+    }
+  }, [tenantLoaded, tenant, router])
+
   useEffect(() => {
     if (!tenantLoaded) return
 
@@ -155,7 +188,8 @@ export default function CheckoutPage() {
       const data = await response.json()
       if (data.success && data.assessment) {
         sessionStorage.setItem("resumeAssessment", JSON.stringify(data))
-        const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}&resume=${data.assessment.id}` : `?resume=${data.assessment.id}`
+        const code = resumeCode.trim().toUpperCase()
+        const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}&code=${code}` : `?code=${code}`
         router.push(`/assessment${orgParam}`)
       } else {
         toast.error(data.error || "Invalid resume code. Please check and try again.")

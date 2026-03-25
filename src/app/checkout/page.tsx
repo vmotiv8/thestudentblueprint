@@ -299,7 +299,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                   className="object-contain group-hover:scale-110 transition-transform"
                 />
               </div>
-              <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Playfair Display', serif", color: primaryColor }}>
+              <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Oswald', sans-serif", color: primaryColor }}>
                 {orgName}
               </span>
             </Link>
@@ -315,7 +315,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
             <h1
               className="text-3xl sm:text-4xl font-bold mb-3"
-              style={{ fontFamily: "'Playfair Display', serif", color: primaryColor }}
+              style={{ fontFamily: "'Oswald', sans-serif", color: primaryColor }}
             >
               Get Started
             </h1>
@@ -425,7 +425,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                   className="object-contain group-hover:scale-110 transition-transform" 
                 />
               </div>
-              <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif", color: tenant?.primary_color || "#1e3a5f" }}>
+              <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif", color: tenant?.primary_color || "#1e3a5f" }}>
                 {tenant?.name || "The Student Blueprint"}
               </span>
             </Link>
@@ -446,7 +446,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
         >
           <h1
             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4"
-            style={{ fontFamily: "'Playfair Display', serif", color: tenant?.primary_color || "#1e3a5f" }}
+            style={{ fontFamily: "'Oswald', sans-serif", color: tenant?.primary_color || "#1e3a5f" }}
           >
             Complete Your Purchase
           </h1>
@@ -461,7 +461,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
               <div className="text-white p-6" style={{ backgroundColor: tenant?.primary_color || "#1e3a5f" }}>
                 <div className="flex items-center gap-3 mb-1">
                   <Sparkles className="w-5 h-5" style={{ color: tenant?.secondary_color || "#c9a227" }} />
-                  <h3 className="text-xl font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <h3 className="text-xl font-semibold" style={{ fontFamily: "'Oswald', sans-serif" }}>
                     {tenant?.name ? `${tenant.name} Assessment` : "Student Assessment"}
                   </h3>
                 </div>

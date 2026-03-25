@@ -744,7 +744,7 @@ export default function SuperAdminDashboard() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <Image src="/logo.png" alt="The Student Blueprint Logo" width={42} height={42} className="w-9 h-9 object-contain" />
-              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 The Student Blueprint
               </span>
             </Link>
@@ -821,7 +821,7 @@ export default function SuperAdminDashboard() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-[#0a192f] flex items-center gap-3" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h1 className="text-3xl font-bold text-[#0a192f] flex items-center gap-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 <LayoutDashboard className="w-8 h-8 text-[#c9a227]" />
                 Platform Command Center
               </h1>
@@ -1725,7 +1725,7 @@ export default function SuperAdminDashboard() {
               <div className="max-w-4xl mx-auto py-6">
                 <div className="flex items-center justify-between mb-12">
                   <div>
-                    <h2 className="text-4xl font-black text-[#0a192f] tracking-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h2 className="text-4xl font-black text-[#0a192f] tracking-tight mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
                       Platform Evolution
                     </h2>
                     <p className="text-[#5a7a9a] text-lg">Tracking every milestone at The Student Blueprint.</p>

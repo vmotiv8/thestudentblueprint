@@ -3218,7 +3218,7 @@ function AssessmentContent() {
               <div className="mb-6">
                 <Loader2 className="w-16 h-16 animate-spin text-[#c9a227] mx-auto" />
               </div>
-              <h2 className="text-2xl font-bold text-[#1e3a5f] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h2 className="text-2xl font-bold text-[#1e3a5f] mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 Generating Your Report
               </h2>
               <p className="text-[#5a7a9a] mb-2">
@@ -3246,7 +3246,7 @@ function AssessmentContent() {
                     className="object-contain"
                   />
                 </div>
-                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>{tenant?.name || "The Student Blueprint"}</span>
+                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif" }}>{tenant?.name || "The Student Blueprint"}</span>
               </Link>
               <div className="flex items-center gap-2 sm:gap-3">
                 {isSaving && (
@@ -3326,7 +3326,7 @@ function AssessmentContent() {
             >
                 <Card className="border-[#e5e0d5] bg-white shadow-sm">
                   <CardHeader className="border-b border-[#e5e0d5] bg-[#faf8f3]/50 p-4 sm:p-6">
-                    <CardTitle className="text-xl sm:text-2xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <CardTitle className="text-xl sm:text-2xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif" }}>
                       {SECTION_TITLES[currentSection - 1]}
                     </CardTitle>
                   </CardHeader>

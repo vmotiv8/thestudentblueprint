@@ -124,7 +124,7 @@ function SetupPasswordContent() {
               <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 className="w-10 h-10 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-[#0a192f] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h2 className="text-2xl font-bold text-[#0a192f] mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 You're All Set!
               </h2>
               <p className="text-[#5a7a9a] mb-8">
@@ -156,7 +156,7 @@ function SetupPasswordContent() {
               <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
                 <XCircle className="w-10 h-10 text-red-600" />
               </div>
-              <h2 className="text-2xl font-bold text-[#0a192f] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h2 className="text-2xl font-bold text-[#0a192f] mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 Invalid Link
               </h2>
               <p className="text-[#5a7a9a] mb-8">
@@ -186,7 +186,7 @@ function SetupPasswordContent() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-6">
             <Image src="/logo.png" alt="The Student Blueprint" width={48} height={48} className="object-contain" />
-            <span className="text-2xl font-bold text-[#0a192f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <span className="text-2xl font-bold text-[#0a192f]" style={{ fontFamily: "'Oswald', sans-serif" }}>
               The Student Blueprint
             </span>
           </Link>
@@ -197,7 +197,7 @@ function SetupPasswordContent() {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0a192f] to-[#1e3a5f] flex items-center justify-center mx-auto mb-4 shadow-lg">
               <ShieldCheck className="w-8 h-8 text-[#c9a227]" />
             </div>
-            <CardTitle className="text-2xl text-[#0a192f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <CardTitle className="text-2xl text-[#0a192f]" style={{ fontFamily: "'Oswald', sans-serif" }}>
               Set Up Your Password
             </CardTitle>
             <CardDescription className="text-[#5a7a9a]">

@@ -130,7 +130,7 @@ export default function ResumePage() {
             <div className="relative w-8 h-8 sm:w-10 sm:h-10">
               <Image src="/logo.png" alt="The Student Blueprint Logo" fill className="object-contain group-hover:scale-110 transition-transform" />
             </div>
-            <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>The Student Blueprint</span>
+            <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif" }}>The Student Blueprint</span>
           </Link>
           <Link href="/checkout">
             <Button className="bg-[#c9a227] hover:bg-white hover:text-[#1e3a5f] text-[#1e3a5f] font-bold text-[10px] sm:text-sm px-4 sm:px-6 h-9 sm:h-10 border border-[#c9a227] transition-all duration-300">
@@ -143,7 +143,7 @@ export default function ResumePage() {
       <main className="py-20 px-6">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-[#1e3a5f] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h1 className="text-3xl font-bold text-[#1e3a5f] mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
               Resume Your Assessment
             </h1>
             <p className="text-[#5a7a9a]">

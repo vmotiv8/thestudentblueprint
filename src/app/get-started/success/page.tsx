@@ -44,7 +44,7 @@ export default function GetStartedSuccess() {
 
         <h1
           className="text-4xl sm:text-5xl font-bold text-white mb-4"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          style={{ fontFamily: "'Oswald', sans-serif" }}
         >
           You&apos;re All Set!
         </h1>

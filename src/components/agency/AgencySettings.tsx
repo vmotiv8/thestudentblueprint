@@ -1559,7 +1559,7 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h1 className="text-xl font-bold" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 Agency Settings
               </h1>
               <Badge className="bg-[#c9a227] text-[#0a192f] border-0 uppercase tracking-widest text-[10px] font-black">

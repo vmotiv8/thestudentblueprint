@@ -25,7 +25,7 @@ export default function ResultsError({
 
         <h1
           className="text-2xl font-bold text-[#0a192f] mb-3"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          style={{ fontFamily: "'Oswald', sans-serif" }}
         >
           Something went wrong
         </h1>

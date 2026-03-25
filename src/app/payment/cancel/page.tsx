@@ -15,7 +15,7 @@ export default function PaymentCancelPage() {
             <div className="w-10 h-10 rounded-full bg-[#1e3a5f] flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-[#c9a227]" />
             </div>
-<span className="font-bold text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+<span className="font-bold text-xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 The Student Blueprint
               </span>
           </Link>
@@ -36,7 +36,7 @@ export default function PaymentCancelPage() {
               </motion.div>
               <h1
                 className="text-3xl font-bold text-white mb-2"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                style={{ fontFamily: "'Oswald', sans-serif" }}
               >
                 Payment Cancelled
               </h1>

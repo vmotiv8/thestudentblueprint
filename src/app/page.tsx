@@ -20,7 +20,9 @@ import {
   Menu,
   X,
   Check,
-  Minus
+  Minus,
+  Rocket,
+  Search
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -470,13 +472,13 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
       <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-48 bg-gradient-to-l from-[#FFFAF0] via-[#FFFAF0] to-transparent z-20 pointer-events-none" />
 
       <button
-        className="absolute left-1 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
+        className="absolute left-1 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#af8f5b] hover:text-white hover:border-[#af8f5b] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
         onClick={() => scroll('left')}
       >
         <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
       <button
-        className="absolute right-1 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#c9a227] hover:text-white hover:border-[#c9a227] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
+        className="absolute right-1 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white border border-[#e5e0d5] flex items-center justify-center text-[#0a0a0a] hover:bg-[#af8f5b] hover:text-white hover:border-[#af8f5b] transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-xl"
         onClick={() => scroll('right')}
       >
         <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -504,16 +506,16 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
           {doubledTestimonials.map((t, i) => (
             <div key={i} className="flex-shrink-0 px-3">
               <div
-                className="w-[320px] sm:w-[440px] bg-white border border-[#e5e0d5] p-6 sm:p-8 rounded-2xl transition-colors duration-700 hover:border-[#c9a227]/30 hover:shadow-xl hover:shadow-[#c9a227]/5 shadow-sm"
+                className="w-[320px] sm:w-[440px] bg-white border border-[#e5e0d5] p-6 sm:p-8 rounded-2xl transition-colors duration-700 hover:border-[#af8f5b]/30 hover:shadow-xl hover:shadow-[#af8f5b]/5 shadow-sm"
                 onClick={(e) => { if (isDragging.current) e.preventDefault() }}
               >
                 <div className="mb-5 relative">
-                  <div className="absolute -top-4 -left-2 text-6xl font-display text-[#c9a227]/15 select-none pointer-events-none">&ldquo;</div>
+                  <div className="absolute -top-4 -left-2 text-6xl font-display text-[#af8f5b]/15 select-none pointer-events-none">&ldquo;</div>
                   <p className="text-sm sm:text-[15px] text-[#1a1a1a] leading-relaxed relative z-10 min-h-[100px]">{t.quote}</p>
                 </div>
                 <div className="pt-5 border-t border-[#e5e0d5]">
                   <p className="text-xs sm:text-sm font-bold text-[#0a0a0a]">{t.name}</p>
-                  <p className="text-xs sm:text-xs text-[#c9a227] font-medium mt-1">{t.school}</p>
+                  <p className="text-xs sm:text-xs text-[#af8f5b] font-medium mt-1">{t.school}</p>
                 </div>
               </div>
             </div>
@@ -537,19 +539,103 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
       {...stagger(index, 0.2)}
       className="text-center"
     >
-      <div
-        className="text-6xl sm:text-7xl md:text-8xl font-bold bg-gradient-to-b from-[#1E2849] to-[#1E2849]/40 bg-clip-text text-transparent mb-4"
-        style={{ fontFamily: "'Playfair Display', serif" }}
-      >
-        {display}
+      <div className="border border-[#af8f5b]/40 p-10 sm:p-14 mb-6">
+        <div
+          className="text-7xl sm:text-8xl md:text-9xl font-bold text-[#1E2849] mb-4"
+          style={{ fontFamily: "'Oswald', sans-serif" }}
+        >
+          {display}
+        </div>
+        <div className="text-lg sm:text-xl md:text-2xl font-bold tracking-[0.3em] uppercase text-[#af8f5b]" style={{ fontFamily: "'Oswald', sans-serif" }}>
+          {stat.label}
+        </div>
       </div>
-      <div className="text-xs sm:text-sm font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-2">
-        {stat.label}
-      </div>
-      <div className="text-xs text-[#1E2849]/50 font-light tracking-wide">
+      <div className="text-xs sm:text-sm text-[#1E2849]/70 font-bold tracking-[0.2em] uppercase">
         {stat.sub}
       </div>
     </motion.div>
+  )
+}
+
+// ─── Clock Transition ────────────────────────────────────────────────────────
+
+function ClockTransition() {
+  const clockRef = useRef<HTMLDivElement>(null)
+  const minuteRef = useRef<SVGGElement>(null)
+  const hourRef = useRef<SVGGElement>(null)
+
+  const { scrollYProgress } = useScroll({
+    target: clockRef,
+    offset: ["start end", "end start"]
+  })
+
+  const clockOpacity = useTransform(scrollYProgress, [0, 0.15, 0.75, 0.95], [0, 1, 1, 0])
+  const clockScale = useTransform(scrollYProgress, [0, 0.15, 0.75, 0.95], [0.6, 1, 1, 0.6])
+
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on("change", (v) => {
+      const minuteDeg = ((v - 0.1) / 0.8) * 720 // 2 full rotations over scroll range
+      const hourDeg = minuteDeg / 12
+      if (minuteRef.current) {
+        minuteRef.current.setAttribute("transform", `rotate(${minuteDeg} 100 100)`)
+      }
+      if (hourRef.current) {
+        hourRef.current.setAttribute("transform", `rotate(${hourDeg} 100 100)`)
+      }
+    })
+    return unsubscribe
+  }, [scrollYProgress])
+
+  return (
+    <section ref={clockRef} className="h-[60vh] sm:h-[80vh] flex items-center justify-center bg-[#FFFAF0] overflow-hidden">
+      <motion.div
+        style={{ opacity: clockOpacity, scale: clockScale }}
+        className="relative w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64"
+      >
+        <svg viewBox="0 0 200 200" className="w-full h-full">
+          {/* Outer circle */}
+          <circle cx="100" cy="100" r="95" fill="none" stroke="#1E2849" strokeWidth="2" opacity="0.15" />
+          <circle cx="100" cy="100" r="88" fill="none" stroke="#af8f5b" strokeWidth="1" opacity="0.3" />
+
+          {/* Hour markers */}
+          {[...Array(12)].map((_, i) => {
+            const angle = (i * 30) * (Math.PI / 180)
+            const isMain = i % 3 === 0
+            const outerR = 85
+            const innerR = isMain ? 74 : 78
+            return (
+              <line
+                key={i}
+                x1={100 + outerR * Math.sin(angle)}
+                y1={100 - outerR * Math.cos(angle)}
+                x2={100 + innerR * Math.sin(angle)}
+                y2={100 - innerR * Math.cos(angle)}
+                stroke="#1E2849"
+                strokeWidth={isMain ? 2.5 : 1}
+                opacity={isMain ? 0.5 : 0.2}
+                strokeLinecap="round"
+              />
+            )
+          })}
+
+          {/* Center dot */}
+          <circle cx="100" cy="100" r="4" fill="#af8f5b" />
+
+          {/* Hour hand (short, thick) */}
+          <g ref={hourRef}>
+            <line x1="100" y1="100" x2="100" y2="52" stroke="#1E2849" strokeWidth="3.5" strokeLinecap="round" />
+          </g>
+
+          {/* Minute hand (long, thinner) */}
+          <g ref={minuteRef}>
+            <line x1="100" y1="100" x2="100" y2="30" stroke="#af8f5b" strokeWidth="2.5" strokeLinecap="round" />
+          </g>
+
+          {/* Center cap */}
+          <circle cx="100" cy="100" r="2.5" fill="#FFFAF0" />
+        </svg>
+      </motion.div>
+    </section>
   )
 }
 
@@ -632,7 +718,7 @@ function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#FFFAF0] font-sans selection:bg-[#D3AF78]/30">
+    <div className="min-h-screen bg-[#FFFAF0] font-sans selection:bg-[#af8f5b]/30">
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#FFFAF0]/90 backdrop-blur-2xl py-4 border-b border-[#1E2849]/5" : "bg-transparent py-6"}`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
@@ -640,8 +726,8 @@ function LandingPage() {
             <div className="relative w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-700 group-hover:rotate-[360deg]">
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
-            <span className="font-bold text-xl sm:text-2xl text-[#1E2849] tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              The Student Blueprint
+            <span className="text-xl sm:text-2xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
             </span>
           </Link>
 
@@ -688,7 +774,7 @@ function LandingPage() {
                   <Link
                     key={item}
                     href={`#${item.toLowerCase()}`}
-                    className="text-[#1E2849]/70 hover:text-[#D3AF78] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
+                    className="text-[#1E2849]/70 hover:text-[#af8f5b] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item}
@@ -697,7 +783,7 @@ function LandingPage() {
                 <div className="h-px bg-[#1E2849]/10 my-2" />
                 <Link
                   href="/admin/login"
-                  className="text-[#1E2849]/70 hover:text-[#D3AF78] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
+                  className="text-[#1E2849]/70 hover:text-[#af8f5b] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Login
@@ -731,9 +817,9 @@ function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xs sm:text-sm font-medium tracking-[0.3em] uppercase text-[#1E2849]/60 mb-6 sm:mb-8"
+            className="text-xs sm:text-sm font-bold tracking-[0.3em] uppercase text-[#af8f5b] mb-6 sm:mb-8"
           >
-            The platform behind the top 1% of admissions agencies
+            The Platform Powering the Top 1% of Admissions Agencies
           </motion.p>
 
           {/* Main headline */}
@@ -742,27 +828,36 @@ function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4 }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6 sm:mb-8"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            style={{ fontFamily: "'Oswald', sans-serif" }}
           >
-            <span className="text-[#1E2849]">What If Every Student</span>
+            <span className="text-[#1E2849]">WHAT IF EVERY STUDENT</span>
             <br />
-            <span className="text-[#1E2849]">Got a Roadmap Built by</span>
+            <span className="text-[#1E2849]">HAD AN IVY LEAGUE-</span>
             <br />
-            <span className="text-[#D3AF78] italic">
-              an Ivy League Strategist?
+            <span className="text-[#af8f5b] italic">
+              DESIGNED FUTURE?
             </span>
           </motion.h1>
 
-          {/* Subheadline — the reveal */}
+          {/* Subheadline */}
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.7 }}
-            className="text-base sm:text-lg md:text-xl text-[#1E2849]/50 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2"
+            className="text-base sm:text-lg md:text-xl text-[#1E2849]/50 max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2 font-semibold"
           >
-            Now they can. <span className="text-[#1E2849] font-medium">Blueprint Intelligence</span> gives
-            your agency the power to deliver elite, personalized college strategies
-            to <span className="text-[#1E2849] font-semibold">hundreds of students</span> — in the time it used to take for one.
+            With <span className="text-[#1E2849] font-bold">Blueprint Intelligence</span>, your agency can deliver elite, deeply personalized college strategies at scale, transforming what once took weeks for one student into a seamless experience for hundreds.
+          </motion.p>
+
+          {/* Tagline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.9 }}
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-wide text-[#1E2849] mb-10 sm:mb-12"
+            style={{ fontFamily: "'Oswald', sans-serif" }}
+          >
+            TURN <span className="text-[#af8f5b]">AMBITION</span> INTO <span className="text-[#af8f5b]">ADMISSION.</span>
           </motion.p>
 
           {/* CTAs */}
@@ -772,63 +867,44 @@ function LandingPage() {
             transition={{ duration: 1, delay: 1.0 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
           >
-            <Button asChild size="lg" className="bg-[#1E2849] hover:bg-[#1E2849]/90 text-white px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#1E2849]/20 tracking-wide">
+            <Button asChild size="lg" className="bg-[#1E2849] hover:bg-[#1E2849]/90 text-white px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-none transition-all duration-500 shadow-2xl shadow-[#1E2849]/20 tracking-wide">
               <Link href="/get-started">
                 See It in Action <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-[#1E2849]/20 text-[#1E2849]/70 hover:text-[#1E2849] hover:border-[#1E2849]/40 px-8 sm:px-10 py-5 sm:py-6 h-auto text-sm font-medium rounded-full transition-all duration-500 bg-transparent">
+            <Button asChild variant="outline" size="lg" className="border-[#1E2849]/20 text-[#1E2849]/70 hover:text-[#1E2849] hover:border-[#1E2849]/40 px-8 sm:px-10 py-5 sm:py-6 h-auto text-sm font-medium rounded-none transition-all duration-500 bg-transparent">
               <Link href="#methodology">
                 How It Works
               </Link>
             </Button>
           </motion.div>
 
-          {/* Trust line */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.2 }}
-            className="text-xs text-[#1E2849]/30"
-          >
-            Free to explore. No credit card. Set up in 5 minutes.
-          </motion.p>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          >
-            <ArrowDown className="w-5 h-5 text-[#1E2849]/25" />
-          </motion.div>
         </motion.div>
       </section>
 
-      {/* ── Section 2: Statement ─────────────────────────────────────────── */}
+      {/* ── Section 2: Parent Quote ──────────────────────────────────────── */}
       <section ref={statementRef} className="min-h-screen flex items-center justify-center bg-[#FFFAF0] px-6">
         <motion.div
           style={{ opacity: stmtOpacity, y: stmtY }}
           className="max-w-5xl mx-auto text-center"
         >
           <p
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] text-[#1E2849]/80"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-[#1E2849] mb-4 sm:mb-6 uppercase tracking-[0.1em]"
+            style={{ fontFamily: "'Oswald', sans-serif" }}
           >
-            A single counselor. Hundreds of students.{" "}
-            <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent font-medium italic">
-              Every roadmap as personal as a one-on-one session.
-            </span>{" "}
-            That&apos;s not a dream — it&apos;s what our agencies deliver every day to their students.
+            Every Parent Says<br />The Same Thing:
+          </p>
+          <p
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-[1.1] text-[#af8f5b]"
+            style={{ fontFamily: "'Oswald', sans-serif" }}
+          >
+            &ldquo;I WISH WE<br />STARTED EARLIER.&rdquo;
           </p>
         </motion.div>
       </section>
+
+      {/* ── Clock Transition ──────────────────────────────────────────────── */}
+      <ClockTransition />
 
       {/* ── Section 3: Stats ─────────────────────────────────────────────── */}
       <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
@@ -842,157 +918,191 @@ function LandingPage() {
       {/* ── Section 4: How It Works ──────────────────────────────────────── */}
       <section id="methodology" className="relative py-32 sm:py-48 bg-[#FFFAF0] px-6 overflow-hidden">
         {/* Background accents */}
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#c9a227]/[0.02] rounded-full blur-[200px]" />
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#af8f5b]/20 to-transparent" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#af8f5b]/[0.02] rounded-full blur-[200px]" />
 
         <div className="relative max-w-7xl mx-auto">
-          <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
-            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">The Process</p>
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Three Steps to{" "}
-              <span className="bg-gradient-to-r from-[#c9a227] via-[#e8d48b] to-[#c9a227] bg-clip-text text-transparent">
-                Transform
-              </span>{" "}
-              Your Agency
+          <motion.div {...fadeUp} className="text-center mb-16 sm:mb-24">
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">THE PROCESS</p>
+            <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-6" />
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold uppercase text-[#1E2849]" style={{ fontFamily: "'Oswald', sans-serif" }}>
+              Three Steps
+              <br />
+              <span className="text-[#af8f5b]">to Transform Your Agency</span>
             </h2>
-            <p className="mt-6 text-lg text-[#1E2849]/35 max-w-2xl mx-auto">
+            <p className="mt-6 text-sm sm:text-base text-[#1E2849] max-w-4xl mx-auto uppercase tracking-[0.15em] font-bold">
               From setup to scale in under a week. No technical expertise required.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
-            {[
-              {
-                step: "01",
-                title: "Deploy",
-                subtitle: "Launch in minutes",
-                description: "White-labeled assessment under your brand. Send to students as part of onboarding or premium strategy sessions.",
-                icon: "🚀",
-              },
-              {
-                step: "02",
-                title: "Analyze",
-                subtitle: "Powered by Blueprint Intelligence",
-                description: "Personalized Ivy League roadmaps generated in seconds. Data-driven insights your counselors can act on immediately.",
-                icon: "⚡",
-              },
-              {
-                step: "03",
-                title: "Scale",
-                subtitle: "Grow without limits",
-                description: "Serve 10x more students without adding headcount. Turn every interaction into a premium, high-margin service.",
-                icon: "📈",
-              }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                {...stagger(i, 0.2)}
-                className="relative group"
-              >
-                {/* Card */}
-                <div className="relative p-8 sm:p-10 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 backdrop-blur-sm hover:border-[#c9a227]/30 hover:bg-white/[0.04] transition-all duration-700 h-full overflow-hidden">
-                  {/* Hover glow */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#c9a227]/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
-
-                  <div className="relative z-10">
-                    {/* Step number + icon */}
-                    <div className="flex items-center justify-between mb-8">
-                      <span className="text-5xl sm:text-6xl font-bold bg-gradient-to-b from-white/10 to-transparent bg-clip-text text-transparent" style={{ fontFamily: "'Playfair Display', serif" }}>
-                        {item.step}
-                      </span>
-                      <div className="w-12 h-12 rounded-xl bg-[#c9a227]/10 border border-[#c9a227]/20 flex items-center justify-center text-xl group-hover:bg-[#c9a227]/20 group-hover:scale-110 transition-all duration-500">
-                        {item.icon}
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <h3 className="text-2xl sm:text-3xl font-bold text-[#1E2849] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                      {item.title}
-                    </h3>
-                    <p className="text-sm font-medium text-[#c9a227] mb-4 tracking-wide">
-                      {item.subtitle}
-                    </p>
-                    <p className="text-base text-[#1E2849]/40 leading-relaxed">
-                      {item.description}
-                    </p>
-
-                    {/* Bottom accent */}
-                    <div className="mt-8 h-px w-full bg-gradient-to-r from-[#c9a227]/30 via-[#c9a227]/10 to-transparent group-hover:from-[#c9a227]/50 group-hover:via-[#c9a227]/20 transition-all duration-700" />
-                  </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Deploy Card */}
+            <motion.div {...stagger(0, 0.2)}>
+              <div className="rounded-xl p-8 sm:p-10 h-full flex flex-col" style={{ backgroundColor: "#1b2034" }}>
+                <h3 className="text-4xl sm:text-5xl font-bold mb-3 uppercase text-[#af8f5b]" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  Deploy
+                </h3>
+                <p className="text-sm font-bold mb-8 tracking-[0.15em] uppercase text-white">
+                  Launch in minutes
+                </p>
+                <div className="mb-8 w-32 h-32">
+                  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-32 h-32">
+                    <style>{`
+                      @keyframes flame1 { 0%,100% { opacity:0.4; } 50% { opacity:0.8; } }
+                      @keyframes flame2 { 0%,100% { opacity:0.3; } 50% { opacity:0.7; } }
+                      @keyframes flame3 { 0%,100% { opacity:0.5; } 50% { opacity:0.9; } }
+                      @keyframes rocketHover { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-2px); } }
+                      .rocket-body { animation: rocketHover 2s ease-in-out infinite; }
+                      .flame-1 { animation: flame1 0.4s ease-in-out infinite; }
+                      .flame-2 { animation: flame2 0.5s ease-in-out infinite 0.1s; }
+                      .flame-3 { animation: flame3 0.35s ease-in-out infinite 0.2s; }
+                    `}</style>
+                    <g className="rocket-body">
+                      <path d="M40 10 C40 10, 28 22, 28 38 C28 43, 30 48, 33 51 L47 51 C50 48, 52 43, 52 38 C52 22, 40 10, 40 10Z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+                      <path d="M33 51 L27 58 L33 55Z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+                      <path d="M47 51 L53 58 L47 55Z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+                      <circle cx="40" cy="32" r="4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+                      <line x1="33" y1="51" x2="47" y2="51" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
+                    </g>
+                    <path className="flame-1" d="M36 52 C36 56, 33 60, 35 64 C37 60, 38 56, 36 52Z" fill="#af8f5b" opacity="0.4" />
+                    <path className="flame-2" d="M40 53 C40 58, 43 62, 41 66 C39 62, 38 58, 40 53Z" fill="#e8a84c" opacity="0.3" />
+                    <path className="flame-3" d="M44 52 C44 56, 47 60, 45 64 C43 60, 42 56, 44 52Z" fill="#ff9944" opacity="0.5" />
+                  </svg>
                 </div>
+                <p className="text-sm sm:text-base leading-relaxed mt-auto font-bold text-white">
+                  White-labeled assessment under your brand. Send to students as part of onboarding or premium strategy sessions.
+                </p>
+              </div>
+            </motion.div>
 
-                {/* Connector line between cards (hidden on last) */}
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-[#c9a227]/30 to-[#c9a227]/10" />
-                )}
-              </motion.div>
-            ))}
+            {/* Analyze Card */}
+            <motion.div {...stagger(1, 0.2)}>
+              <div className="rounded-xl p-8 sm:p-10 h-full flex flex-col" style={{ backgroundColor: "#313b5c" }}>
+                <h3 className="text-4xl sm:text-5xl font-bold mb-3 uppercase text-[#af8f5b]" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  Analyze
+                </h3>
+                <p className="text-sm font-bold mb-8 tracking-[0.15em] uppercase text-white">
+                  Powered by Intelligence
+                </p>
+                <div className="mb-8 w-32 h-32">
+                  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-32 h-32">
+                    <style>{`
+                      @keyframes searchOrbit { 0% { transform: rotate(0deg) translateX(4px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(4px) rotate(-360deg); } }
+                      .search-group { transform-origin: 32px 32px; animation: searchOrbit 4s linear infinite; }
+                    `}</style>
+                    <g className="search-group">
+                      <circle cx="32" cy="32" r="16" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+                      <line x1="44" y1="44" x2="60" y2="60" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M26 32 L30 36 L38 28" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    </g>
+                  </svg>
+                </div>
+                <p className="text-sm sm:text-base leading-relaxed mt-auto font-bold text-white">
+                  Personalized Ivy League roadmaps generated in seconds. Data-driven insights your counselors can act on immediately.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Scale Card */}
+            <motion.div {...stagger(2, 0.2)}>
+              <div className="rounded-xl p-8 sm:p-10 h-full flex flex-col" style={{ backgroundColor: "#47547c" }}>
+                <h3 className="text-4xl sm:text-5xl font-bold mb-3 uppercase text-[#af8f5b]" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  Scale
+                </h3>
+                <p className="text-sm font-bold mb-8 tracking-[0.15em] uppercase text-white">
+                  Grow without limits
+                </p>
+                <div className="mb-8 w-32 h-32">
+                  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-32 h-32">
+                    <style>{`
+                      @keyframes growLine { 0% { stroke-dashoffset: 80; } 50% { stroke-dashoffset: 0; } 50.01% { stroke-dashoffset: 80; } 100% { stroke-dashoffset: 0; } }
+                      @keyframes arrowPulse { 0%,40% { opacity: 0; transform: translate(0,0); } 50% { opacity: 1; transform: translate(0,0); } 90% { opacity: 1; transform: translate(3px,-3px); } 100% { opacity: 0; transform: translate(3px,-3px); } }
+                      .grow-line { stroke-dasharray: 80; animation: growLine 3s ease-in-out infinite; }
+                      .grow-arrow { animation: arrowPulse 3s ease-in-out infinite; }
+                    `}</style>
+                    <line x1="10" y1="66" x2="70" y2="66" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                    <line x1="10" y1="66" x2="10" y2="8" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                    <path className="grow-line" d="M14 60 C22 56, 28 50, 38 42 C46 34, 52 24, 64 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                    <g className="grow-arrow">
+                      <path d="M56 14 L64 14 L64 22" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    </g>
+                  </svg>
+                </div>
+                <p className="text-sm sm:text-base leading-relaxed mt-auto font-bold text-white">
+                  Serve 10x more students without adding headcount. Turn every interaction into a premium, high-margin service.
+                </p>
+              </div>
+            </motion.div>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#af8f5b]/20 to-transparent" />
       </section>
 
       {/* ── Section 5: Features ──────────────────────────────────────────── */}
       <section id="services" className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
-            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Platform</p>
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Built for Scale
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-16 sm:mb-24">
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">Platform</p>
+            <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-6" />
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold uppercase" style={{ fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[#1E2849]">Built </span>
+              <span className="text-[#af8f5b]">for Scale</span>
             </h2>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 gap-6">
-            {features.map((feature, i) => (
-              <motion.div
-                key={i}
-                {...stagger(i, 0.15)}
-                className="relative group p-8 sm:p-12 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:border-white/[0.12] transition-all duration-700 overflow-hidden"
-              >
-                {/* Glassmorphism highlight */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
-
-                <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-xl bg-[#c9a227]/10 flex items-center justify-center mb-8 group-hover:bg-[#c9a227]/20 transition-colors duration-500">
-                    <feature.icon className="w-5 h-5 text-[#c9a227]" />
+          <motion.div {...fadeUp}>
+            <div className="grid sm:grid-cols-2" style={{ borderColor: '#1E2849' }}>
+              {features.map((feature, i) => (
+                <div
+                  key={i}
+                  className="p-8 sm:p-12"
+                  style={{
+                    borderBottom: i < 2 ? '2px solid #af8f5b' : 'none',
+                    borderRight: i % 2 === 0 ? '2px solid #af8f5b' : 'none',
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-6 mb-6">
+                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#af8f5b] uppercase leading-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                      {feature.title}
+                    </h3>
+                    <feature.icon className="w-10 h-10 sm:w-12 sm:h-12 text-[#af8f5b] shrink-0" strokeWidth={1.2} />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-[#1E2849] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm sm:text-base text-[#1E2849]/60 leading-relaxed font-light">
+                  <p className="text-sm sm:text-base text-[#1E2849]/70 leading-relaxed font-bold">
                     {feature.description}
                   </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ── Section 6: Comparison ────────────────────────────────────────── */}
       <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-5xl mx-auto">
-          <motion.div {...fadeUp} className="text-center mb-20 sm:mb-28">
-            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Why Switch</p>
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              The Difference
+          <motion.div {...fadeUp} className="text-center mb-16 sm:mb-24">
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">Why Switch</p>
+            <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-6" />
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold uppercase" style={{ fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[#af8f5b]">The </span>
+              <span className="text-[#1E2849]">Difference</span>
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {/* Traditional */}
             <motion.div
               initial={{ opacity: 0, x: -60 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease }}
-              className="p-8 sm:p-12 rounded-2xl border border-[#e5e0d5] bg-white"
+              className="p-8 sm:p-12 rounded-xl bg-[#f0e8d9] text-center"
             >
-              <h3 className="text-xl sm:text-2xl font-bold text-[#0a0a0a]/70 mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#1E2849] mb-8 uppercase" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 Traditional Agency
               </h3>
-              <ul className="space-y-5">
+              <div className="space-y-0">
                 {[
                   "Inconsistent profile analysis",
                   "Manual, time-consuming roadmaps",
@@ -1001,15 +1111,15 @@ function LandingPage() {
                   "Limited scalability",
                   "No predictive modeling"
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-[#0a0a0a]/70 font-light">
-                    <Minus className="w-4 h-4 mt-1 shrink-0 text-[#0a0a0a]/20" />
-                    {item}
-                  </li>
+                  <div key={i}>
+                    <p className="py-4 text-base sm:text-lg text-[#1E2849] font-bold">{item}</p>
+                    {i < 5 && <div className="w-10 h-px bg-[#af8f5b] mx-auto" />}
+                  </div>
                 ))}
-              </ul>
-              <div className="mt-10 pt-8 border-t border-[#e5e0d5]">
-                <p className="text-sm font-medium text-[#0a0a0a]/30 uppercase tracking-[0.2em]">Profit Margin</p>
-                <p className="text-2xl text-[#0a0a0a]/50 mt-2 italic" style={{ fontFamily: "'Playfair Display', serif" }}>Low</p>
+              </div>
+              <div className="mt-10 pt-8">
+                <p className="text-2xl sm:text-3xl font-bold text-[#1E2849] uppercase tracking-[0.1em] mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>Profit Margin</p>
+                <p className="text-4xl sm:text-5xl text-[#1E2849] font-bold uppercase" style={{ fontFamily: "'Oswald', sans-serif" }}>Low</p>
               </div>
             </motion.div>
 
@@ -1019,15 +1129,15 @@ function LandingPage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease }}
-              className="p-8 sm:p-12 rounded-2xl border-2 border-[#c9a227]/30 bg-white relative overflow-hidden"
+              className="p-8 sm:p-12 rounded-xl bg-[#af8f5b] text-center relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 bg-[#c9a227] px-4 py-1.5 rounded-bl-xl">
-                <span className="text-xs font-bold text-[#0a0a0a] uppercase tracking-[0.2em]">Recommended</span>
+              <div className="absolute top-0 right-0 bg-[#1E2849] px-4 py-2 rounded-bl-lg">
+                <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em]">Recommended</span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-[#0a0a0a] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#1E2849] mb-8 uppercase" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 Blueprint-Powered
               </h3>
-              <ul className="space-y-5">
+              <div className="space-y-0">
                 {[
                   "Data-driven profile analysis",
                   "Automated Ivy League roadmaps",
@@ -1036,15 +1146,15 @@ function LandingPage() {
                   "Unlimited scalability",
                   "Predictive success modeling"
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-[#0a0a0a] font-medium">
-                    <Check className="w-4 h-4 mt-1 shrink-0 text-[#c9a227]" />
-                    {item}
-                  </li>
+                  <div key={i}>
+                    <p className="py-4 text-base sm:text-lg text-[#1E2849] font-bold">{item}</p>
+                    {i < 5 && <div className="w-10 h-px bg-[#1E2849]/30 mx-auto" />}
+                  </div>
                 ))}
-              </ul>
-              <div className="mt-10 pt-8 border-t border-[#c9a227]/20">
-                <p className="text-sm font-medium text-[#c9a227] uppercase tracking-[0.2em]">Profit Margin</p>
-                <p className="text-2xl text-[#0a0a0a] mt-2 font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>High</p>
+              </div>
+              <div className="mt-10 pt-8">
+                <p className="text-2xl sm:text-3xl font-bold text-[#1E2849] uppercase tracking-[0.1em] mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>Profit Margin</p>
+                <p className="text-4xl sm:text-5xl text-[#1E2849] font-bold uppercase" style={{ fontFamily: "'Oswald', sans-serif" }}>High</p>
               </div>
             </motion.div>
           </div>
@@ -1055,10 +1165,10 @@ function LandingPage() {
       <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 sm:gap-24 items-center">
           <motion.div {...fadeUp}>
-            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-6">Strategic Intelligence</p>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#1E2849] leading-tight mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">Strategic Intelligence</p>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#1E2849] leading-tight mb-8" style={{ fontFamily: "'Oswald', sans-serif" }}>
               We look beyond the{" "}
-              <span className="italic bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent">
+              <span className="italic bg-gradient-to-r from-[#af8f5b] to-[#d4b87a] bg-clip-text text-transparent">
                 surface level.
               </span>
             </h2>
@@ -1077,20 +1187,20 @@ function LandingPage() {
               <motion.div
                 key={i}
                 {...stagger(i, 0.2)}
-                className="p-8 sm:p-10 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 hover:border-[#c9a227]/20 transition-all duration-700"
+                className="p-8 sm:p-10 rounded-2xl border border-[#1E2849]/[0.08] bg-white/60 hover:border-[#af8f5b]/20 transition-all duration-700"
               >
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-10 h-10 rounded-xl bg-[#c9a227]/10 flex items-center justify-center">
-                    <section.icon className="w-4 h-4 text-[#c9a227]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#af8f5b]/10 flex items-center justify-center">
+                    <section.icon className="w-4 h-4 text-[#af8f5b]" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#1E2849]" style={{ fontFamily: "'Oswald', sans-serif" }}>
                     {section.category}
                   </h3>
                 </div>
                 <ul className="space-y-4">
                   {section.questions.map((q, j) => (
                     <li key={j} className="flex items-start gap-4 group">
-                      <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#c9a227] shrink-0 opacity-30 group-hover:opacity-100 transition-opacity" />
+                      <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#af8f5b] shrink-0 opacity-30 group-hover:opacity-100 transition-opacity" />
                       <p className="text-sm text-[#1E2849]/50 font-light group-hover:text-[#1E2849]/60 transition-colors duration-500 italic">
                         {q}
                       </p>
@@ -1108,15 +1218,15 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 mb-16 sm:mb-20">
           <motion.div {...fadeUp} className="flex flex-col md:flex-row md:items-end justify-between gap-10">
             <div>
-              <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#c9a227] mb-4">Agency Success</p>
-              <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Agency Success</p>
+              <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 What Agencies Say
               </h2>
             </div>
             <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-full border border-[#e5e0d5] w-fit shadow-sm">
               <div className="flex -space-x-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-[#c9a227] text-[#c9a227]" />
+                  <Star key={i} className="w-4 h-4 fill-[#af8f5b] text-[#af8f5b]" />
                 ))}
               </div>
               <span className="text-xs font-semibold text-[#0a0a0a] tracking-wide">4.9/5 Rating</span>
@@ -1138,7 +1248,7 @@ function LandingPage() {
       <section id="faq" className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div {...fadeUp} className="text-center mb-20">
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold text-[#1E2849]" style={{ fontFamily: "'Oswald', sans-serif" }}>
               Questions?
             </h2>
           </motion.div>
@@ -1149,7 +1259,7 @@ function LandingPage() {
                 <AccordionItem
                   key={i}
                   value={`item-${i}`}
-                  className="bg-white/70 border border-[#1E2849]/[0.08] rounded-xl px-6 sm:px-8 data-[state=open]:border-[#c9a227]/30 data-[state=open]:bg-white/80 transition-all duration-500"
+                  className="bg-white/70 border border-[#1E2849]/[0.08] rounded-xl px-6 sm:px-8 data-[state=open]:border-[#af8f5b]/30 data-[state=open]:bg-white/80 transition-all duration-500"
                 >
                   <AccordionTrigger className="text-[#1E2849]/70 hover:text-[#1E2849] text-left py-6 text-base sm:text-lg font-medium hover:no-underline transition-colors duration-300">
                     {faq.question}
@@ -1168,15 +1278,15 @@ function LandingPage() {
       <section className="relative py-32 sm:py-48 overflow-hidden bg-[#FFFAF0]">
         {/* Gradient orbs */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#c9a227]/[0.04] rounded-full blur-[200px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#af8f5b]/[0.04] rounded-full blur-[200px]" />
           <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-[#1e3a5f]/[0.06] rounded-full blur-[150px]" />
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <motion.div {...fadeUp}>
-            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-[#1E2849] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-[#1E2849] mb-8" style={{ fontFamily: "'Oswald', sans-serif" }}>
               Ready to{" "}
-              <span className="bg-gradient-to-r from-[#c9a227] to-[#e8d48b] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#af8f5b] to-[#d4b87a] bg-clip-text text-transparent">
                 Scale?
               </span>
             </h2>
@@ -1184,7 +1294,7 @@ function LandingPage() {
               Join the elite network of tutoring agencies and educational consultancies using The Student Blueprint to deliver world-class admissions strategy.
             </p>
 
-            <Button asChild size="lg" className="bg-white hover:bg-[#c9a227] text-[#0a0a0a] px-12 sm:px-16 py-6 sm:py-8 h-auto text-sm sm:text-base font-semibold rounded-full transition-all duration-500 shadow-2xl shadow-white/10">
+            <Button asChild size="lg" className="bg-white hover:bg-[#af8f5b] text-[#0a0a0a] px-12 sm:px-16 py-6 sm:py-8 h-auto text-sm sm:text-base font-semibold rounded-full transition-all duration-500 shadow-2xl shadow-white/10">
               <Link href="/get-started">
                 Get Started <ArrowRight className="ml-3 w-5 h-5" />
               </Link>
@@ -1192,13 +1302,13 @@ function LandingPage() {
 
             <div className="mt-16 sm:mt-20 pt-12 border-t border-[#1E2849]/5 flex flex-wrap justify-center gap-8 sm:gap-12 text-xs text-[#1E2849]/40 font-medium">
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-[#c9a227]/50" /> Secure Integration
+                <ShieldCheck className="w-4 h-4 text-[#af8f5b]/50" /> Secure Integration
               </div>
               <div className="flex items-center gap-2.5">
-                <Zap className="w-4 h-4 text-[#c9a227]/50" /> Scalable Infrastructure
+                <Zap className="w-4 h-4 text-[#af8f5b]/50" /> Scalable Infrastructure
               </div>
               <div className="flex items-center gap-2.5">
-                <Award className="w-4 h-4 text-[#c9a227]/50" /> White-Labeled Reports
+                <Award className="w-4 h-4 text-[#af8f5b]/50" /> White-Labeled Reports
               </div>
             </div>
           </motion.div>
@@ -1213,8 +1323,8 @@ function LandingPage() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 relative">
                 <Image src="/logo.png" alt="Logo" fill className="object-contain" />
               </div>
-              <span className="text-xl sm:text-2xl text-[#1E2849] font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                The Student Blueprint
+              <span className="text-xl sm:text-2xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
               </span>
             </div>
 

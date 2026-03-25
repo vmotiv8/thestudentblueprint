@@ -249,7 +249,7 @@ export default function OrganizationsPage() {
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h1 className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 Platform Management
               </h1>
               <p className="text-white/60 text-sm">Manage tutoring agency organizations</p>

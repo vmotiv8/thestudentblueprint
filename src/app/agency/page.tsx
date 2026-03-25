@@ -683,7 +683,7 @@ export default function AgencyDashboard() {
                   {admin.organization?.name?.[0] || 'A'}
                 </div>
               )}
-              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
                 {admin.organization?.name || 'Dashboard'}
               </span>
             </Link>
@@ -762,7 +762,7 @@ export default function AgencyDashboard() {
           {/* Dashboard Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8 p-8 bg-white rounded-3xl border border-[#e5e0d5] shadow-sm">
             <div>
-              <h1 className="text-4xl font-black tracking-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: primaryColor }}>
+              <h1 className="text-4xl font-black tracking-tight mb-2" style={{ fontFamily: "'Oswald', sans-serif", color: primaryColor }}>
                 Admin Dashboard
               </h1>
               <p className="text-[#5a7a9a] text-lg font-medium">Manage assessments, students, coupons, and system-wide upgrades</p>

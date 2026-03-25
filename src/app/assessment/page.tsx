@@ -300,7 +300,38 @@ function AssessmentContent() {
     
     loadAssessment()
   }, [searchParams, router])
-  
+
+  // Pre-fill form fields from localStorage (set by checkout free flow)
+  useEffect(() => {
+    if (isLoading) return
+    const savedName = localStorage.getItem("studentblueprint_student_name")
+    const savedEmail = localStorage.getItem("studentblueprint_paid_email")
+    const savedPhone = localStorage.getItem("studentblueprint_student_phone")
+
+    if (savedName || savedEmail || savedPhone) {
+      setFormData(prev => {
+        // Only pre-fill if the fields are currently empty (don't overwrite resumed data)
+        const needsName = !prev.basicInfo.fullName && savedName
+        const needsEmail = !prev.basicInfo.email && savedEmail
+        const needsPhone = !prev.basicInfo.phone && savedPhone
+        if (!needsName && !needsEmail && !needsPhone) return prev
+
+        return {
+          ...prev,
+          basicInfo: {
+            ...prev.basicInfo,
+            ...(needsName ? { fullName: savedName } : {}),
+            ...(needsEmail ? { email: savedEmail } : {}),
+            ...(needsPhone ? { phone: savedPhone } : {}),
+          }
+        }
+      })
+      // Clean up so it doesn't pre-fill again on future visits
+      localStorage.removeItem("studentblueprint_student_name")
+      localStorage.removeItem("studentblueprint_student_phone")
+    }
+  }, [isLoading])
+
   const loadAssessmentData = (assessment: Record<string, unknown>) => {
     setAssessmentId(assessment.id as string)
     setCurrentSection((assessment.current_section as number) || 1)
@@ -3170,9 +3201,19 @@ function AssessmentContent() {
                   </div>
                 )}
                 {uniqueCode && (
-                  <div className="text-[10px] sm:text-xs text-[#5a7a9a] bg-[#f0ece3] px-2 py-1 rounded border border-[#e5e0d5]">
-                    <span className="hidden sm:inline">Code: </span><span className="font-mono font-bold text-[#1e3a5f]">{uniqueCode}</span>
-                  </div>
+                  <button
+                    onClick={copyCode}
+                    className="flex items-center gap-1.5 text-[10px] sm:text-xs bg-[#1e3a5f] text-white px-2.5 sm:px-3 py-1.5 rounded-lg hover:bg-[#152a45] transition-colors"
+                    title="Click to copy resume code"
+                  >
+                    <span className="hidden sm:inline text-[#c9a227] font-semibold">Resume Code:</span>
+                    <span className="font-mono font-bold tracking-wider">{uniqueCode}</span>
+                    {codeCopied ? (
+                      <Check className="w-3 h-3 text-green-400" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-white/60" />
+                    )}
+                  </button>
                 )}
               </div>
             </div>

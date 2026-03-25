@@ -200,9 +200,9 @@ Generate a core analysis with the following structure in JSON format:
     "alignedActivities": ["Specific activities that match their passions"]
   },
   "gapAnalysis": {
-    "missingElements": ["5-7 brutally honest gaps — be direct and aggressive about what is missing. Do NOT sugarcoat. Name specific weaknesses that admissions officers WILL notice. Examples: 'Zero research experience is a dealbreaker for top STEM programs', 'No national-level awards puts you behind 80% of Ivy applicants'. The student needs a wake-up call, not encouragement."],
+    "missingElements": ["EXACTLY 10 brutally honest gaps — be direct and aggressive about what is missing. Do NOT sugarcoat. Name specific weaknesses that admissions officers WILL notice. Examples: 'Zero research experience is a dealbreaker for top STEM programs', 'No national-level awards puts you behind 80% of Ivy applicants'. The student needs a wake-up call, not encouragement. Cover academics, testing, extracurriculars, leadership, research, awards, community service, narrative/story, and any other gaps."],
     "activitiesToDeepen": ["2-3 activities needing more depth"],
-    "skillsToDevelope": ["5-6 skills needed for career goals — ALWAYS include modern AI literacy skills: prompt engineering, using AI tools (Claude, ChatGPT, Gemini), AI-assisted coding/vibe coding, and AI-powered productivity workflows. These are non-negotiable for any career path in the 2020s-2030s. Also include traditional skills relevant to their field."],
+    "skillsToDevelope": ["EXACTLY 10 skills needed — at least 5 must be AI and modern technology skills: prompt engineering and AI communication, using AI tools for research and writing (Claude, ChatGPT, Gemini, Perplexity), AI-assisted coding and vibe coding (Cursor, GitHub Copilot, Replit Agent), building AI-powered projects and automations, AI-powered data analysis and visualization, creating content with AI (video, design, music), understanding AI ethics and responsible AI use, no-code/low-code AI app building. The remaining 5 should be traditional skills specific to their career path and field of interest."],
     "vulnerabilities": ["3-4 specific vulnerabilities that admissions officers may flag — be harsh and specific"]
   },
   "roadmap": {
@@ -437,9 +437,9 @@ Generate a comprehensive analysis with the following structure in JSON format:
     "alignedActivities": ["Specific activities that match their passions"]
   },
   "gapAnalysis": {
-    "missingElements": ["5-7 brutally honest gaps — be direct and aggressive about what is missing. Do NOT sugarcoat. Name specific weaknesses that admissions officers WILL notice. Examples: 'Zero research experience is a dealbreaker for top STEM programs', 'No national-level awards puts you behind 80% of Ivy applicants'. The student needs a wake-up call, not encouragement."],
+    "missingElements": ["EXACTLY 10 brutally honest gaps — be direct and aggressive about what is missing. Do NOT sugarcoat. Name specific weaknesses that admissions officers WILL notice. Examples: 'Zero research experience is a dealbreaker for top STEM programs', 'No national-level awards puts you behind 80% of Ivy applicants'. The student needs a wake-up call, not encouragement. Cover academics, testing, extracurriculars, leadership, research, awards, community service, narrative/story, and any other gaps."],
     "activitiesToDeepen": ["2-3 activities needing more depth"],
-    "skillsToDevelope": ["5-6 skills needed for career goals — ALWAYS include modern AI literacy skills: prompt engineering, using AI tools (Claude, ChatGPT, Gemini), AI-assisted coding/vibe coding, and AI-powered productivity workflows. These are non-negotiable for any career path in the 2020s-2030s. Also include traditional skills relevant to their field."],
+    "skillsToDevelope": ["EXACTLY 10 skills needed — at least 5 must be AI and modern technology skills: prompt engineering and AI communication, using AI tools for research and writing (Claude, ChatGPT, Gemini, Perplexity), AI-assisted coding and vibe coding (Cursor, GitHub Copilot, Replit Agent), building AI-powered projects and automations, AI-powered data analysis and visualization, creating content with AI (video, design, music), understanding AI ethics and responsible AI use, no-code/low-code AI app building. The remaining 5 should be traditional skills specific to their career path and field of interest."],
     "vulnerabilities": ["3-4 specific vulnerabilities that admissions officers may flag — be harsh and specific"]
   },
   "roadmap": {

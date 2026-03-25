@@ -54,22 +54,69 @@ export async function POST(
 
     const { context } = buildStudentProfileContext(formData, knowledgeHubResources)
 
-    const prompt = `You are an expert college admissions counselor specializing in scholarship matching. Based on the following student profile, generate exactly 20 personalized scholarship recommendations.
+    // Extract key student details for targeted scholarship matching
+    const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
+    const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
+    const testingInfo = (formData.testingInfo || {}) as Record<string, unknown>
+    const familyContext = (formData.familyContext || {}) as Record<string, unknown>
+    const passions = (formData.passions || {}) as Record<string, unknown>
+    const careerAspirations = (formData.careerAspirations || {}) as Record<string, unknown>
+    const extracurriculars = (formData.extracurriculars || {}) as Record<string, unknown>
+    const personality = (formData.personality || {}) as Record<string, unknown>
+
+    const studentState = basicInfo.state || ''
+    const studentCity = basicInfo.city || ''
+    const studentCountry = basicInfo.country || ''
+    const ethnicity = basicInfo.ethnicity || ''
+    const gender = basicInfo.gender || ''
+    const grade = basicInfo.currentGrade || ''
+    const gpa = academicProfile.gpaUnweighted || academicProfile.gpaWeighted || ''
+    const financialAid = familyContext.financialAidNeeded ? 'Yes' : 'No'
+    const careers = [careerAspirations.career1, careerAspirations.career2, careerAspirations.dreamJobTitle].filter(Boolean).join(', ')
+    const interests = Array.isArray(passions.topicsYouLove) ? passions.topicsYouLove.join(', ') : ''
+    const industries = Array.isArray(passions.industriesCurious) ? passions.industriesCurious.join(', ') : ''
+    const activities = JSON.stringify(extracurriculars.activities || []).slice(0, 1500)
+    const archetypes = Array.isArray(personality.archetypes) ? personality.archetypes.join(', ') : ''
+
+    const prompt = `You are a scholarship matching specialist. Your job is to find REALISTIC, ATTAINABLE scholarships that this specific student has a genuine chance of winning — NOT prestigious national scholarships that only 0.1% of students win.
+
+STUDENT PROFILE:
+- Location: ${studentCity}, ${studentState}, ${studentCountry}
+- Grade: ${grade}
+- GPA: ${gpa}
+- Ethnicity/Background: ${ethnicity || 'Not specified'}
+- Gender: ${gender || 'Not specified'}
+- Financial Aid Needed: ${financialAid}
+- Career Interests: ${careers || 'Not specified'}
+- Topics They Love: ${interests || 'Not specified'}
+- Industries: ${industries || 'Not specified'}
+- Archetypes: ${archetypes || 'Not specified'}
+- Competitiveness Score: ${assessment.competitiveness_score || 0}/100
+- Student Archetype: ${assessment.student_archetype || 'Unknown'}
+- Activities: ${activities}
 
 ${context}
 
-Student Archetype: ${assessment.student_archetype || 'Unknown'}
-Competitiveness Score: ${assessment.competitiveness_score || 0}/100
+CRITICAL RULES:
+1. DO NOT recommend ultra-competitive national scholarships (Gates, Coca-Cola, Jack Kent Cooke, etc.) unless the student has a competitiveness score above 85.
+2. PRIORITIZE scholarships the student can REALISTICALLY win based on their actual profile:
+   - Local/community scholarships in ${studentCity || 'their city'}, ${studentState || 'their state'} (easiest to win, fewer applicants)
+   - Scholarships matching their specific ethnicity, background, or heritage if provided
+   - Scholarships matching their specific career interests (${careers || 'general'})
+   - Scholarships matching their extracurricular activities and interests
+   - School-specific and university-specific merit scholarships at their target schools
+   - Smaller, less-known scholarships ($500-$5,000) that have fewer applicants
+   - State-level scholarships specific to ${studentState || 'their state'}
+3. Only include 2-3 national competitive scholarships MAX — the rest should be attainable.
+4. For the "why" field, reference SPECIFIC details from this student's profile (their activities, GPA, location, background, interests).
+5. Include the actual application URL where possible. If you don't know the exact URL, provide the organization's scholarship page URL.
 
-Generate exactly 20 scholarships that this specific student should apply for. Include a mix of:
-- Merit-based scholarships matching their academics and test scores
-- Activity-based scholarships matching their extracurriculars and interests
-- Identity/background-based scholarships they may qualify for
-- Career-specific scholarships aligned with their goals
-- Local/regional scholarships based on their location
-- National competitive scholarships for high-achieving students
-
-For each scholarship, provide realistic and accurate information. If you are not certain about specific deadlines or amounts, provide reasonable estimates and note them.
+Generate exactly 20 scholarships. Distribute them roughly as:
+- 5-6 local/community scholarships (city, county, or state level)
+- 3-4 identity/background-based scholarships (ethnicity, gender, first-gen, etc.)
+- 3-4 career/interest-specific scholarships
+- 3-4 merit scholarships at universities they might attend
+- 2-3 national scholarships they could realistically compete for
 
 Respond ONLY with valid JSON in this exact format:
 {
@@ -80,7 +127,7 @@ Respond ONLY with valid JSON in this exact format:
         "organization": "Sponsoring Organization",
         "amount": "Award amount or range",
         "deadline": "Application deadline or cycle",
-        "why": "Specific reason why this student qualifies and should apply",
+        "why": "Specific reason referencing THIS student's profile — their activities, grades, location, background, or interests",
         "url": "Application URL"
       }
     ]

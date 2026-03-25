@@ -1864,19 +1864,23 @@ export default function AgencyDashboard() {
                           <Download className="w-3.5 h-3.5 mr-1.5" /> Download PDF
                         </Button>
                       )}
-                      {a.status === 'completed' && (
+                      {(a.status === 'completed' || a.status === 'partial') && (
                         <Button size="sm" variant="outline" className="border-[#e5e0d5] text-orange-600 hover:bg-orange-50" onClick={async () => {
+                          if (!confirm('This will regenerate the full report using AI. It may take 3-5 minutes. Continue?')) return
                           try {
+                            toast.info('Regenerating report... This may take a few minutes.')
                             const res = await fetch('/api/assessment/submit', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ assessmentId: a.id, reanalyze: true }),
                             })
                             if (res.ok) {
-                              toast.success('Report regeneration started')
+                              toast.success('Report regenerated successfully!')
+                              setSelectedStudent(null)
                               fetchData()
                             } else {
-                              toast.error('Failed to regenerate')
+                              const data = await res.json()
+                              toast.error(data.error || 'Failed to regenerate')
                             }
                           } catch { toast.error('Failed to regenerate') }
                         }}>

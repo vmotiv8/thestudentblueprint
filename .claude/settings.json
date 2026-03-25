@@ -5,7 +5,8 @@
       "Bash(grep -n \"\\) : \" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
       "Bash(grep -n \"Phase2Placeholder\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/results/[id]/page.tsx)",
       "WebFetch(domain:ai.google.dev)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(grep -r \"password\\\\|token\\\\|secret\" /Users/vish/Documents/Platforms/thestudentblueprint/.env*)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

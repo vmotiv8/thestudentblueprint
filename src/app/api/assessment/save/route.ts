@@ -359,7 +359,7 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     })
     return NextResponse.json(
-      { error: `Failed to save: ${errorMessage}` },
+      { error: 'Failed to save assessment. Please try again.' },
       { status: 500 }
     )
   }

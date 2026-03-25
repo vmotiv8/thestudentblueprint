@@ -289,6 +289,15 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const logoUrl = tenant?.logo_url
 
   const updateAssessmentState = useCallback((data: Assessment) => {
+    console.log('[Results] Assessment loaded:', {
+      status: data.status,
+      archetype: data.student_archetype,
+      hasAcademics: !!data.academic_courses_recommendations,
+      academicsType: data.academic_courses_recommendations ? typeof data.academic_courses_recommendations.apCourses : 'none',
+      hasCollege: !!data.college_recommendations,
+      hasResearch: !!data.research_publications_recommendations,
+      hasMentors: !!data.mentor_recommendations,
+    })
     setAssessment(data)
     const scores = data.archetype_scores
     if (scores) {
@@ -308,7 +317,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       setIsPhase2Loading(false)
       setPhase2RetryAvailable(false)
       if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current)
+        clearTimeout(pollIntervalRef.current)
         pollIntervalRef.current = null
       }
     } else if (data.status === 'partial') {
@@ -344,12 +353,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
           // Start polling if not fully complete
           if (assessmentData.assessment.status === 'partial') {
-            pollIntervalRef.current = setInterval(async () => {
+            const poll = async () => {
               pollCountRef.current++
-              if (pollCountRef.current > 60) {
-                // 5 minutes of polling, show retry
+              if (pollCountRef.current > 40) {
                 setPhase2RetryAvailable(true)
-                if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
                 return
               }
               try {
@@ -357,11 +364,16 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 const data = await res.json()
                 if (data.assessment) {
                   updateAssessmentState(data.assessment)
+                  if (data.assessment.status === 'completed') return
                 }
               } catch (err) {
                 console.error('Polling error:', err)
               }
-            }, 5000)
+              // Exponential backoff: 5s, 5s, 5s, 10s, 10s, 15s, 15s, 20s, 30s...
+              const delay = pollCountRef.current < 4 ? 5000 : pollCountRef.current < 8 ? 10000 : pollCountRef.current < 12 ? 15000 : 30000
+              pollIntervalRef.current = setTimeout(poll, delay) as unknown as NodeJS.Timeout
+            }
+            pollIntervalRef.current = setTimeout(poll, 5000) as unknown as NodeJS.Timeout
           }
         }
 
@@ -379,7 +391,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
     return () => {
       if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current)
+        clearTimeout(pollIntervalRef.current)
       }
     }
   }, [resolvedParams.id, updateAssessmentState])
@@ -395,12 +407,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         setIsPhase2Loading(true)
         // Restart polling
         pollCountRef.current = 0
-        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
-        pollIntervalRef.current = setInterval(async () => {
+        if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current)
+        const poll = async () => {
           pollCountRef.current++
-          if (pollCountRef.current > 60) {
+          if (pollCountRef.current > 40) {
             setPhase2RetryAvailable(true)
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
             return
           }
           try {
@@ -408,11 +419,16 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             const data = await pollRes.json()
             if (data.assessment) {
               updateAssessmentState(data.assessment)
+              if (data.assessment.status === 'completed') return
             }
           } catch (err) {
             console.error('Polling error:', err)
           }
-        }, 5000)
+          // Exponential backoff: 5s, 5s, 5s, 10s, 10s, 15s, 15s, 20s, 30s...
+          const delay = pollCountRef.current < 4 ? 5000 : pollCountRef.current < 8 ? 10000 : pollCountRef.current < 12 ? 15000 : 30000
+          pollIntervalRef.current = setTimeout(poll, delay) as unknown as NodeJS.Timeout
+        }
+        pollIntervalRef.current = setTimeout(poll, 5000) as unknown as NodeJS.Timeout
       } else {
         const data = await res.json()
         toast.error(data.error || 'Failed to generate recommendations')
@@ -596,6 +612,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           )}
         </div>
       )
+    }
+
+    // Safely coerce any value to a string array — handles Gemini returning strings/objects instead of arrays
+    const toArray = (val: unknown): string[] => {
+      if (!val) return []
+      if (Array.isArray(val)) return val.map(v => typeof v === 'string' ? v : JSON.stringify(v))
+      if (typeof val === 'string') return val.split('\n').filter(Boolean)
+      return []
     }
 
     const RecommendationCard = ({
@@ -1301,9 +1325,9 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         Research & Publications
                       </h3>
                       <div className="grid md:grid-cols-2 gap-4">
-                        <RecommendationCard title="Research Topics" icon={FlaskConical} items={assessment.research_publications_recommendations.researchTopics} color="#06b6d4" />
-                        <RecommendationCard title="Where to Publish" icon={FileText} items={assessment.research_publications_recommendations.publicationOpportunities} color="#8b5cf6" />
-                        <RecommendationCard title="Finding Mentors" icon={Users} items={assessment.research_publications_recommendations.mentorshipSuggestions} color="#f59e0b" />
+                        <RecommendationCard title="Research Topics" icon={FlaskConical} items={toArray(assessment.research_publications_recommendations.researchTopics)} color="#06b6d4" />
+                        <RecommendationCard title="Where to Publish" icon={FileText} items={toArray(assessment.research_publications_recommendations.publicationOpportunities)} color="#8b5cf6" />
+                        <RecommendationCard title="Finding Mentors" icon={Users} items={toArray(assessment.research_publications_recommendations.mentorshipSuggestions)} color="#f59e0b" />
                       </div>
                       {assessment.research_publications_recommendations.timeline && (
                         <Card className="border-[#e5e0d5]"><CardContent className="p-4"><p className="text-sm font-semibold text-[#1e3a5f] mb-1">Research Timeline</p><p className="text-sm text-[#5a7a9a]">{assessment.research_publications_recommendations.timeline}</p></CardContent></Card>
@@ -1500,10 +1524,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             <TabsContent value="academics" className="mt-6">
               {!assessment.academic_courses_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="academics" /> : <div className="grid md:grid-cols-2 gap-5">
                 {[
-                  { title: "AP Courses", icon: BookOpen, items: assessment.academic_courses_recommendations?.apCourses, color: "#6366f1", accent: "bg-indigo-50" },
-                  { title: "IB Courses", icon: GraduationCap, items: assessment.academic_courses_recommendations?.ibCourses, color: "#8b5cf6", accent: "bg-violet-50" },
-                  { title: "Honors Courses", icon: Award, items: assessment.academic_courses_recommendations?.honorsCourses, color: "#ec4899", accent: "bg-pink-50" },
-                  { title: "Strategic Electives", icon: Lightbulb, items: assessment.academic_courses_recommendations?.electivesRecommended, color: "#f59e0b", accent: "bg-amber-50" },
+                  { title: "AP Courses", icon: BookOpen, items: toArray(assessment.academic_courses_recommendations?.apCourses), color: "#6366f1", accent: "bg-indigo-50" },
+                  { title: "IB Courses", icon: GraduationCap, items: toArray(assessment.academic_courses_recommendations?.ibCourses), color: "#8b5cf6", accent: "bg-violet-50" },
+                  { title: "Honors Courses", icon: Award, items: toArray(assessment.academic_courses_recommendations?.honorsCourses), color: "#ec4899", accent: "bg-pink-50" },
+                  { title: "Strategic Electives", icon: Lightbulb, items: toArray(assessment.academic_courses_recommendations?.electivesRecommended), color: "#f59e0b", accent: "bg-amber-50" },
                 ].map(({ title, icon: SectionIcon, items, color, accent }) => {
                   if (!items || items.length === 0) {
                     if (title === "IB Courses") return (

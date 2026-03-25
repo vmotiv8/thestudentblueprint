@@ -523,9 +523,9 @@ function AssessmentContent() {
   }, [assessmentId, currentSection, tenant])
 
   useEffect(() => {
-    const timer = setTimeout(autoSave, 30000)
-    return () => clearTimeout(timer)
-  }, [autoSave])
+    const interval = setInterval(() => { autoSave() }, 30000)
+    return () => clearInterval(interval)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateSection = (section: number): boolean => {
     const errors: Record<string, string> = {}

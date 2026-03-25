@@ -28,7 +28,6 @@ export async function GET(request: Request) {
         expires_at,
         scores,
         report_data,
-        responses,
         student_archetype,
         competitiveness_score,
         archetype_scores,

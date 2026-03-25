@@ -367,7 +367,7 @@ Be SPECIFIC — name real programs, real competitions, real deadlines. Not gener
     const err = error as { message?: string; code?: string; details?: string }
     const msg = err.message || (error instanceof Error ? error.message : JSON.stringify(error))
     console.error('[Submit] Error:', { message: msg, code: err.code, details: err.details })
-    return NextResponse.json({ error: `Failed to submit: ${msg}` }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to submit assessment. Please try again.' }, { status: 500 })
   }
 }
 
@@ -386,43 +386,38 @@ async function savePartialResults(
   const update: Record<string, unknown> = {
     status,
     report_data: results,
-    student_archetype: results.studentArchetype || null,
-    archetype_scores: results.archetypeScores || null,
-    competitiveness_score: results.competitivenessScore ?? null,
-    scores: results.competitivenessScore != null ? {
-      competitivenessScore: results.competitivenessScore,
-      archetypeScores: results.archetypeScores,
-    } : undefined,
-    roadmap_data: results.roadmap || null,
-    strengths_analysis: results.strengthsAnalysis || null,
-    gap_analysis: results.gapAnalysis || null,
-    grade_by_grade_roadmap: results.gradeByGradeRoadmap || null,
-    passion_projects: results.passionProjects || null,
-    academic_courses_recommendations: results.academicCoursesRecommendations || null,
-    sat_act_goals: results.satActGoals || null,
-    research_publications_recommendations: results.researchPublicationsRecommendations || null,
-    leadership_recommendations: results.leadershipRecommendations || null,
-    service_community_recommendations: results.serviceCommunityRecommendations || null,
-    summer_ivy_programs_recommendations: results.summerIvyProgramsRecommendations || null,
-    sports_recommendations: results.sportsRecommendations || null,
-    competitions_recommendations: results.competitionsRecommendations || null,
-    student_government_recommendations: results.studentGovernmentRecommendations || null,
-    internships_recommendations: results.internshipsRecommendations || null,
-    culture_arts_recommendations: results.cultureArtsRecommendations || null,
-    career_recommendations: results.careerRecommendations || null,
-    college_recommendations: results.collegeRecommendations || null,
-    mentor_recommendations: results.mentorRecommendations || null,
-    waste_of_time_activities: results.wasteOfTimeActivities || null,
-    scholarship_recommendations: results.scholarshipRecommendations || null,
     updated_at: new Date().toISOString(),
   }
+  if (status === 'completed') update.completed_at = new Date().toISOString()
 
-  if (status === 'completed') {
-    update.completed_at = new Date().toISOString()
+  // Only write fields that have actual values
+  if (results.studentArchetype) update.student_archetype = results.studentArchetype
+  if (results.archetypeScores) update.archetype_scores = results.archetypeScores
+  if (results.competitivenessScore != null) {
+    update.competitiveness_score = results.competitivenessScore
+    update.scores = { competitivenessScore: results.competitivenessScore, archetypeScores: results.archetypeScores }
   }
-
-  // Remove undefined values
-  Object.keys(update).forEach(k => { if (update[k] === undefined) delete update[k] })
+  if (results.roadmap) update.roadmap_data = results.roadmap
+  if (results.strengthsAnalysis) update.strengths_analysis = results.strengthsAnalysis
+  if (results.gapAnalysis) update.gap_analysis = results.gapAnalysis
+  if (results.gradeByGradeRoadmap) update.grade_by_grade_roadmap = results.gradeByGradeRoadmap
+  if (results.passionProjects) update.passion_projects = results.passionProjects
+  if (results.academicCoursesRecommendations) update.academic_courses_recommendations = results.academicCoursesRecommendations
+  if (results.satActGoals) update.sat_act_goals = results.satActGoals
+  if (results.researchPublicationsRecommendations) update.research_publications_recommendations = results.researchPublicationsRecommendations
+  if (results.leadershipRecommendations) update.leadership_recommendations = results.leadershipRecommendations
+  if (results.serviceCommunityRecommendations) update.service_community_recommendations = results.serviceCommunityRecommendations
+  if (results.summerIvyProgramsRecommendations) update.summer_ivy_programs_recommendations = results.summerIvyProgramsRecommendations
+  if (results.sportsRecommendations) update.sports_recommendations = results.sportsRecommendations
+  if (results.competitionsRecommendations) update.competitions_recommendations = results.competitionsRecommendations
+  if (results.studentGovernmentRecommendations) update.student_government_recommendations = results.studentGovernmentRecommendations
+  if (results.internshipsRecommendations) update.internships_recommendations = results.internshipsRecommendations
+  if (results.cultureArtsRecommendations) update.culture_arts_recommendations = results.cultureArtsRecommendations
+  if (results.careerRecommendations) update.career_recommendations = results.careerRecommendations
+  if (results.collegeRecommendations) update.college_recommendations = results.collegeRecommendations
+  if (results.mentorRecommendations) update.mentor_recommendations = results.mentorRecommendations
+  if (results.wasteOfTimeActivities) update.waste_of_time_activities = results.wasteOfTimeActivities
+  if (results.scholarshipRecommendations) update.scholarship_recommendations = results.scholarshipRecommendations
 
   let query = supabase.from('assessments').update(update).eq('id', assessmentId)
   if (!reanalyze && orgId) query = query.eq('organization_id', orgId)
@@ -454,9 +449,10 @@ async function callClaude(
 
   const MAX_RETRIES = 1
 
+  const client = new Anthropic({ apiKey })
+
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const client = new Anthropic({ apiKey })
       const response = await Promise.race([
         client.messages.create({
           model: 'claude-haiku-4-5-20251001',
@@ -513,9 +509,10 @@ async function callGemini(
 
   const MAX_RETRIES = 1
 
+  const ai = new GoogleGenAI({ apiKey })
+
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const ai = new GoogleGenAI({ apiKey })
       const response = await Promise.race([
         ai.models.generateContent({
           model: 'gemini-2.5-flash-lite',

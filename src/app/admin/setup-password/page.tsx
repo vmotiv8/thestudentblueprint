@@ -185,9 +185,9 @@ function SetupPasswordContent() {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-6">
-            <Image src="/logo.png" alt="Student Blueprint" width={48} height={48} className="object-contain" />
+            <Image src="/logo.png" alt="VMotiv8 Business" width={48} height={48} className="object-contain" />
             <span className="text-2xl font-bold text-[#0a192f]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Student Blueprint
+              VMotiv8 Business
             </span>
           </Link>
         </div>

@@ -63,7 +63,7 @@ export async function GET(
         pdf.setTextColor(201, 162, 39)
         pdf.setFontSize(9)
         pdf.setFont('helvetica', 'bold')
-        pdf.text('Student Blueprint', margin, footerY)
+        pdf.text('VMotiv8 Business', margin, footerY)
         pdf.setTextColor(120, 140, 160)
         pdf.setFontSize(8)
         pdf.setFont('helvetica', 'normal')
@@ -150,7 +150,7 @@ export async function GET(
       pdf.setTextColor(201, 162, 39)
       pdf.setFontSize(36)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('Student Blueprint', pageWidth / 2, 35, { align: 'center' })
+      pdf.text('VMotiv8 Business', pageWidth / 2, 35, { align: 'center' })
 
       pdf.setTextColor(255, 255, 255)
       pdf.setFontSize(16)
@@ -1185,7 +1185,7 @@ export async function GET(
       pdf.setFontSize(9.5)
       pdf.setFont('helvetica', 'normal')
 
-      const disclaimer = `Student Blueprint has been designed to help US high school students, parents and teachers. We use a proprietary mix of behavioral, aspirational and education insights to give the student some broad, directional guidance that could lead to clarity and confidence about career development.
+      const disclaimer = `VMotiv8 Business has been designed to help US high school students, parents and teachers. We use a proprietary mix of behavioral, aspirational and education insights to give the student some broad, directional guidance that could lead to clarity and confidence about career development.
 
 The content of this success plan is based on the survey answers provided by individual students. This report should not be used to identify, diagnose, or treat psychological, mental health, and/or medical problems. Additionally, this report is not to be used to evaluate any individual for any form of employment.
 
@@ -1249,7 +1249,7 @@ The user assumes sole responsibility for any actions or decisions that are made 
       const nextSteps = [
         'Review this report thoroughly with your parents or guardians',
         'Prioritize 2-3 immediate action items from your roadmap',
-        'Schedule a consultation with a Student Blueprint counselor for personalized guidance',
+        'Schedule a consultation with a VMotiv8 Business counselor for personalized guidance',
         'Begin researching specific programs and opportunities mentioned in this report',
         'Create a calendar with deadlines for applications and activities',
         'Start building relationships with potential mentors in your areas of interest'
@@ -1277,7 +1277,7 @@ The user assumes sole responsibility for any actions or decisions that are made 
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${studentName.replace(/[^a-zA-Z0-9]/g, '-')}-StudentBlueprint-Report.pdf"`
+        'Content-Disposition': `attachment; filename="${studentName.replace(/[^a-zA-Z0-9]/g, '-')}-VMotiv8Business-Report.pdf"`
       }
     })
 

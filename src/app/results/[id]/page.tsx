@@ -274,7 +274,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   // Organization branding colors (with defaults)
   const primaryColor = tenant?.primary_color || "#1e3a5f"
   const secondaryColor = tenant?.secondary_color || "#c9a227"
-  const orgName = tenant?.name || "Student Blueprint"
+  const orgName = tenant?.name || "VMotiv8 Business"
   const logoUrl = tenant?.logo_url
 
   useEffect(() => {
@@ -332,7 +332,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${assessment?.students?.full_name || 'Student'}-StudentBlueprint-Report.pdf`
+      a.download = `${assessment?.students?.full_name || 'Student'}-VMotiv8Business-Report.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -351,7 +351,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${assessment?.students?.full_name}'s Student Blueprint Results`,
+          title: `${assessment?.students?.full_name}'s VMotiv8 Business Results`,
           text: 'Check out my personalized college success roadmap!',
           url
         })
@@ -2257,7 +2257,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
       <footer className="py-8 px-6 bg-[#0f1f30] border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center text-white/40 text-sm">
-          &copy; 2024 Student Blueprint. All rights reserved.
+          &copy; 2024 VMotiv8 Business. All rights reserved.
         </div>
       </footer>
     </div>

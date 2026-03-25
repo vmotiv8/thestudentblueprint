@@ -16,7 +16,7 @@ export default function PaymentCancelPage() {
               <GraduationCap className="w-6 h-6 text-[#c9a227]" />
             </div>
 <span className="font-bold text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Student Blueprint
+                VMotiv8 Business
               </span>
           </Link>
         </div>

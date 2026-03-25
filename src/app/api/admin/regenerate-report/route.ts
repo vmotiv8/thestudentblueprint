@@ -495,12 +495,12 @@ ${khSection}
           console.warn("No student email found, skipping email notification. Student data:", student);
         } else {
           const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://thestudentblueprint.com'}/results/${assessmentId}`
-          const fromEmail = process.env.RESEND_FROM_EMAIL || 'Student Blueprint Team <hello@thestudentblueprint.com>'
+          const fromEmail = process.env.RESEND_FROM_EMAIL || 'VMotiv8 Business Team <hello@thestudentblueprint.com>'
 
           await resend.emails.send({
             from: fromEmail,
             to: [student.email],
-            subject: "Your Updated Student Blueprint Report is Ready!",
+            subject: "Your Updated VMotiv8 Business Report is Ready!",
             html: `
   <!DOCTYPE html>
   <html>
@@ -530,7 +530,7 @@ ${khSection}
                   Hi ${student.full_name || "there"}!
                 </h2>
                 <p style="margin: 0 0 30px; color: #5a7a9a; font-size: 16px; line-height: 1.7;">
-                  We've regenerated your Student Blueprint assessment with the latest analysis and enhanced recommendations. Your roadmap has been updated with fresh insights!
+                  We've regenerated your VMotiv8 Business assessment with the latest analysis and enhanced recommendations. Your roadmap has been updated with fresh insights!
                 </p>
 
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
@@ -567,7 +567,7 @@ ${khSection}
 
             <tr>
               <td style="background: linear-gradient(135deg, #1e3a5f 0%, #0f1520 100%); padding: 40px; text-align: center;">
-                <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 800;">Student Blueprint</h4>
+                <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 800;">VMotiv8 Business</h4>
                 <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 13px;">Questions? We're here to help!</p>
               </td>
             </tr>

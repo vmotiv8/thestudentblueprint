@@ -237,7 +237,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
 
   const primaryColor = tenant?.primary_color || "#1e3a5f"
   const secondaryColor = tenant?.secondary_color || "#c9a227"
-  const orgName = tenant?.name || "Student Blueprint"
+  const orgName = tenant?.name || "VMotiv8 Business"
 
   if (isCheckingPayment) {
     return (
@@ -386,13 +386,13 @@ localStorage.setItem("studentblueprint_coupon", data.code)
               <div className="relative w-8 h-8 sm:w-10 sm:h-10">
                 <Image 
                   src={tenant?.logo_url || "/logo.png"} 
-                  alt={`${tenant?.name || "Student Blueprint"} Logo`} 
+                  alt={`${tenant?.name || "VMotiv8 Business"} Logo`}
                   fill 
                   className="object-contain group-hover:scale-110 transition-transform" 
                 />
               </div>
               <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif", color: tenant?.primary_color || "#1e3a5f" }}>
-                {tenant?.name || "Student Blueprint"}
+                {tenant?.name || "VMotiv8 Business"}
               </span>
             </Link>
 

@@ -81,7 +81,7 @@ function SuccessContent() {
               <GraduationCap className="w-6 h-6 text-[#c9a227]" />
             </div>
 <span className="font-bold text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Student Blueprint
+                VMotiv8 Business
               </span>
           </Link>
         </div>
@@ -112,7 +112,7 @@ function SuccessContent() {
               {verified ? (
                 <>
                   <p className="text-[#5a7a9a] mb-8">
-                    Your payment has been confirmed. You now have full access to the Student Blueprint Student Assessment.
+                    Your payment has been confirmed. You now have full access to the VMotiv8 Business Student Assessment.
                     Get ready to discover your personalized college success roadmap!
                   </p>
 

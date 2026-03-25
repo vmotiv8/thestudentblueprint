@@ -948,13 +948,13 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
               <Card className="border-[#e5e0d5]">
                 <CardHeader>
                   <CardTitle>White-label Settings</CardTitle>
-                  <CardDescription>Control Student Blueprint branding visibility</CardDescription>
+                  <CardDescription>Control VMotiv8 Business branding visibility</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between p-4 bg-[#faf8f3] rounded-xl border border-[#e5e0d5]">
                     <div className="space-y-1">
-                      <p className="font-bold text-[#0a192f]">Remove Student Blueprint Branding</p>
-                      <p className="text-sm text-[#5a7a9a]">Hide &quot;Powered by Student Blueprint&quot; from the platform</p>
+                      <p className="font-bold text-[#0a192f]">Remove VMotiv8 Business Branding</p>
+                      <p className="text-sm text-[#5a7a9a]">Hide &quot;Powered by VMotiv8 Business&quot; from the platform</p>
                     </div>
                     {org.plan_type === 'enterprise' ? (
                       <Switch 
@@ -1378,7 +1378,7 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
                       </p>
                       {!org.remove_branding && (
                         <p className="text-[10px] text-[#5a7a9a] mt-1">
-                          Powered by Student Blueprint Platform
+                          Powered by VMotiv8 Business Platform
                         </p>
                       )}
                     </div>

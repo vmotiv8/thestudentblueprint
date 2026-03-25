@@ -743,9 +743,9 @@ export default function SuperAdminDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Image src="/logo.png" alt="Student Blueprint Logo" width={42} height={42} className="w-9 h-9 object-contain" />
+              <Image src="/logo.png" alt="VMotiv8 Business Logo" width={42} height={42} className="w-9 h-9 object-contain" />
               <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Student Blueprint
+                VMotiv8 Business
               </span>
             </Link>
             <Badge className="bg-[#c9a227] text-[#0a192f] border-0 rounded-full px-4 py-1 font-black text-[10px] uppercase tracking-widest shadow-lg">
@@ -1728,7 +1728,7 @@ export default function SuperAdminDashboard() {
                     <h2 className="text-4xl font-black text-[#0a192f] tracking-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                       Platform Evolution
                     </h2>
-                    <p className="text-[#5a7a9a] text-lg">Tracking every milestone at Student Blueprint.</p>
+                    <p className="text-[#5a7a9a] text-lg">Tracking every milestone at VMotiv8 Business.</p>
                   </div>
                   <div className="bg-amber-100 p-4 rounded-3xl">
                     <History className="w-10 h-10 text-[#c9a227]" />

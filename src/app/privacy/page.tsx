@@ -2,8 +2,8 @@ import Link from "next/link"
 import Image from "next/image"
 
 export const metadata = {
-  title: "Privacy Policy - TheStudentBlueprint",
-  description: "Privacy Policy for TheStudentBlueprint assessment platform",
+  title: "Privacy Policy - VMotiv8 Business",
+  description: "Privacy Policy for VMotiv8 Business assessment platform",
 }
 
 export default function PrivacyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
             <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              TheStudentBlueprint
+              VMotiv8 Business
             </span>
           </Link>
           <Link href="/" className="text-xs text-white/50 hover:text-[#c9a227] uppercase tracking-widest font-bold transition-colors">
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <div className="prose prose-lg max-w-none text-[#0a192f]/70 space-y-8">
           <section>
             <h2 className="text-xl font-bold text-[#0a192f] mb-3">1. Introduction</h2>
-            <p>TheStudentBlueprint (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is committed to protecting the privacy and security of your personal information. This Privacy Policy describes how we collect, use, disclose, store, and protect information when you access or use our platform, website, APIs, and associated services (collectively, the &quot;Service&quot;).</p>
+            <p>VMotiv8 Business (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is committed to protecting the privacy and security of your personal information. This Privacy Policy describes how we collect, use, disclose, store, and protect information when you access or use our platform, website, APIs, and associated services (collectively, the &quot;Service&quot;).</p>
             <p className="mt-3">By using the Service, you consent to the data practices described in this Privacy Policy. If you do not agree with the practices described herein, you should not use the Service. This policy applies to all users, including students, parents, agency administrators, and any other individuals who interact with the Service.</p>
           </section>
 
@@ -227,7 +227,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-[#0a192f] mb-3">13. Third-Party Links</h2>
-            <p>The Service may contain links to third-party websites, resources, or services that are not owned or controlled by TheStudentBlueprint. We are not responsible for the privacy practices, content, or security of any third-party sites. We encourage you to review the privacy policies of any third-party sites you visit.</p>
+            <p>The Service may contain links to third-party websites, resources, or services that are not owned or controlled by VMotiv8 Business. We are not responsible for the privacy practices, content, or security of any third-party sites. We encourage you to review the privacy policies of any third-party sites you visit.</p>
           </section>
 
           <section>
@@ -245,7 +245,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-[#0a192f] mb-3">15. Data Protection Officer</h2>
             <p>For privacy-related questions, data access requests, complaints, or concerns, please contact our data protection team:</p>
             <p className="mt-3">
-              <strong>TheStudentBlueprint — Privacy Team</strong><br />
+              <strong>VMotiv8 Business — Privacy Team</strong><br />
               Email: <a href="mailto:hello@thestudentblueprint.com" className="text-[#c9a227] hover:underline">hello@thestudentblueprint.com</a><br />
               Website: <a href="https://thestudentblueprint.com" className="text-[#c9a227] hover:underline">thestudentblueprint.com</a>
             </p>
@@ -256,7 +256,7 @@ export default function PrivacyPage() {
 
       <footer className="bg-[#0a192f] py-8 px-6">
         <div className="max-w-4xl mx-auto text-center text-[10px] font-bold text-white/10 uppercase tracking-[0.4em]">
-          &copy; {new Date().getFullYear()} TheStudentBlueprint Admissions Consulting. All rights reserved.
+          &copy; {new Date().getFullYear()} VMotiv8 Business. All rights reserved.
         </div>
       </footer>
     </div>

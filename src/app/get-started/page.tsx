@@ -265,7 +265,7 @@ export default function GetStartedPage() {
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="Logo" width={24} height={24} className="rounded-md" />
             <span className="font-semibold text-[15px] text-white/90 tracking-tight">
-              Student Blueprint
+              VMotiv8 Business
             </span>
           </Link>
           <Link

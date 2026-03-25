@@ -641,7 +641,7 @@ function LandingPage() {
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
             <span className="font-bold text-xl sm:text-2xl text-[#1E2849] tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              TheStudentBlueprint
+              VMotiv8 Business
             </span>
           </Link>
 
@@ -1181,7 +1181,7 @@ function LandingPage() {
               </span>
             </h2>
             <p className="text-base sm:text-lg text-[#1E2849]/60 mb-12 font-light leading-relaxed max-w-2xl mx-auto">
-              Join the elite network of tutoring agencies and educational consultancies using TheStudentBlueprint to deliver world-class admissions strategy.
+              Join the elite network of tutoring agencies and educational consultancies using VMotiv8 Business to deliver world-class admissions strategy.
             </p>
 
             <Button asChild size="lg" className="bg-white hover:bg-[#c9a227] text-[#0a0a0a] px-12 sm:px-16 py-6 sm:py-8 h-auto text-sm sm:text-base font-semibold rounded-full transition-all duration-500 shadow-2xl shadow-white/10">
@@ -1214,7 +1214,7 @@ function LandingPage() {
                 <Image src="/logo.png" alt="Logo" fill className="object-contain" />
               </div>
               <span className="text-xl sm:text-2xl text-[#1E2849] font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                TheStudentBlueprint
+                VMotiv8 Business
               </span>
             </div>
 
@@ -1228,7 +1228,7 @@ function LandingPage() {
             </div>
 
             <div className="text-xs text-[#1E2849]/35 tracking-wide">
-              &copy; {new Date().getFullYear()} TheStudentBlueprint
+              &copy; {new Date().getFullYear()} VMotiv8 Business
             </div>
           </div>
         </div>

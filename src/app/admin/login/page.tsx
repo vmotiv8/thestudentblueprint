@@ -58,13 +58,13 @@ export default function AdminLoginPage() {
             <div className="text-center mb-8">
 <Image 
                   src="/logo.png" 
-                  alt="Student Blueprint Logo" 
+                  alt="VMotiv8 Business Logo" 
                   width={64} 
                   height={64} 
                   className="mx-auto mb-4 object-contain"
                 />
                 <h1 className="text-3xl font-extrabold text-[#1e3a5f] tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Student Blueprint
+                  VMotiv8 Business
                 </h1>
             </div>
 
@@ -85,7 +85,7 @@ export default function AdminLoginPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="admin@studentblueprint.com"
+                      placeholder="admin@vmotiv8.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="border-[#e5e0d5]"

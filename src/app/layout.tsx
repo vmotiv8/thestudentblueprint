@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TheStudentBlueprint - Your Personalized Ivy League Roadmap",
+  title: "VMotiv8 Business - Your Personalized Ivy League Roadmap",
   description: "Take our comprehensive profile assessment and receive a custom action plan designed by college admissions experts.",
   icons: {
     icon: '/logo.png',

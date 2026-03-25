@@ -3186,12 +3186,12 @@ function AssessmentContent() {
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10">
                   <Image
                     src={tenant?.logo_url || "/logo.png"}
-                    alt={`${tenant?.name || "Student Blueprint"} Logo`}
+                    alt={`${tenant?.name || "VMotiv8 Business"} Logo`}
                     fill
                     className="object-contain"
                   />
                 </div>
-                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>{tenant?.name || "Student Blueprint"}</span>
+                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>{tenant?.name || "VMotiv8 Business"}</span>
               </Link>
               <div className="flex items-center gap-2 sm:gap-3">
                 {isSaving && (

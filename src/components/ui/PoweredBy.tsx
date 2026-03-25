@@ -8,7 +8,7 @@ interface PoweredByProps {
 }
 
 /**
- * "Powered by Student Blueprint" component that respects organization's
+ * "Powered by VMotiv8 Business" component that respects organization's
  * remove_branding setting for Enterprise plans.
  */
 export function PoweredBy({ className = '', variant = 'dark' }: PoweredByProps) {
@@ -31,7 +31,7 @@ export function PoweredBy({ className = '', variant = 'dark' }: PoweredByProps) 
         rel="noopener noreferrer"
         className={`font-medium transition-colors ${linkColor}`}
       >
-        Student Blueprint
+        VMotiv8 Business
       </a>
     </div>
   )

@@ -64,7 +64,7 @@ export async function GET(request: Request) {
         .eq('email', email.toLowerCase())
         .eq('status', 'completed')
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (payment) {
         return NextResponse.json({ 
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
         studentQuery = studentQuery.eq('organization_id', organization.id)
       }
 
-      const { data: student } = await studentQuery.single()
+      const { data: student } = await studentQuery.maybeSingle()
       
       if (student) {
         const assessments = student.assessments as unknown as { coupon_code_used: string | null }[]

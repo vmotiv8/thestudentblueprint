@@ -122,7 +122,7 @@ export interface Admin {
   password_hash: string;
   first_name?: string;
   last_name?: string;
-  role: 'super_admin' | 'owner' | 'admin' | 'viewer';
+  role: 'god' | 'super_admin' | 'agency_admin' | 'agency_owner' | 'owner' | 'admin' | 'viewer';
   is_active: boolean;
   last_login?: string;
   created_at: string;

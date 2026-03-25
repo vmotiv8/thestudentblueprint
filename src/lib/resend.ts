@@ -351,7 +351,7 @@ export async function sendStudentResultsEmail(
 
   const roadmap = analysis.roadmap as { immediate: string[] } | undefined
   const immediateActions = roadmap?.immediate?.slice(0, 3) || []
-  const competitivenessScore = analysis.competitivenessScore as number || 75
+  const competitivenessScore = (analysis.competitivenessScore as number) ?? 75
   const safeStudentName = escapeHtml(studentName)
   const safeArchetype = escapeHtml(archetype)
 
@@ -581,7 +581,7 @@ export async function sendParentEmail(
     supportAreas?: string[]
   } | undefined
 
-  const competitivenessScore = analysis.competitivenessScore as number || 75
+  const competitivenessScore = (analysis.competitivenessScore as number) ?? 75
   const safeStudentName = escapeHtml(studentName)
   const safeArchetype = escapeHtml(archetype)
 

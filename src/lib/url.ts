@@ -85,8 +85,9 @@ export function buildOrgUrl(
   path?: string
 ): string {
   if (org.domain && org.domain_verified === true) {
+    const cleanDomain = org.domain.replace(/^https?:\/\//, '')
     const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : ''
-    return `https://${org.domain}${cleanPath}`
+    return `https://${cleanDomain}${cleanPath}`
   }
   const base = getAppUrl()
   const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : ''
@@ -99,8 +100,9 @@ export function buildOrgUrl(
 export function buildOrgAssessmentUrl(orgSlug: string, path?: string, orgDomain?: string | null, freeAssessments?: boolean): string {
   const assessmentPath = path || 'checkout'
   if (orgDomain) {
+    const cleanDomain = orgDomain.replace(/^https?:\/\//, '')
     const cleanPath = assessmentPath.startsWith('/') ? assessmentPath : `/${assessmentPath}`
-    return `https://${orgDomain}${cleanPath}`
+    return `https://${cleanDomain}${cleanPath}`
   }
   const base = getAppUrl()
   return `${base}/${orgSlug}/${assessmentPath}`

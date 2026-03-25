@@ -1047,6 +1047,32 @@ export default function AgencyDashboard() {
                                 <Button size="sm" variant="ghost" className="rounded-xl h-10 w-10 p-0 text-[#5a7a9a] hover:bg-gray-100" onClick={() => copyToClipboard(a.student?.email || '')}>
                                   <Mail className="w-4 h-4" />
                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="rounded-xl h-10 w-10 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                  onClick={async () => {
+                                    if (!confirm(`Delete ${a.student?.first_name || 'this student'}'s assessment? This cannot be undone.`)) return
+                                    try {
+                                      const res = await fetch('/api/admin/delete-assessment', {
+                                        method: 'DELETE',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ assessmentId: a.id }),
+                                      })
+                                      if (res.ok) {
+                                        toast.success('Student and assessment deleted')
+                                        fetchData()
+                                      } else {
+                                        const data = await res.json()
+                                        toast.error(data.error || 'Failed to delete')
+                                      }
+                                    } catch {
+                                      toast.error('Failed to delete')
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>

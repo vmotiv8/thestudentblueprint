@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { toast } from "sonner"
 
 // ─── Pricing Logic ──────────────────────────────────────────────────────────
 
@@ -208,11 +209,11 @@ export default function GetStartedPage() {
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
       } else {
-        alert(data.error || "Something went wrong. Please try again.")
+        toast.error(data.error || "Something went wrong. Please try again.")
         setIsProcessing(false)
       }
     } catch {
-      alert("Something went wrong. Please try again.")
+      toast.error("Something went wrong. Please try again.")
       setIsProcessing(false)
     }
   }

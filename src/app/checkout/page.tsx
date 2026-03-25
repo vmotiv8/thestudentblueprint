@@ -176,6 +176,10 @@ export default function CheckoutPage() {
       toast.error("Please enter your email address")
       return
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error("Please enter a valid email address")
+      return
+    }
     // Store student info for the assessment page to pick up
     localStorage.setItem("studentblueprint_paid_email", email)
     localStorage.setItem("studentblueprint_student_name", fullName)
@@ -207,7 +211,8 @@ localStorage.setItem("studentblueprint_coupon", data.code)
             localStorage.setItem("studentblueprint_paid_email", email)
         }
         setTimeout(() => {
-          router.push("/assessment")
+          const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}` : ''
+          router.push(`/assessment${orgParam}`)
         }, 1000)
       } else {
         toast.error(data.error || "Invalid coupon code")

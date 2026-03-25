@@ -114,7 +114,7 @@ export default function APIDocumentation() {
             <div>
               <h3 className="text-sm font-bold text-[#0a192f] uppercase tracking-widest mb-4">Introduction</h3>
               <p className="text-sm text-[#5a7a9a] leading-relaxed">
-                The VMotiv8 Business API allows agencies to programmatically invite students, manage assessments, and retrieve results for integration into their own CRM or student portals.
+                The The Student Blueprint API allows agencies to programmatically invite students, manage assessments, and retrieve results for integration into their own CRM or student portals.
               </p>
             </div>
 

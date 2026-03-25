@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use } from "react"
+import { useEffect, useState, use, useRef, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -66,8 +66,14 @@ import {
   ResponsiveContainer
 } from "recharts"
 
+const PHASE_1_TABS = new Set(['timeline', 'gaps', 'roadmap', 'essays'])
+const PHASE_2_TABS = new Set(['projects', 'research', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match', 'network', 'leadership'])
+
 interface Assessment {
   id: string
+  status: string
+  generation_phase: number | null
+  phase2_started_at: string | null
   student_archetype: string
   archetype_scores: {
     Visionary: number
@@ -270,17 +276,59 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
   const [archetypeScores, setArchetypeScores] = useState<Array<{ subject: string; score: number; fullMark: number }>>([])
+  const [isPhase2Loading, setIsPhase2Loading] = useState(false)
+  const [phase2RetryAvailable, setPhase2RetryAvailable] = useState(false)
+  const [retryingPhase2, setRetryingPhase2] = useState(false)
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pollCountRef = useRef(0)
 
   // Organization branding colors (with defaults)
   const primaryColor = tenant?.primary_color || "#1e3a5f"
   const secondaryColor = tenant?.secondary_color || "#c9a227"
-  const orgName = tenant?.name || "VMotiv8 Business"
+  const orgName = tenant?.name || "The Student Blueprint"
   const logoUrl = tenant?.logo_url
+
+  const updateAssessmentState = useCallback((data: Assessment) => {
+    setAssessment(data)
+    const scores = data.archetype_scores
+    if (scores) {
+      setArchetypeScores([
+        { subject: "Visionary", score: scores.Visionary || 0, fullMark: 100 },
+        { subject: "Builder", score: scores.Builder || 0, fullMark: 100 },
+        { subject: "Healer", score: scores.Healer || 0, fullMark: 100 },
+        { subject: "Analyst", score: scores.Analyst || 0, fullMark: 100 },
+        { subject: "Artist", score: scores.Artist || 0, fullMark: 100 },
+        { subject: "Advocate", score: scores.Advocate || 0, fullMark: 100 },
+        { subject: "Entrepreneur", score: scores.Entrepreneur || 0, fullMark: 100 },
+        { subject: "Researcher", score: scores.Researcher || 0, fullMark: 100 }
+      ])
+    }
+
+    if (data.status === 'completed') {
+      setIsPhase2Loading(false)
+      setPhase2RetryAvailable(false)
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current)
+        pollIntervalRef.current = null
+      }
+    } else if (data.status === 'partial') {
+      setIsPhase2Loading(true)
+      // Check if Phase 2 seems stuck (>3 min)
+      if (data.phase2_started_at) {
+        const elapsed = Date.now() - new Date(data.phase2_started_at).getTime()
+        if (elapsed > 180000) {
+          setPhase2RetryAvailable(true)
+        }
+      } else {
+        // phase2_started_at is null = Phase 2 failed, show retry
+        setPhase2RetryAvailable(true)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch assessment and tenant info in parallel
         const [assessmentRes, tenantRes] = await Promise.all([
           fetch(`/api/assessment/${resolvedParams.id}`),
           fetch('/api/platform/organizations/me')
@@ -292,20 +340,28 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         ])
 
         if (assessmentData.assessment) {
-          setAssessment(assessmentData.assessment)
+          updateAssessmentState(assessmentData.assessment)
 
-          const scores = assessmentData.assessment.archetype_scores
-          if (scores) {
-            setArchetypeScores([
-              { subject: "Visionary", score: scores.Visionary || 0, fullMark: 100 },
-              { subject: "Builder", score: scores.Builder || 0, fullMark: 100 },
-              { subject: "Healer", score: scores.Healer || 0, fullMark: 100 },
-              { subject: "Analyst", score: scores.Analyst || 0, fullMark: 100 },
-              { subject: "Artist", score: scores.Artist || 0, fullMark: 100 },
-              { subject: "Advocate", score: scores.Advocate || 0, fullMark: 100 },
-              { subject: "Entrepreneur", score: scores.Entrepreneur || 0, fullMark: 100 },
-              { subject: "Researcher", score: scores.Researcher || 0, fullMark: 100 }
-            ])
+          // Start polling if not fully complete
+          if (assessmentData.assessment.status === 'partial') {
+            pollIntervalRef.current = setInterval(async () => {
+              pollCountRef.current++
+              if (pollCountRef.current > 60) {
+                // 5 minutes of polling, show retry
+                setPhase2RetryAvailable(true)
+                if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+                return
+              }
+              try {
+                const res = await fetch(`/api/assessment/${resolvedParams.id}`)
+                const data = await res.json()
+                if (data.assessment) {
+                  updateAssessmentState(data.assessment)
+                }
+              } catch (err) {
+                console.error('Polling error:', err)
+              }
+            }, 5000)
           }
         }
 
@@ -320,7 +376,55 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     }
 
     fetchData()
-  }, [resolvedParams.id])
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current)
+      }
+    }
+  }, [resolvedParams.id, updateAssessmentState])
+
+  const handleRetryPhase2 = async () => {
+    setRetryingPhase2(true)
+    setPhase2RetryAvailable(false)
+    try {
+      const res = await fetch(`/api/assessment/${resolvedParams.id}/generate-phase2`, {
+        method: 'POST',
+      })
+      if (res.ok || res.status === 202) {
+        setIsPhase2Loading(true)
+        // Restart polling
+        pollCountRef.current = 0
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+        pollIntervalRef.current = setInterval(async () => {
+          pollCountRef.current++
+          if (pollCountRef.current > 60) {
+            setPhase2RetryAvailable(true)
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+            return
+          }
+          try {
+            const pollRes = await fetch(`/api/assessment/${resolvedParams.id}`)
+            const data = await pollRes.json()
+            if (data.assessment) {
+              updateAssessmentState(data.assessment)
+            }
+          } catch (err) {
+            console.error('Polling error:', err)
+          }
+        }, 5000)
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Failed to generate recommendations')
+        setPhase2RetryAvailable(true)
+      }
+    } catch {
+      toast.error('Failed to generate recommendations')
+      setPhase2RetryAvailable(true)
+    } finally {
+      setRetryingPhase2(false)
+    }
+  }
 
   const handleDownloadPDF = async () => {
     setDownloading(true)
@@ -332,7 +436,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${assessment?.students?.full_name || 'Student'}-VMotiv8Business-Report.pdf`
+      a.download = `${assessment?.students?.full_name || 'Student'}-StudentBlueprint-Report.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -351,7 +455,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${assessment?.students?.full_name}'s VMotiv8 Business Results`,
+          title: `${assessment?.students?.full_name}'s The Student Blueprint Results`,
           text: 'Check out my personalized college success roadmap!',
           url
         })
@@ -426,6 +530,53 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     if (words.length > 6) short = words.slice(0, 5).join(' ')
     return short
   })()
+
+    const Phase2Placeholder = () => (
+      <div className="text-center py-16 sm:py-20">
+        {retryingPhase2 || (isPhase2Loading && !phase2RetryAvailable) ? (
+          <>
+            <Loader2 className="w-8 h-8 animate-spin text-[#c9a227] mx-auto mb-3" />
+            <p className="text-[#5a7a9a] font-medium">
+              Generating your personalized recommendations...
+            </p>
+            <p className="text-sm text-[#5a7a9a]/60 mt-1">
+              This usually takes 1-2 minutes
+            </p>
+          </>
+        ) : phase2RetryAvailable ? (
+          <>
+            <AlertCircle className="w-8 h-8 text-[#c9a227] mx-auto mb-3" />
+            <p className="text-[#5a7a9a] font-medium mb-1">
+              Detailed recommendations are still being generated
+            </p>
+            <p className="text-sm text-[#5a7a9a]/60 mb-4">
+              This is taking longer than usual. You can retry or check back in a few minutes.
+            </p>
+            <Button
+              onClick={handleRetryPhase2}
+              disabled={retryingPhase2}
+              className="bg-[#1e3a5f] hover:bg-[#152a45] text-white"
+            >
+              {retryingPhase2 ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+              ) : (
+                'Generate Recommendations'
+              )}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Clock className="w-8 h-8 text-[#c9a227] mx-auto mb-3" />
+            <p className="text-[#5a7a9a] font-medium">
+              We&apos;re still generating your personalized results...
+            </p>
+            <p className="text-sm text-[#5a7a9a]/60 mt-1">
+              Check again in a few minutes.
+            </p>
+          </>
+        )}
+      </div>
+    )
 
     const RecommendationCard = ({
       title,
@@ -528,9 +679,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               </Button>
               <Button
                 className="font-bold rounded-full px-3 sm:px-6 h-8 sm:h-10 shadow-lg transition-all hover:-translate-y-0.5 text-[10px] sm:text-sm"
-                style={{ backgroundColor: secondaryColor, color: primaryColor, boxShadow: `0 4px 14px ${secondaryColor}40` }}
+                style={{ backgroundColor: secondaryColor, color: primaryColor, boxShadow: `0 4px 14px ${secondaryColor}40`, opacity: assessment?.status !== 'completed' ? 0.5 : 1 }}
                 onClick={handleDownloadPDF}
-                disabled={downloading}
+                disabled={downloading || assessment?.status !== 'completed'}
+                title={assessment?.status !== 'completed' ? 'PDF available once all recommendations are generated' : ''}
               >
                 {downloading ? (
                   <Loader2 className="w-3.5 h-3.5 mr-1 sm:mr-2 animate-spin" />
@@ -774,6 +926,24 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               </motion.div>
             </div>
 
+                {isPhase2Loading && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 bg-gradient-to-r from-[#1e3a5f]/5 to-[#c9a227]/5 border border-[#c9a227]/20 rounded-xl p-4 flex items-center gap-3"
+                  >
+                    <Loader2 className="w-5 h-5 animate-spin text-[#c9a227] flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-[#1e3a5f]">
+                        Generating detailed recommendations...
+                      </p>
+                      <p className="text-xs text-[#5a7a9a]">
+                        Your core analysis is ready below. Detailed tabs will unlock automatically in 1-2 minutes.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+
                 <Tabs defaultValue="timeline" className="mb-8 sm:mb-12 w-full">
                   <div className="sm:max-w-full sm:overflow-x-auto scrollbar-hide sm:-mx-0 sm:px-0">
                     <TabsList className="bg-white/40 backdrop-blur-2xl border border-white/20 p-1.5 sm:p-2 grid grid-cols-4 sm:grid-cols-7 h-auto gap-1 sm:gap-2 shadow-2xl shadow-[#1e3a5f]/5 rounded-xl sm:rounded-[2.5rem] w-full scrollbar-hide mb-2">
@@ -793,9 +963,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         { value: "leadership", icon: Flag, label: "Leadership" },
                         { value: "essays", icon: PenLine, label: "Essays" },
                       ].map(({ value, icon: Icon, label }) => (
-                        <TabsTrigger key={value} value={value} className="data-[state=active]:bg-[#1e3a5f] data-[state=active]:text-[#c9a227] px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold text-[#1e3a5f]/50 flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0">
+                        <TabsTrigger key={value} value={value} className="data-[state=active]:bg-[#1e3a5f] data-[state=active]:text-[#c9a227] px-1 sm:px-2 py-2 sm:py-5 rounded-lg sm:rounded-[2rem] transition-all duration-300 font-bold text-[#1e3a5f]/50 flex flex-col items-center gap-0.5 sm:gap-1.5 h-full min-w-0 relative">
                           <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                           <span className="text-[7px] sm:text-[10px] uppercase tracking-tight leading-tight truncate w-full text-center">{label}</span>
+                          {isPhase2Loading && PHASE_2_TABS.has(value) && (
+                            <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#c9a227] rounded-full animate-pulse" />
+                          )}
                         </TabsTrigger>
                       ))}
                     </TabsList>
@@ -1002,7 +1175,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
                 <TabsContent value="projects" className="mt-6">
-                  {assessment.passion_projects && assessment.passion_projects.length > 0 ? (
+                  {!assessment.passion_projects && isPhase2Loading ? <Phase2Placeholder /> : assessment.passion_projects && assessment.passion_projects.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                       {assessment.passion_projects.map((project, index) => (
                         <motion.div
@@ -1101,7 +1274,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </TabsContent>
 
             <TabsContent value="research" className="mt-6">
-              <div className="grid md:grid-cols-2 gap-6">
+              {!assessment.research_publications_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="grid md:grid-cols-2 gap-6">
                 {/* Research Topics - Left Column */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
@@ -1179,11 +1352,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     })}
                   </div>
                 </div>
-              </div>
+              </div>}
             </TabsContent>
 
                 <TabsContent value="career-future" className="mt-6">
-                  <div className="space-y-6">
+                  {!assessment.career_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
                     <Card className="border-[#e5e0d5] bg-[#1e3a5f] text-white overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-10">
                         <Linkedin className="w-24 h-24" />
@@ -1258,11 +1431,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           ))}
                         </div>
                       </div>
-                  </div>
+                  </div>}
                 </TabsContent>
 
             <TabsContent value="academics" className="mt-6">
-              <div className="grid md:grid-cols-2 gap-5">
+              {!assessment.academic_courses_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="grid md:grid-cols-2 gap-5">
                 {[
                   { title: "AP Courses", icon: BookOpen, items: assessment.academic_courses_recommendations?.apCourses, color: "#6366f1", accent: "bg-indigo-50" },
                   { title: "IB Courses", icon: GraduationCap, items: assessment.academic_courses_recommendations?.ibCourses, color: "#8b5cf6", accent: "bg-violet-50" },
@@ -1329,11 +1502,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </Card>
                   )
                 })}
-              </div>
+              </div>}
             </TabsContent>
 
             <TabsContent value="testing" className="mt-6">
-              <div className="space-y-6">
+              {!assessment.sat_act_goals && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* SAT Goals */}
                   <Card className="border-[#e5e0d5]">
@@ -1534,11 +1707,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </Accordion>
                   </CardContent>
                 </Card>
-              </div>
+              </div>}
             </TabsContent>
 
             <TabsContent value="scholarships" className="mt-6">
-              <div className="space-y-6">
+              {!assessment.scholarship_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
                 <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
                   <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
                     Scholarship Opportunities
@@ -1595,11 +1768,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </div>
                   )
                 })()}
-              </div>
+              </div>}
             </TabsContent>
 
             <TabsContent value="activities" className="mt-6">
-              <div className="space-y-8">
+              {!assessment.competitions_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-8">
                 <div>
                   <h3 className="text-lg font-semibold text-[#1e3a5f] mb-4 flex items-center gap-2">
                     <Sun className="w-5 h-5 text-[#f59e0b]" />
@@ -1797,11 +1970,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     />
                   </div>
                 </div>
-              </div>
+              </div>}
             </TabsContent>
 
                 <TabsContent value="college-match" className="mt-6">
-                  <div className="space-y-6">
+                  {!assessment.college_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-6">
                     <div className="grid md:grid-cols-3 gap-6">
                       <Card className="border-[#e5e0d5]">
                         <CardHeader>
@@ -1882,11 +2055,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         </Card>
                       ))}
                     </div>
-                  </div>
+                  </div>}
                 </TabsContent>
 
                     <TabsContent value="network" className="mt-6">
-                      <div className="space-y-4 sm:space-y-6">
+                      {!assessment.mentor_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="space-y-4 sm:space-y-6">
                         <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-4 sm:p-8 rounded-xl sm:rounded-2xl text-white">
                           <h3 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                             Strategic Network Targets
@@ -1992,7 +2165,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         ))
                           })()}
                       </div>
-                    </div>
+                    </div>}
                   </TabsContent>
 
                 <TabsContent value="roadmap" className="mt-6">
@@ -2077,7 +2250,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </TabsContent>
 
             <TabsContent value="leadership" className="mt-6">
-              <div className="grid md:grid-cols-2 gap-6">
+              {!assessment.leadership_recommendations && isPhase2Loading ? <Phase2Placeholder /> : <div className="grid md:grid-cols-2 gap-6">
                 <RecommendationCard
                   title="Club Leadership"
                   icon={Users}
@@ -2154,7 +2327,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              </div>}
             </TabsContent>
 
             <TabsContent value="essays" className="mt-6">
@@ -2241,14 +2414,15 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   size="lg"
                   className="bg-white text-[#1e3a5f] hover:bg-gray-100 font-semibold border-2 border-white"
                   onClick={handleDownloadPDF}
-                  disabled={downloading}
+                  disabled={downloading || assessment?.status !== 'completed'}
+                  style={{ opacity: assessment?.status !== 'completed' ? 0.5 : 1 }}
                 >
                   {downloading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
                     <Download className="w-4 h-4 mr-2" />
                   )}
-                  {downloading ? 'Generating PDF...' : 'Download Full Report'}
+                  {assessment?.status !== 'completed' ? 'PDF available soon...' : downloading ? 'Generating PDF...' : 'Download Full Report'}
                 </Button>
               </div>
           </motion.div>
@@ -2257,7 +2431,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
       <footer className="py-8 px-6 bg-[#0f1f30] border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center text-white/40 text-sm">
-          &copy; 2024 VMotiv8 Business. All rights reserved.
+          &copy; 2024 The Student Blueprint. All rights reserved.
         </div>
       </footer>
     </div>

@@ -13,7 +13,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;')
 }
 
-const DEFAULT_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "VMotiv8 Business <onboarding@resend.dev>"
+const DEFAULT_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "The Student Blueprint <onboarding@resend.dev>"
 
 export async function POST(request: NextRequest) {
   try {

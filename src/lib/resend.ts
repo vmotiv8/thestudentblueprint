@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'VMotiv8 Business <onboarding@resend.dev>'
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'The Student Blueprint <onboarding@resend.dev>'
 
 async function logEmailSend(template: string, to: string, success: boolean, error?: unknown) {
   try {
@@ -58,7 +58,7 @@ export async function sendResumeCodeEmail(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your VMotiv8 Business Assessment Resume Code</title>
+  <title>Your The Student Blueprint Assessment Resume Code</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; min-height: 100vh;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
@@ -72,7 +72,7 @@ export async function sendResumeCodeEmail(
               <div style="width: 90px; height: 90px; background-color: #c9a227; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <span style="font-size: 44px; line-height: 1;">💾</span>
               </div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">VMotiv8 Business</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
               <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
             </td>
           </tr>
@@ -163,7 +163,7 @@ export async function sendResumeCodeEmail(
         <!-- Footer -->
         <tr>
           <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
-            <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">VMotiv8 Business</h4>
+            <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">The Student Blueprint</h4>
             <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
             <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
           </td>
@@ -181,7 +181,7 @@ export async function sendResumeCodeEmail(
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: `💾 Your VMotiv8 Business Resume Code: ${safeUniqueCode}`,
+      subject: `💾 Your The Student Blueprint Resume Code: ${safeUniqueCode}`,
       html
     })
 
@@ -284,7 +284,7 @@ export async function sendStudentInviteEmail(props: {
           <tr>
             <td style="background-color: #faf8f3; padding: 30px; text-align: center; border-top: 1px solid #e5e0d5;">
               <p style="margin: 0; color: #5a7a9a; font-size: 14px;">&copy; ${new Date().getFullYear()} ${safeOrgName}. All rights reserved.</p>
-              <p style="margin: 8px 0 0; color: #5a7a9a; font-size: 12px;">Powered by VMotiv8 Business Platform</p>
+              <p style="margin: 8px 0 0; color: #5a7a9a; font-size: 12px;">Powered by The Student Blueprint Platform</p>
             </td>
           </tr>
         </table>
@@ -356,7 +356,7 @@ export async function sendStudentResultsEmail(
   const safeArchetype = escapeHtml(archetype)
 
   // White-label colors and name from organization
-  const brandName = orgBranding?.orgName || 'VMotiv8 Business'
+  const brandName = orgBranding?.orgName || 'The Student Blueprint'
   const primaryColor = (orgBranding?.primaryColor && isValidHexColor(orgBranding.primaryColor)) ? orgBranding.primaryColor : '#1e3a5f'
   const accentColor = (orgBranding?.secondaryColor && isValidHexColor(orgBranding.secondaryColor)) ? orgBranding.secondaryColor : '#c9a227'
   const safeBrandName = escapeHtml(brandName)
@@ -539,7 +539,7 @@ export async function sendStudentResultsEmail(
 
   try {
     // Use org branding for from name if available
-    const fromName = orgBranding?.fromName || 'VMotiv8 Business'
+    const fromName = orgBranding?.fromName || 'The Student Blueprint'
     const fromEmail = FROM_EMAIL.includes('<')
       ? `${fromName} ${FROM_EMAIL.substring(FROM_EMAIL.indexOf('<'))}`
       : `${fromName} <${FROM_EMAIL}>`
@@ -605,7 +605,7 @@ export async function sendParentEmail(
               <div style="display: inline-block; background-color: #c9a227; border-radius: 16px; padding: 16px 28px; margin-bottom: 20px;">
                 <span style="font-size: 32px; line-height: 1;">👪</span>
               </div>
-              <h1 style="margin: 0 0 8px; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">VMotiv8 Business</h1>
+              <h1 style="margin: 0 0 8px; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
               <p style="margin: 0; color: #c9a227; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Parent Report</p>
               <div style="width: 60px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
             </td>
@@ -688,7 +688,7 @@ export async function sendParentEmail(
           <!-- Footer -->
           <tr>
             <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
-              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 800;">VMotiv8 Business</h4>
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 800;">The Student Blueprint</h4>
               <p style="margin: 0; color: #ffffff; font-size: 13px; opacity: 0.8;">Supporting families on the path to college success</p>
               <div style="width: 50px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
             </td>
@@ -706,7 +706,7 @@ export async function sendParentEmail(
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: `📊 ${safeStudentName}'s VMotiv8 Business Assessment Results`,
+      subject: `📊 ${safeStudentName}'s The Student Blueprint Assessment Results`,
       html
     })
 
@@ -732,7 +732,7 @@ export async function sendOTPEmail(to: string, studentName: string, otpCode: str
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your VMotiv8 Business Login Code</title>
+  <title>Your The Student Blueprint Login Code</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
@@ -746,7 +746,7 @@ export async function sendOTPEmail(to: string, studentName: string, otpCode: str
               <div style="width: 80px; height: 80px; background-color: #c9a227; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <span style="font-size: 40px; line-height: 1;">🔐</span>
               </div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">VMotiv8 Business</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
               <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
             </td>
           </tr>
@@ -783,7 +783,7 @@ export async function sendOTPEmail(to: string, studentName: string, otpCode: str
           <!-- Footer -->
           <tr>
             <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
-              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">VMotiv8 Business</h4>
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">The Student Blueprint</h4>
               <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
               <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
             </td>
@@ -801,7 +801,7 @@ export async function sendOTPEmail(to: string, studentName: string, otpCode: str
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: `Your VMotiv8 Business Login Code: ${otpCode}`,
+      subject: `Your The Student Blueprint Login Code: ${otpCode}`,
       html
     })
 
@@ -837,7 +837,7 @@ export async function sendAgencyWelcomeEmail(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to VMotiv8 Business - Your Agency Account is Ready</title>
+  <title>Welcome to The Student Blueprint - Your Agency Account is Ready</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
@@ -851,7 +851,7 @@ export async function sendAgencyWelcomeEmail(
               <div style="width: 90px; height: 90px; background-color: #c9a227; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <span style="font-size: 44px; line-height: 1;">&#127970;</span>
               </div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">VMotiv8 Business</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
               <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
             </td>
           </tr>
@@ -938,7 +938,7 @@ export async function sendAgencyWelcomeEmail(
           <!-- Footer -->
           <tr>
             <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
-              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">VMotiv8 Business</h4>
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">The Student Blueprint</h4>
               <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
               <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
             </td>
@@ -956,7 +956,7 @@ export async function sendAgencyWelcomeEmail(
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: 'Welcome to VMotiv8 Business - Your Agency Account is Ready',
+      subject: 'Welcome to The Student Blueprint - Your Agency Account is Ready',
       html
     })
 
@@ -982,7 +982,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset Your Password - VMotiv8 Business</title>
+  <title>Reset Your Password - The Student Blueprint</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
@@ -996,7 +996,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
               <div style="width: 80px; height: 80px; background-color: #c9a227; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <span style="font-size: 40px; line-height: 1;">&#128273;</span>
               </div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">VMotiv8 Business</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
               <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
             </td>
           </tr>
@@ -1029,7 +1029,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
           <!-- Footer -->
           <tr>
             <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
-              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">VMotiv8 Business</h4>
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">The Student Blueprint</h4>
               <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
               <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
             </td>
@@ -1047,7 +1047,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: 'Reset Your Password - VMotiv8 Business',
+      subject: 'Reset Your Password - The Student Blueprint',
       html
     })
 
@@ -1074,7 +1074,7 @@ export async function sendAdminInviteEmail(to: string, role: string, tempPasswor
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VMotiv8 Business Admin Invitation</title>
+  <title>The Student Blueprint Admin Invitation</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
@@ -1088,7 +1088,7 @@ export async function sendAdminInviteEmail(to: string, role: string, tempPasswor
               <div style="width: 80px; height: 80px; background-color: #c9a227; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <span style="font-size: 40px; line-height: 1;">👑</span>
               </div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">VMotiv8 Business</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
               <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
             </td>
           </tr>
@@ -1098,7 +1098,7 @@ export async function sendAdminInviteEmail(to: string, role: string, tempPasswor
             <td style="padding: 50px 40px;">
               <h2 style="margin: 0 0 16px; color: #1e3a5f; font-size: 24px; font-weight: 700; text-align: center;">Admin Team Invitation</h2>
               <p style="margin: 0 0 32px; color: #5a7a9a; font-size: 16px; line-height: 1.6; text-align: center;">
-                Welcome to the VMotiv8 Business Admin Team!<br>
+                Welcome to the The Student Blueprint Admin Team!<br>
                 You've been invited by <strong>${escapeHtml(inviterEmail)}</strong> to join as a <span style="background-color: #c9a227; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">${escapeHtml(role.replace('_', ' '))}</span>.
               </p>
 
@@ -1136,7 +1136,7 @@ export async function sendAdminInviteEmail(to: string, role: string, tempPasswor
           <!-- Footer -->
           <tr>
             <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
-              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">VMotiv8 Business</h4>
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">The Student Blueprint</h4>
               <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
               <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
             </td>
@@ -1154,7 +1154,7 @@ export async function sendAdminInviteEmail(to: string, role: string, tempPasswor
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: '🎉 VMotiv8 Business Admin Invitation',
+      subject: '🎉 The Student Blueprint Admin Invitation',
       html
     })
 

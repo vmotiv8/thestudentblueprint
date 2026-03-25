@@ -87,7 +87,7 @@ function generateStudentInviteTemplate(
   const assessmentUrl = buildOrgAssessmentUrl(org.slug)
   const poweredBy = org.removeBranding
     ? ''
-    : '<p style="margin: 8px 0 0; color: #5a7a9a; font-size: 12px;">Powered by VMotiv8 Business Platform</p>'
+    : '<p style="margin: 8px 0 0; color: #5a7a9a; font-size: 12px;">Powered by The Student Blueprint Platform</p>'
 
   return `
 <!DOCTYPE html>
@@ -185,7 +185,7 @@ function generateAssessmentCompleteTemplate(
   const dashboardUrl = buildResultsUrl(assessmentId)
   const poweredBy = org.removeBranding
     ? ''
-    : `<p style="margin: 8px 0 0; color: rgba(255,255,255,0.6); font-size: 12px;">Powered by VMotiv8 Business</p>`
+    : `<p style="margin: 8px 0 0; color: rgba(255,255,255,0.6); font-size: 12px;">Powered by The Student Blueprint</p>`
 
   return `
 <!DOCTYPE html>
@@ -332,7 +332,7 @@ function generateResumeCodeTemplate(
   const resumeUrl = buildUrl('/resume')
   const poweredBy = org.removeBranding
     ? ''
-    : `<p style="margin: 8px 0 0; color: rgba(255,255,255,0.6); font-size: 12px;">Powered by VMotiv8 Business</p>`
+    : `<p style="margin: 8px 0 0; color: rgba(255,255,255,0.6); font-size: 12px;">Powered by The Student Blueprint</p>`
 
   return `
 <!DOCTYPE html>
@@ -433,7 +433,7 @@ function generateOTPTemplate(
 
   const poweredBy = org.removeBranding
     ? ''
-    : `<p style="margin: 8px 0 0; color: rgba(255,255,255,0.6); font-size: 12px;">Powered by VMotiv8 Business</p>`
+    : `<p style="margin: 8px 0 0; color: rgba(255,255,255,0.6); font-size: 12px;">Powered by The Student Blueprint</p>`
 
   return `
 <!DOCTYPE html>
@@ -517,7 +517,7 @@ function generateOTPTemplate(
  * Default branding for the platform (used when no organization context)
  */
 export const defaultBranding: OrganizationBranding = {
-  name: 'VMotiv8 Business',
+  name: 'The Student Blueprint',
   slug: '',
   logoUrl: null,
   primaryColor: '#1e3a5f',

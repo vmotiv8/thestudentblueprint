@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]/)"
+    ],
+    "additionalDirectories": [
+      "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"
+    ]
+  }
+}

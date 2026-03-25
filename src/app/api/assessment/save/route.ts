@@ -81,7 +81,10 @@ export async function POST(request: Request) {
         .eq('id', assessmentId)
         .eq('organization_id', organization.id)
 
-      if (error) throw error
+      if (error) {
+        console.error('[AssessmentSave] Update failed:', { code: error.code, message: error.message, details: error.details, hint: error.hint, assessmentId, orgId: organization.id })
+        throw error
+      }
 
       const { data: assessment } = await supabase
         .from('assessments')
@@ -244,13 +247,17 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('[AssessmentSave] Error:', {
-      message: error instanceof Error ? error.message : error,
+      message: errorMessage,
+      code: (error as { code?: string })?.code,
+      details: (error as { details?: string })?.details,
+      hint: (error as { hint?: string })?.hint,
       stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
     })
     return NextResponse.json(
-      { error: 'Failed to save assessment' },
+      { error: `Failed to save assessment: ${errorMessage}` },
       { status: 500 }
     )
   }

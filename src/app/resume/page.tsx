@@ -128,9 +128,9 @@ export default function ResumePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-8 h-8 sm:w-10 sm:h-10">
-              <Image src="/logo.png" alt="VMotiv8 Business Logo" fill className="object-contain group-hover:scale-110 transition-transform" />
+              <Image src="/logo.png" alt="The Student Blueprint Logo" fill className="object-contain group-hover:scale-110 transition-transform" />
             </div>
-            <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>VMotiv8 Business</span>
+            <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>The Student Blueprint</span>
           </Link>
           <Link href="/checkout">
             <Button className="bg-[#c9a227] hover:bg-white hover:text-[#1e3a5f] text-[#1e3a5f] font-bold text-[10px] sm:text-sm px-4 sm:px-6 h-9 sm:h-10 border border-[#c9a227] transition-all duration-300">

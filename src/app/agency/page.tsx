@@ -1008,10 +1008,11 @@ export default function AgencyDashboard() {
                               <div>
                                 <Badge className={`rounded-lg px-3 py-1 font-bold text-[10px] uppercase tracking-wider ${
                                   a.status === 'completed' ? 'bg-green-50 text-green-700 border border-green-100' :
+                                  a.status === 'partial' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
                                   a.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
                                   'bg-gray-50 text-gray-700 border border-gray-100'
                                 }`}>
-                                  {(a.status || 'pending').replace('_', ' ')}
+                                  {a.status === 'partial' ? 'Generating...' : (a.status || 'pending').replace('_', ' ')}
                                 </Badge>
                                 {a.status === 'in_progress' && a.current_section && (
                                   <p className="text-[11px] text-[#5a7a9a] mt-1.5">
@@ -1039,7 +1040,7 @@ export default function AgencyDashboard() {
                             </TableCell>
                             <TableCell className="px-8 text-right">
                               <div className="flex justify-end gap-2">
-                                {a.status === 'completed' && (
+                                {(a.status === 'completed' || a.status === 'partial') && (
                                   <Button size="sm" variant="ghost" className="rounded-xl h-10 w-10 p-0 text-[#1e3a5f] hover:bg-blue-50" onClick={() => router.push(`/results/${a.id}`)}>
                                     <Eye className="w-4 h-4" />
                                   </Button>

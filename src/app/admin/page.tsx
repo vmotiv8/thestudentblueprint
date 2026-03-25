@@ -743,9 +743,9 @@ export default function SuperAdminDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Image src="/logo.png" alt="VMotiv8 Business Logo" width={42} height={42} className="w-9 h-9 object-contain" />
+              <Image src="/logo.png" alt="The Student Blueprint Logo" width={42} height={42} className="w-9 h-9 object-contain" />
               <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                VMotiv8 Business
+                The Student Blueprint
               </span>
             </Link>
             <Badge className="bg-[#c9a227] text-[#0a192f] border-0 rounded-full px-4 py-1 font-black text-[10px] uppercase tracking-widest shadow-lg">
@@ -1728,7 +1728,7 @@ export default function SuperAdminDashboard() {
                     <h2 className="text-4xl font-black text-[#0a192f] tracking-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                       Platform Evolution
                     </h2>
-                    <p className="text-[#5a7a9a] text-lg">Tracking every milestone at VMotiv8 Business.</p>
+                    <p className="text-[#5a7a9a] text-lg">Tracking every milestone at The Student Blueprint.</p>
                   </div>
                   <div className="bg-amber-100 p-4 rounded-3xl">
                     <History className="w-10 h-10 text-[#c9a227]" />
@@ -1837,10 +1837,11 @@ export default function SuperAdminDashboard() {
                             <TableCell>
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
                                 assessment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                assessment.status === 'partial' ? 'bg-blue-100 text-blue-700' :
                                 assessment.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
                                 'bg-gray-100 text-gray-600'
                               }`}>
-                                {assessment.status}
+                                {assessment.status === 'partial' ? 'Generating...' : assessment.status}
                               </span>
                             </TableCell>
                             <TableCell>
@@ -1858,7 +1859,7 @@ export default function SuperAdminDashboard() {
                               )}
                             </TableCell>
                             <TableCell className="px-6 text-right">
-                              {assessment.status === 'completed' && (
+                              {(assessment.status === 'completed' || assessment.status === 'partial') && (
                                 <Button
                                   size="sm"
                                   variant="outline"

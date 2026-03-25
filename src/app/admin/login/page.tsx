@@ -58,13 +58,13 @@ export default function AdminLoginPage() {
             <div className="text-center mb-8">
 <Image 
                   src="/logo.png" 
-                  alt="VMotiv8 Business Logo" 
+                  alt="The Student Blueprint Logo" 
                   width={64} 
                   height={64} 
                   className="mx-auto mb-4 object-contain"
                 />
                 <h1 className="text-3xl font-extrabold text-[#1e3a5f] tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  VMotiv8 Business
+                  The Student Blueprint
                 </h1>
             </div>
 

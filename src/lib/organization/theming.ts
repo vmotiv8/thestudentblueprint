@@ -138,7 +138,7 @@ export function generateThemeStyleString(colors: ThemeColors): string {
 }
 
 /**
- * Default theme colors (VMotiv8 Business brand)
+ * Default theme colors (The Student Blueprint brand)
  */
 export const DEFAULT_THEME: ThemeColors = {
   primary: '#1e3a5f',

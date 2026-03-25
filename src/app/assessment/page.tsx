@@ -258,6 +258,7 @@ function AssessmentContent() {
           if (data.success && data.assessment) {
             setIsPaid(true)
             verified = true
+            if (data.student?.uniqueCode) setUniqueCode(data.student.uniqueCode)
             loadAssessmentData(data.assessment)
           } else if (!verified) {
             const verifyResponse = await fetch(`/api/payment/verify?email=${encodeURIComponent(savedEmail)}`)
@@ -440,9 +441,9 @@ function AssessmentContent() {
     })
   }
 
-  const autoSave = useCallback(async () => {
+  const autoSave = useCallback(async (sectionOverride?: number) => {
     if (!formData.basicInfo.fullName || !formData.basicInfo.email) return
-    
+
     setIsSaving(true)
     const couponCode = localStorage.getItem("studentblueprint_coupon")
     try {
@@ -451,7 +452,7 @@ function AssessmentContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           assessmentId,
-          currentSection,
+          currentSection: sectionOverride ?? currentSection,
           formData,
           couponCode,
           organization_slug: tenant?.slug
@@ -459,16 +460,22 @@ function AssessmentContent() {
       })
 
       const data = await response.json()
+      if (!response.ok) {
+        console.error("[AutoSave] Server error:", response.status, data.error)
+        toast.error(data.error || "Failed to save progress", { duration: 4000 })
+        return
+      }
       if (data.assessmentId) {
         setAssessmentId(data.assessmentId)
         setUniqueCode(data.uniqueCode)
       }
     } catch (error) {
-      console.error("Auto-save failed:", error)
+      console.error("[AutoSave] Network error:", error)
+      toast.error("Unable to save — check your internet connection", { duration: 4000 })
     } finally {
       setIsSaving(false)
     }
-  }, [assessmentId, currentSection, formData])
+  }, [assessmentId, currentSection, formData, tenant])
 
   useEffect(() => {
     const timer = setTimeout(autoSave, 30000)
@@ -550,11 +557,6 @@ function AssessmentContent() {
       return
     }
     
-    if (!validateSection(1)) {
-      toast.error("Please fix the errors before saving")
-      return
-    }
-    
     setIsSaving(true)
     const couponCode = localStorage.getItem("studentblueprint_coupon")
     try {
@@ -571,11 +573,16 @@ function AssessmentContent() {
       })
 
       const data = await response.json()
+      if (!response.ok) {
+        console.error("[Save] Server error:", response.status, data.error)
+        toast.error(data.error || "Failed to save progress")
+        return
+      }
       if (data.assessmentId) {
         setAssessmentId(data.assessmentId)
         setUniqueCode(data.uniqueCode)
         setShowSaveModal(true)
-        
+
         if (isNewAssessment) {
           toast.success(
             <div className="flex items-center gap-2">
@@ -588,8 +595,8 @@ function AssessmentContent() {
         }
       }
     } catch (error) {
-      console.error("Save failed:", error)
-      toast.error("Failed to save progress")
+      console.error("[Save] Network error:", error)
+      toast.error("Failed to save progress — check your internet connection")
     } finally {
       setIsSaving(false)
     }
@@ -611,18 +618,21 @@ function AssessmentContent() {
         return
       }
     }
-    
-    await autoSave()
-    
+
+    const nextSection = currentSection < 15 ? currentSection + 1 : currentSection
+    await autoSave(nextSection)
+
     if (currentSection < 15) {
-      setCurrentSection(currentSection + 1)
+      setCurrentSection(nextSection)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
+    const prevSection = currentSection > 1 ? currentSection - 1 : currentSection
+    await autoSave(prevSection)
     if (currentSection > 1) {
-      setCurrentSection(currentSection - 1)
+      setCurrentSection(prevSection)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
@@ -3164,13 +3174,13 @@ function AssessmentContent() {
                 <Loader2 className="w-16 h-16 animate-spin text-[#c9a227] mx-auto" />
               </div>
               <h2 className="text-2xl font-bold text-[#1e3a5f] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Generating Your Report
+                Analyzing Your Profile
               </h2>
               <p className="text-[#5a7a9a] mb-2">
-                Please stay on this page, your report will be ready in &lt;10 min
+                Generating your core analysis... You&apos;ll be redirected to your results in about a minute.
               </p>
               <p className="text-sm text-[#5a7a9a]/70">
-                Our team is analyzing your profile and creating your personalized roadmap. We will also email you the results once it&apos;s ready.
+                Your detailed recommendations will continue generating in the background and will appear automatically.
               </p>
             </CardContent>
           </Card>
@@ -3186,12 +3196,12 @@ function AssessmentContent() {
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10">
                   <Image
                     src={tenant?.logo_url || "/logo.png"}
-                    alt={`${tenant?.name || "VMotiv8 Business"} Logo`}
+                    alt={`${tenant?.name || "The Student Blueprint"} Logo`}
                     fill
                     className="object-contain"
                   />
                 </div>
-                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>{tenant?.name || "VMotiv8 Business"}</span>
+                <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Playfair Display', serif" }}>{tenant?.name || "The Student Blueprint"}</span>
               </Link>
               <div className="flex items-center gap-2 sm:gap-3">
                 {isSaving && (
@@ -3237,7 +3247,7 @@ function AssessmentContent() {
               {SECTION_TITLES.map((title, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentSection(index + 1)}
+                  onClick={() => { autoSave(index + 1); setCurrentSection(index + 1) }}
                   className={`px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1 ${
                     currentSection === index + 1
                       ? "bg-[#1e3a5f] text-white"

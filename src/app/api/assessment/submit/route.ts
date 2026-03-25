@@ -143,7 +143,7 @@ Generate JSON:
   ]
 }
 
-CRITICAL: Generate exactly 5 essay ideas. Each MUST be deeply personal and connect 3+ profile elements. NO cliche topics (immigration stories, sports injuries, volunteer trips). Focus on specific, surprising moments.`, 10000, 120000)
+CRITICAL: Generate exactly 5 essay ideas. Each MUST be deeply personal and connect 3+ profile elements. NO cliche topics (immigration stories, sports injuries, volunteer trips). Focus on specific, surprising moments.`, 16000, 120000)
 
     if (!phase1.success) {
       console.error('[Submit] Phase 1 failed:', phase1.error)

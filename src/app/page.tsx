@@ -685,7 +685,7 @@ function ProductDemo() {
     <section className="py-20 sm:py-32 bg-[#FFFAF0] px-6">
       <div className="max-w-5xl mx-auto">
         <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
-          <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">See It In Action</p>
+          <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">Product Preview</p>
           <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-6" />
           <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold uppercase text-[#1E2849]" style={{ fontFamily: "'Oswald', sans-serif" }}>
             The <span className="text-[#af8f5b]">Blueprint</span> Report
@@ -1303,7 +1303,7 @@ function LandingPage() {
           >
             <Button asChild size="lg" className="bg-[#1E2849] hover:bg-[#1E2849]/90 text-white px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-none transition-all duration-500 shadow-2xl shadow-[#1E2849]/20 tracking-wide">
               <Link href="/get-started">
-                See It in Action <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
+                Start Now <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-[#1E2849]/20 text-[#1E2849]/70 hover:text-[#1E2849] hover:border-[#1E2849]/40 px-8 sm:px-10 py-5 sm:py-6 h-auto text-sm font-medium rounded-none transition-all duration-500 bg-transparent">

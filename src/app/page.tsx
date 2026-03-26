@@ -1087,9 +1087,8 @@ function LandingPage() {
     target: heroRef,
     offset: ["start start", "end start"]
   })
-  const heroOpacity = useTransform(heroProgress, [0, 0.5], [1, 0])
-  const heroY = useTransform(heroProgress, [0, 0.5], [0, -100])
-  const heroScale = useTransform(heroProgress, [0, 0.5], [1, 0.95])
+  const heroY = useTransform(heroProgress, [0, 1], [0, -150])
+  const heroScale = useTransform(heroProgress, [0, 1], [1, 0.92])
 
   const statementRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress: stmtProgress } = useScroll({
@@ -1244,7 +1243,7 @@ function LandingPage() {
         </div>
 
         <motion.div
-          style={{ opacity: heroOpacity, y: heroY, scale: heroScale }}
+          style={{ y: heroY, scale: heroScale }}
           className="relative z-10 max-w-6xl mx-auto px-6 text-center"
         >
           {/* Eyebrow */}

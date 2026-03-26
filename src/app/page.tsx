@@ -907,14 +907,19 @@ function DemoTesting({ data }: { data: any }) {
           <span className="text-xs text-[#af8f5b] font-bold uppercase tracking-[0.1em]">{data.current.goal}</span>
         </div>
       </div>
-      <div className="space-y-2">
+      <div className="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+        {/* Header */}
+        <div className="grid grid-cols-[1fr,100px,1fr] sm:grid-cols-[1fr,100px,1fr] px-5 py-3 border-b border-white/10">
+          <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">Test</span>
+          <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] text-center">Target</span>
+          <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] text-right">Timeline</span>
+        </div>
+        {/* Rows */}
         {data.plan.map((t: any, i: number) => (
-          <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-white">{t.test}</span>
-            </div>
-            <span className="text-xs font-bold text-[#af8f5b] uppercase tracking-[0.1em]">{t.target}</span>
-            <span className="text-xs text-white/30 font-medium hidden sm:block">{t.timeline}</span>
+          <div key={i} className={`grid grid-cols-[1fr,100px,1fr] sm:grid-cols-[1fr,100px,1fr] px-5 py-3.5 items-center ${i < data.plan.length - 1 ? "border-b border-white/5" : ""}`}>
+            <span className="text-sm font-bold text-white">{t.test}</span>
+            <span className="text-sm font-bold text-[#af8f5b] text-center">{t.target}</span>
+            <span className="text-xs text-white/30 font-medium text-right">{t.timeline}</span>
           </div>
         ))}
       </div>

@@ -1023,7 +1023,7 @@ function ClockTransition() {
         style={{ opacity: clockOpacity, scale: clockScale }}
         className="flex items-center gap-6 sm:gap-10 md:gap-14"
       >
-        <span className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-[0.3em] uppercase text-[#af8f5b] select-none" style={{ fontFamily: "'Oswald', sans-serif" }}>TICK</span>
+        <span className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-[0.3em] uppercase text-[#1E2849] select-none" style={{ fontFamily: "'Oswald', sans-serif" }}>TICK</span>
         <div className="relative w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64">
         <svg viewBox="0 0 200 200" className="w-full h-full">
           {/* Outer circle */}
@@ -1763,7 +1763,7 @@ function LandingPage() {
 
             <Button asChild size="lg" className="bg-[#1b2034] hover:bg-[#af8f5b] text-white px-12 sm:px-16 py-6 sm:py-8 h-auto text-sm sm:text-base font-bold rounded-full transition-all duration-500 shadow-2xl shadow-[#1b2034]/20 uppercase tracking-[0.15em]">
               <Link href="/get-started">
-                Get Started <ArrowRight className="ml-3 w-5 h-5" />
+                Get Started
               </Link>
             </Button>
 
@@ -1804,8 +1804,13 @@ function LandingPage() {
               </Link>
             </div>
 
-            <div className="text-xs text-white/35 tracking-[0.15em] uppercase font-bold">
-              &copy; {new Date().getFullYear()} The Student Blueprint
+            <div className="flex flex-col items-center md:items-end gap-1">
+              <div className="text-xs text-white/35 tracking-[0.15em] uppercase font-bold">
+                &copy; {new Date().getFullYear()} The Student Blueprint
+              </div>
+              <div className="text-[10px] text-white/25 tracking-[0.15em] uppercase font-medium">
+                Powered by VMotiv8
+              </div>
             </div>
           </div>
         </div>

@@ -1326,7 +1326,7 @@ function LandingPage() {
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-[#1E2849] mb-4 sm:mb-6 uppercase tracking-[0.1em]"
             style={{ fontFamily: "'Oswald', sans-serif" }}
           >
-            Every Agency Owner Says<br />The Same Thing:
+            Every Parent Says<br />The Same Thing:
           </p>
           <p
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-[1.1] text-[#af8f5b]"

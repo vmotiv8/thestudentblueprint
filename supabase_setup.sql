@@ -581,7 +581,7 @@ SELECT
 FROM organizations o
 CROSS JOIN (VALUES
   ('How long does the assessment take?',
-   'The assessment typically takes 15-20 minutes to complete. You can save your progress and return later if needed.', 1),
+   'The assessment typically takes about one hour to complete. You can save your progress and return later if needed.', 1),
   ('What happens after I complete the assessment?',
    'You will receive a comprehensive personalized report with your student archetype, strengths analysis, and a detailed roadmap for college success.', 2),
   ('Can I retake the assessment?',

@@ -258,24 +258,24 @@ export default function GetStartedPage() {
   const stepLabels = ["Plan", "Account", "Payment"]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white antialiased">
+    <div className="min-h-screen bg-[#FFFAF0] text-[#1E2849] antialiased">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FFFAF0]/80 backdrop-blur-2xl">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="Logo" width={24} height={24} className="rounded-md" />
-            <span className="font-semibold text-[15px] text-white/90 tracking-tight">
-              The Student Blueprint
+            <span className="font-bold text-[15px] tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <span className="text-[#1E2849]">TheStudent</span><span className="text-[#af8f5b]">Blueprint</span>
             </span>
           </Link>
           <Link
             href="/admin/login"
-            className="text-[13px] text-white/60 hover:text-white/70 transition-colors"
+            className="text-[13px] text-[#af8f5b] font-bold uppercase tracking-[0.15em] hover:text-[#1E2849] transition-colors"
           >
             Sign in
           </Link>
         </div>
-        <div className="h-px bg-white/[0.06]" />
+        <div className="h-px bg-gradient-to-r from-transparent via-[#af8f5b]/20 to-transparent" />
       </nav>
 
       <div className="pt-32 pb-24 px-6">
@@ -292,24 +292,24 @@ export default function GetStartedPage() {
                     }
                   }}
                   className={`
-                    relative flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium transition-all duration-500
+                    relative flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold transition-all duration-500
                     ${s === step
-                      ? "bg-white text-[#0a0a0a]"
+                      ? "bg-[#1b2034] text-white"
                       : s < step
-                        ? "bg-white/90 text-[#0a0a0a] cursor-pointer"
-                        : "bg-white/[0.08] text-white/60"
+                        ? "bg-[#af8f5b] text-white cursor-pointer"
+                        : "bg-[#1E2849]/10 text-[#1E2849]/40"
                     }
                   `}
                 >
                   {s < step ? <Check className="w-3.5 h-3.5" /> : s}
                 </button>
-                <span className={`ml-2 text-xs font-medium tracking-wide ${s === step ? "text-white/70" : s < step ? "text-white/60" : "text-white/60"} ${s < 3 ? "mr-8" : ""}`}>
+                <span className={`ml-2 text-xs font-bold tracking-[0.15em] uppercase ${s === step ? "text-[#1E2849]" : s < step ? "text-[#af8f5b]" : "text-[#1E2849]/40"} ${s < 3 ? "mr-8" : ""}`}>
                   {stepLabels[s - 1]}
                 </span>
                 {s < 3 && (
-                  <div className="w-12 h-px bg-white/[0.08] mr-4">
+                  <div className="w-12 h-px bg-[#1E2849]/10 mr-4">
                     <motion.div
-                      className="h-full bg-white/40"
+                      className="h-full bg-[#af8f5b]"
                       initial={{ width: "0%" }}
                       animate={{ width: s < step ? "100%" : "0%" }}
                       transition={{ duration: 0.4 }}
@@ -405,10 +405,12 @@ function Step1({
   return (
     <div className="space-y-12">
       <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-          Choose your plan
+        <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Step 1</p>
+        <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+          Choose your <span className="text-[#af8f5b]">plan</span>
         </h1>
-        <p className="text-[15px] text-white/60 leading-relaxed">
+        <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em] leading-relaxed">
           Select the number of student licenses for your agency.<br />
           Resell to your clients at any price you set — you keep the margin.
         </p>
@@ -419,7 +421,7 @@ function Step1({
         <div className="flex items-center justify-center gap-6 mb-8">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-11 h-11 rounded-full bg-white/[0.06] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all active:scale-95"
+            className="w-11 h-11 rounded-full bg-[#1b2034] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#af8f5b] transition-all active:scale-95"
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -433,13 +435,14 @@ function Step1({
                 const v = parseInt(e.target.value)
                 if (!isNaN(v) && v >= 1) setQuantity(Math.min(2000, v))
               }}
-              className="w-24 text-center text-5xl font-semibold bg-transparent border-none outline-none text-white appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] tracking-tight"
+              className="w-24 text-center text-5xl font-bold bg-transparent border-none outline-none text-[#1E2849] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] tracking-tight"
+              style={{ fontFamily: "'Oswald', sans-serif" }}
             />
-            <div className="text-[13px] text-white/60 mt-0.5">licenses</div>
+            <div className="text-xs text-[#af8f5b] font-bold uppercase tracking-[0.15em] mt-0.5">licenses</div>
           </div>
           <button
             onClick={() => setQuantity(Math.min(2000, quantity + 1))}
-            className="w-11 h-11 rounded-full bg-white/[0.06] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all active:scale-95"
+            className="w-11 h-11 rounded-full bg-[#1b2034] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#af8f5b] transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -458,20 +461,20 @@ function Step1({
               [&::-webkit-slider-thumb]:w-5
               [&::-webkit-slider-thumb]:h-5
               [&::-webkit-slider-thumb]:rounded-full
-              [&::-webkit-slider-thumb]:bg-white
-              [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(255,255,255,0.1)]
+              [&::-webkit-slider-thumb]:bg-[#1b2034]
+              [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(175,143,91,0.3)]
               [&::-webkit-slider-thumb]:cursor-pointer
               [&::-webkit-slider-thumb]:transition-shadow
-              [&::-webkit-slider-thumb]:hover:shadow-[0_0_0_6px_rgba(255,255,255,0.15)]
+              [&::-webkit-slider-thumb]:hover:shadow-[0_0_0_6px_rgba(175,143,91,0.4)]
               [&::-moz-range-thumb]:w-5
               [&::-moz-range-thumb]:h-5
               [&::-moz-range-thumb]:rounded-full
-              [&::-moz-range-thumb]:bg-white
+              [&::-moz-range-thumb]:bg-[#1b2034]
               [&::-moz-range-thumb]:border-none
               [&::-moz-range-thumb]:cursor-pointer
             "
             style={{
-              background: `linear-gradient(to right, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.5) ${sliderValue()}%, rgba(255,255,255,0.06) ${sliderValue()}%, rgba(255,255,255,0.06) 100%)`,
+              background: `linear-gradient(to right, #af8f5b 0%, #af8f5b ${sliderValue()}%, rgba(30,42,73,0.1) ${sliderValue()}%, rgba(30,42,73,0.1) 100%)`,
             }}
           />
         </div>
@@ -479,29 +482,31 @@ function Step1({
 
       {/* Pricing Summary */}
       <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={2}>
-        <div className="grid grid-cols-3 text-center">
+        <div className="grid grid-cols-3 text-center rounded-xl p-6 border border-[#af8f5b]/20" style={{ backgroundColor: "#1b2034" }}>
           <div>
-            <div className="text-[13px] text-white/60 mb-1">Per student</div>
+            <div className="text-xs text-white/50 mb-1 font-bold uppercase tracking-[0.1em]">Per student</div>
             <motion.div
               key={pricePerStudent}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-2xl font-semibold tracking-tight"
+              className="text-2xl font-bold tracking-tight text-[#af8f5b]"
+              style={{ fontFamily: "'Oswald', sans-serif" }}
             >
               {formatCurrency(pricePerStudent)}
             </motion.div>
           </div>
           <div>
-            <div className="text-[13px] text-white/60 mb-1">Quantity</div>
-            <div className="text-2xl font-semibold tracking-tight">{quantity}</div>
+            <div className="text-xs text-white/50 mb-1 font-bold uppercase tracking-[0.1em]">Quantity</div>
+            <div className="text-2xl font-bold tracking-tight text-white" style={{ fontFamily: "'Oswald', sans-serif" }}>{quantity}</div>
           </div>
           <div>
-            <div className="text-[13px] text-white/60 mb-1">Total</div>
+            <div className="text-xs text-white/50 mb-1 font-bold uppercase tracking-[0.1em]">Total</div>
             <motion.div
               key={total}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-2xl font-semibold tracking-tight"
+              className="text-2xl font-bold tracking-tight text-white"
+              style={{ fontFamily: "'Oswald', sans-serif" }}
             >
               {formatCurrency(total)}
             </motion.div>
@@ -511,7 +516,7 @@ function Step1({
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-[13px] text-emerald-400/80 mt-4"
+            className="text-center text-xs text-[#af8f5b] font-bold uppercase tracking-[0.1em] mt-4"
           >
             You save {formatCurrency(savings)} ({savingsPercent}%)
           </motion.p>
@@ -530,20 +535,20 @@ function Step1({
                 className={`
                   relative py-3 px-2 rounded-lg text-center transition-all duration-300
                   ${isActive
-                    ? "bg-white/[0.1] ring-1 ring-white/20"
-                    : "bg-white/[0.03] hover:bg-white/[0.06]"
+                    ? "bg-[#1b2034] ring-1 ring-[#af8f5b]/40"
+                    : "bg-[#1E2849]/5 hover:bg-[#1E2849]/10"
                   }
                 `}
               >
                 {tier.popular && (
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-px text-[9px] font-semibold uppercase tracking-wider bg-white text-[#0a0a0a] rounded-full whitespace-nowrap">
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-px text-[9px] font-bold uppercase tracking-[0.15em] bg-[#af8f5b] text-white rounded-full whitespace-nowrap">
                     Popular
                   </div>
                 )}
-                <div className={`text-[11px] mb-0.5 ${isActive ? "text-white/60" : "text-white/60"}`}>
+                <div className={`text-[11px] mb-0.5 font-bold uppercase tracking-wide ${isActive ? "text-white/60" : "text-[#1E2849]/40"}`}>
                   {tier.label}
                 </div>
-                <div className={`text-base font-semibold ${isActive ? "text-white" : "text-white/60"}`}>
+                <div className={`text-base font-bold ${isActive ? "text-[#af8f5b]" : "text-[#1E2849]/60"}`} style={{ fontFamily: "'Oswald', sans-serif" }}>
                   ${tier.price}
                 </div>
               </button>
@@ -556,7 +561,7 @@ function Step1({
       <motion.div className="flex justify-center pt-2" variants={fadeIn} initial="hidden" animate="visible" custom={4}>
         <button
           onClick={onNext}
-          className="group flex items-center gap-2.5 px-8 py-3.5 bg-white text-[#0a0a0a] font-medium text-[15px] rounded-full transition-all hover:bg-white/90 active:scale-[0.97]"
+          className="group flex items-center gap-2.5 px-10 py-4 bg-[#1b2034] text-white font-bold text-sm uppercase tracking-[0.15em] rounded-full transition-all hover:bg-[#af8f5b] active:scale-[0.97]"
         >
           Continue
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -595,17 +600,17 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-[13px] font-medium text-white/60 mb-2">{label}</label>
+      <label className="block text-xs font-bold text-[#1E2849]/60 mb-2 uppercase tracking-[0.1em]">{label}</label>
       {prefix ? (
-        <div className={`flex items-center rounded-lg bg-white/[0.05] transition-all ${error ? "ring-1 ring-red-500/40 focus-within:ring-red-500/60" : "ring-1 ring-white/[0.06] focus-within:ring-white/20"}`}>
-          <span className="shrink-0 pl-3.5 pr-1 text-white/60 text-[13px] select-none">{prefix}</span>
+        <div className={`flex items-center rounded-lg bg-white transition-all ${error ? "ring-1 ring-red-500/40 focus-within:ring-red-500/60" : "ring-1 ring-[#af8f5b]/20 focus-within:ring-[#af8f5b]/40"}`}>
+          <span className="shrink-0 pl-3.5 pr-1 text-[#1E2849]/40 text-[13px] select-none">{prefix}</span>
           <input
             type={type}
             value={value}
             onChange={(e) => onChange(field, e.target.value)}
             onBlur={() => onBlur(field)}
             placeholder={placeholder}
-            className="flex-1 px-1 py-3 bg-transparent text-[15px] text-white placeholder-white/20 outline-none"
+            className="flex-1 px-1 py-3 bg-transparent text-[15px] text-[#1E2849] placeholder-[#1E2849]/20 outline-none"
           />
         </div>
       ) : (
@@ -617,10 +622,10 @@ function InputField({
             onBlur={() => onBlur(field)}
             placeholder={placeholder}
             className={`
-              w-full px-3.5 py-3 rounded-lg bg-white/[0.05] text-[15px] text-white placeholder-white/20 outline-none transition-all
+              w-full px-3.5 py-3 rounded-lg bg-white text-[15px] text-[#1E2849] placeholder-[#1E2849]/20 outline-none transition-all
               ${error
                 ? "ring-1 ring-red-500/40 focus:ring-red-500/60"
-                : "ring-1 ring-white/[0.06] focus:ring-white/20"
+                : "ring-1 ring-[#af8f5b]/20 focus:ring-[#af8f5b]/40"
               }
             `}
           />
@@ -629,7 +634,7 @@ function InputField({
           )}
         </div>
       )}
-      {note && !error && <p className="text-[12px] text-white/60 mt-1.5">{note}</p>}
+      {note && !error && <p className="text-[12px] text-[#1E2849]/50 mt-1.5">{note}</p>}
       {error && (
         <motion.p
           initial={{ opacity: 0 }}
@@ -673,10 +678,12 @@ function Step2({
   return (
     <div className="space-y-10">
       <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-          Create your account
+        <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Step 2</p>
+        <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+          Create your <span className="text-[#af8f5b]">account</span>
         </h1>
-        <p className="text-[15px] text-white/60">
+        <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em]">
           Set up your agency to get started.
         </p>
       </motion.div>
@@ -695,14 +702,14 @@ function Step2({
           onBlur={onBlur}
         />
 
-        <div className="h-px bg-white/[0.04] my-2" />
+        <div className="h-px bg-[#af8f5b]/20 my-2" />
 
         <InputField label="Full name" field="name" placeholder="Sarah Mitchell" value={formData.name} error={errors.name} onChange={onFieldChange} onBlur={onBlur} />
         <InputField label="Email" field="email" type="email" placeholder="you@agency.com" value={formData.email} error={errors.email} onChange={onFieldChange} onBlur={onBlur} />
 
         {/* Password */}
         <div>
-          <label className="block text-[13px] font-medium text-white/60 mb-2">Password</label>
+          <label className="block text-xs font-bold text-[#1E2849]/60 mb-2 uppercase tracking-[0.1em]">Password</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -711,24 +718,24 @@ function Step2({
               onBlur={() => onBlur("password")}
               placeholder="8+ characters"
               className={`
-                w-full px-3.5 py-3 pr-11 rounded-lg bg-white/[0.05] text-[15px] text-white placeholder-white/20 outline-none transition-all
+                w-full px-3.5 py-3 pr-11 rounded-lg bg-white text-[15px] text-[#1E2849] placeholder-[#1E2849]/20 outline-none transition-all
                 ${errors.password
                   ? "ring-1 ring-red-500/40 focus:ring-red-500/60"
-                  : "ring-1 ring-white/[0.06] focus:ring-white/20"
+                  : "ring-1 ring-[#af8f5b]/20 focus:ring-[#af8f5b]/40"
                 }
               `}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#1E2849]/40 hover:text-[#1E2849]/60 transition-colors"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           {formData.password && (
             <div className="mt-2 flex items-center gap-2">
-              <div className="flex-1 h-0.5 bg-white/[0.06] rounded-full overflow-hidden">
+              <div className="flex-1 h-0.5 bg-[#1E2849]/10 rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${passwordStrength.color}`}
                   initial={{ width: "0%" }}
@@ -736,7 +743,7 @@ function Step2({
                   transition={{ duration: 0.3 }}
                 />
               </div>
-              <span className="text-[11px] text-white/60">{passwordStrength.label}</span>
+              <span className="text-[11px] text-[#1E2849]/50 font-bold">{passwordStrength.label}</span>
             </div>
           )}
           {errors.password && (
@@ -748,7 +755,7 @@ function Step2({
 
         {/* Confirm */}
         <div>
-          <label className="block text-[13px] font-medium text-white/60 mb-2">Confirm password</label>
+          <label className="block text-xs font-bold text-[#1E2849]/60 mb-2 uppercase tracking-[0.1em]">Confirm password</label>
           <div className="relative">
             <input
               type={showConfirm ? "text" : "password"}
@@ -757,17 +764,17 @@ function Step2({
               onBlur={() => onBlur("confirmPassword")}
               placeholder="Re-enter password"
               className={`
-                w-full px-3.5 py-3 pr-11 rounded-lg bg-white/[0.05] text-[15px] text-white placeholder-white/20 outline-none transition-all
+                w-full px-3.5 py-3 pr-11 rounded-lg bg-white text-[15px] text-[#1E2849] placeholder-[#1E2849]/20 outline-none transition-all
                 ${errors.confirmPassword
                   ? "ring-1 ring-red-500/40 focus:ring-red-500/60"
-                  : "ring-1 ring-white/[0.06] focus:ring-white/20"
+                  : "ring-1 ring-[#af8f5b]/20 focus:ring-[#af8f5b]/40"
                 }
               `}
             />
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#1E2849]/40 hover:text-[#1E2849]/60 transition-colors"
             >
               {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -784,14 +791,14 @@ function Step2({
       <motion.div className="flex items-center justify-center gap-3" variants={fadeIn} initial="hidden" animate="visible" custom={2}>
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-full text-[15px] text-white/60 hover:text-white transition-all active:scale-[0.97]"
+          className="flex items-center gap-2 px-6 py-3 rounded-full text-sm text-[#1E2849]/50 hover:text-[#1E2849] font-bold uppercase tracking-[0.1em] transition-all active:scale-[0.97]"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         <button
           onClick={onNext}
-          className="group flex items-center gap-2.5 px-8 py-3 bg-white text-[#0a0a0a] font-medium text-[15px] rounded-full transition-all hover:bg-white/90 active:scale-[0.97]"
+          className="group flex items-center gap-2.5 px-10 py-4 bg-[#1b2034] text-white font-bold text-sm uppercase tracking-[0.15em] rounded-full transition-all hover:bg-[#af8f5b] active:scale-[0.97]"
         >
           Continue
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -827,43 +834,46 @@ function Step3({
   return (
     <div className="space-y-10">
       <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-          Review & pay
+        <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Step 3</p>
+        <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+          Review & <span className="text-[#af8f5b]">pay</span>
         </h1>
-        <p className="text-[15px] text-white/60">
+        <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em]">
           Confirm your order details.
         </p>
       </motion.div>
 
       <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={1}>
-        <div className="space-y-0">
-          <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
-            <span className="text-[15px] text-white/60">Agency</span>
-            <span className="text-[15px] font-medium">{agencyName}</span>
+        <div className="space-y-0 rounded-xl p-6 border border-[#af8f5b]/20" style={{ backgroundColor: "#1b2034" }}>
+          <div className="flex justify-between items-center py-4 border-b border-white/10">
+            <span className="text-sm text-white/50 font-bold uppercase tracking-[0.1em]">Agency</span>
+            <span className="text-sm font-bold text-white">{agencyName}</span>
           </div>
-          <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
-            <span className="text-[15px] text-white/60">Licenses</span>
-            <span className="text-[15px] font-medium">{quantity}</span>
+          <div className="flex justify-between items-center py-4 border-b border-white/10">
+            <span className="text-sm text-white/50 font-bold uppercase tracking-[0.1em]">Licenses</span>
+            <span className="text-sm font-bold text-white">{quantity}</span>
           </div>
-          <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
-            <span className="text-[15px] text-white/60">Per student</span>
-            <span className="text-[15px] font-medium">{formatCurrency(pricePerStudent)}</span>
+          <div className="flex justify-between items-center py-4 border-b border-white/10">
+            <span className="text-sm text-white/50 font-bold uppercase tracking-[0.1em]">Per student</span>
+            <span className="text-sm font-bold text-[#af8f5b]">{formatCurrency(pricePerStudent)}</span>
           </div>
           {savings > 0 && (
-            <div className="flex justify-between items-center py-4 border-b border-white/[0.04]">
-              <span className="text-[15px] text-white/60">Discount</span>
-              <span className="text-[15px] font-medium text-emerald-400">
+            <div className="flex justify-between items-center py-4 border-b border-white/10">
+              <span className="text-sm text-white/50 font-bold uppercase tracking-[0.1em]">Discount</span>
+              <span className="text-sm font-bold text-[#af8f5b]">
                 -{formatCurrency(savings)} ({savingsPercent}%)
               </span>
             </div>
           )}
           <div className="flex justify-between items-center py-5">
-            <span className="text-[17px] font-medium">Total</span>
+            <span className="text-base font-bold text-white uppercase tracking-[0.1em]">Total</span>
             <motion.span
               key={total}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-2xl font-semibold tracking-tight"
+              className="text-2xl font-bold tracking-tight text-[#af8f5b]"
+              style={{ fontFamily: "'Oswald', sans-serif" }}
             >
               {formatCurrency(total)}
             </motion.span>
@@ -874,7 +884,7 @@ function Step3({
         <button
           onClick={onCheckout}
           disabled={isProcessing}
-          className="w-full mt-6 flex items-center justify-center gap-2.5 py-3.5 bg-white hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-[#0a0a0a] font-medium text-[15px] rounded-full transition-all active:scale-[0.98]"
+          className="w-full mt-6 flex items-center justify-center gap-2.5 py-4 bg-[#1b2034] hover:bg-[#af8f5b] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-[0.15em] rounded-full transition-all active:scale-[0.98]"
         >
           {isProcessing ? (
             <>
@@ -889,22 +899,22 @@ function Step3({
         </button>
 
         {/* Trust */}
-        <div className="mt-5 flex items-center justify-center gap-5 text-[12px] text-white/60">
+        <div className="mt-5 flex items-center justify-center gap-5 text-xs text-[#1E2849] font-bold uppercase tracking-[0.1em]">
           <span className="flex items-center gap-1.5">
-            <Lock className="w-3 h-3" />
+            <Lock className="w-3 h-3 text-[#af8f5b]" />
             Encrypted
           </span>
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3 h-3" />
+            <ShieldCheck className="w-3 h-3 text-[#af8f5b]" />
             Secure
           </span>
           <span className="flex items-center gap-1.5">
-            <CreditCard className="w-3 h-3" />
+            <CreditCard className="w-3 h-3 text-[#af8f5b]" />
             Stripe
           </span>
         </div>
 
-        <p className="text-center text-[12px] text-white/60 mt-3">
+        <p className="text-center text-xs text-[#af8f5b] font-bold uppercase tracking-[0.1em] mt-3">
           30-day money-back guarantee
         </p>
       </motion.div>
@@ -914,7 +924,7 @@ function Step3({
         <button
           onClick={onBack}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-6 py-3 rounded-full text-[15px] text-white/60 hover:text-white transition-all active:scale-[0.97] disabled:opacity-30"
+          className="flex items-center gap-2 px-6 py-3 rounded-full text-sm text-[#1E2849]/50 hover:text-[#1E2849] font-bold uppercase tracking-[0.1em] transition-all active:scale-[0.97] disabled:opacity-30"
         >
           <ArrowLeft className="w-4 h-4" />
           Back

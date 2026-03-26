@@ -19,14 +19,14 @@ export default function GetStartedSuccess() {
 
   if (!verified) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#c9a227]" />
+      <div className="min-h-screen bg-[#FFFAF0] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#af8f5b]" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-[#FFFAF0] flex items-center justify-center px-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -37,35 +37,37 @@ export default function GetStartedSuccess() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className="w-20 h-20 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-8"
+          className="w-20 h-20 rounded-full bg-[#af8f5b]/10 border border-[#af8f5b]/30 flex items-center justify-center mx-auto mb-8"
         >
-          <CheckCircle2 className="w-10 h-10 text-green-500" />
+          <CheckCircle2 className="w-10 h-10 text-[#af8f5b]" />
         </motion.div>
 
+        <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Success</p>
+        <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
         <h1
-          className="text-4xl sm:text-5xl font-bold text-white mb-4"
+          className="text-4xl sm:text-5xl font-bold text-[#1E2849] uppercase mb-4"
           style={{ fontFamily: "'Oswald', sans-serif" }}
         >
-          You&apos;re All Set!
+          You&apos;re All <span className="text-[#af8f5b]">Set!</span>
         </h1>
 
-        <p className="text-lg text-white/70 mb-4">
+        <p className="text-sm text-[#1E2849] font-bold uppercase tracking-[0.1em] mb-4">
           Your agency account has been created and your licenses are active.
         </p>
 
-        <p className="text-sm text-white/50 mb-10">
+        <p className="text-sm text-[#1E2849]/50 font-medium mb-10">
           Let&apos;s set up your branding and invite your first student.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/agency/onboarding">
-            <Button className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a0a0a] font-bold px-8 py-6 text-base rounded-full">
+            <Button className="bg-[#1b2034] hover:bg-[#af8f5b] text-white font-bold px-8 py-6 text-sm uppercase tracking-[0.15em] rounded-full">
               Set Up Your Agency
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
           <Link href="/agency">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-base rounded-full">
+            <Button variant="outline" className="border-[#1E2849] text-[#1E2849] hover:bg-[#1E2849] hover:text-white font-bold px-8 py-6 text-sm uppercase tracking-[0.15em] rounded-full">
               Go to Dashboard
             </Button>
           </Link>

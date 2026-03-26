@@ -234,7 +234,7 @@ export default function OnboardingPage() {
       <div className="bg-white border-b border-[#e5e0d5]">
         <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
-            <h1 className="text-[#0a192f] font-bold text-lg" style={{ fontFamily: "'Oswald', sans-serif" }}>
+            <h1 className="text-[#0a192f] font-bold text-lg" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
               Welcome to {settings.name || 'Your Portal'}
             </h1>
             <p className="text-[#5a7a9a] text-sm">Let&apos;s get you set up</p>
@@ -287,7 +287,7 @@ export default function OnboardingPage() {
             {currentStep === 0 && (
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     Customize Your Brand
                   </h2>
                   <p className="text-[#5a7a9a] text-sm">
@@ -438,7 +438,7 @@ export default function OnboardingPage() {
                       {settings.logo_url ? (
                         <img src={settings.logo_url} alt="Logo" className="h-10 mx-auto mb-4 object-contain" />
                       ) : (
-                        <div className="text-xl font-bold text-white mb-4" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                        <div className="text-xl font-bold text-white mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                           {settings.name || 'Your Agency'}
                         </div>
                       )}
@@ -460,7 +460,7 @@ export default function OnboardingPage() {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     Your Assessment Portal URL
                   </h2>
                   <p className="text-[#5a7a9a] text-sm">
@@ -509,7 +509,7 @@ export default function OnboardingPage() {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     Email Branding
                   </h2>
                   <p className="text-[#5a7a9a] text-sm">
@@ -587,7 +587,7 @@ export default function OnboardingPage() {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h2 className="text-xl font-bold text-[#0a192f] mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     Invite Your First Student
                   </h2>
                   <p className="text-[#5a7a9a] text-sm">

@@ -17,6 +17,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://thestudentblueprint.com"),
   title: "The Student Blueprint",
   description: "Data-driven personalized college admissions roadmaps",
   icons: {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { GraduationCap, XCircle, ArrowLeft, RefreshCw } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function PaymentCancelPage() {
   return (
@@ -12,11 +13,9 @@ export default function PaymentCancelPage() {
       <nav className="bg-[#faf8f3]/90 backdrop-blur-md border-b border-[#e5e0d5] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-[#1e3a5f] flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-[#c9a227]" />
-            </div>
-<span className="font-bold text-xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif" }}>
-                The Student Blueprint
+            <Image src="/logo.png" alt="Logo" width={32} height={32} className="rounded-md" />
+              <span className="text-xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
               </span>
           </Link>
         </div>
@@ -36,7 +35,7 @@ export default function PaymentCancelPage() {
               </motion.div>
               <h1
                 className="text-3xl font-bold text-white mb-2"
-                style={{ fontFamily: "'Oswald', sans-serif" }}
+                style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
               >
                 Payment Cancelled
               </h1>

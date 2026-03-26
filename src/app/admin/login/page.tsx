@@ -63,8 +63,8 @@ export default function AdminLoginPage() {
                   height={64} 
                   className="mx-auto mb-4 object-contain"
                 />
-                <h1 className="text-3xl font-extrabold text-[#1e3a5f] tracking-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
-                  The Student Blueprint
+                <h1 className="text-3xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
                 </h1>
             </div>
 

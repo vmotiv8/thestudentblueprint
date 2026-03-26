@@ -46,7 +46,7 @@ export default function GetStartedSuccess() {
         <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
         <h1
           className="text-4xl sm:text-5xl font-bold text-[#1E2849] uppercase mb-4"
-          style={{ fontFamily: "'Oswald', sans-serif" }}
+          style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
         >
           You&apos;re All <span className="text-[#af8f5b]">Set!</span>
         </h1>

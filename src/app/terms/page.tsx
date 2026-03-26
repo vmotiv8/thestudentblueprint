@@ -15,7 +15,7 @@ export default function TermsPage() {
             <div className="relative w-8 h-8 transition-transform duration-700 group-hover:rotate-[360deg]">
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
+            <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
               The Student Blueprint
             </span>
           </Link>
@@ -26,7 +26,7 @@ export default function TermsPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold text-[#0a192f] mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
+        <h1 className="text-4xl font-bold text-[#0a192f] mb-2" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
           Terms of Service
         </h1>
         <p className="text-sm text-[#0a192f]/40 uppercase tracking-widest font-bold mb-12">

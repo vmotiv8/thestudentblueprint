@@ -98,7 +98,7 @@ export default function APIDocumentation() {
             </Link>
             <div className="flex items-center gap-3">
               <Code2 className="w-6 h-6" style={{ color: primaryColor }} />
-              <h1 className="text-xl font-bold text-[#0a192f]" style={{ fontFamily: "'Oswald', sans-serif" }}>API Documentation</h1>
+              <h1 className="text-xl font-bold text-[#0a192f]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>API Documentation</h1>
             </div>
           </div>
           <Badge variant="outline" className="border-[#c9a227] text-[#c9a227] px-3 py-1 uppercase tracking-widest text-[10px] font-bold">
@@ -159,7 +159,7 @@ export default function APIDocumentation() {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-[#0a192f]" style={{ fontFamily: "'Oswald', sans-serif" }}>{doc.title}</h2>
+                    <h2 className="text-2xl font-bold text-[#0a192f]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>{doc.title}</h2>
                     <p className="text-[#5a7a9a] mt-2">{doc.description}</p>
                   </div>
                   <Badge className={`

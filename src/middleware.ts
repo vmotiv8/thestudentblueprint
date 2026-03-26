@@ -17,7 +17,7 @@ export const config = {
 
 // Known top-level app routes that should NOT be treated as org slugs
 const RESERVED_PATHS = new Set([
-  'admin', 'agency', 'api', 'assessment', 'checkout', 'get-started',
+  'admin', 'agency', 'api', 'assessment', 'checkout', 'faq', 'get-started',
   'health', 'login', 'payment', 'platform', 'privacy',
   'reset-password', 'results', 'resume', 'terms', 'org',
 ]);

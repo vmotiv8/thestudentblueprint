@@ -299,7 +299,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                   className="object-contain group-hover:scale-110 transition-transform"
                 />
               </div>
-              <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Oswald', sans-serif", color: primaryColor }}>
+              <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: primaryColor }}>
                 {orgName}
               </span>
             </Link>
@@ -315,7 +315,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
             <h1
               className="text-3xl sm:text-4xl font-bold mb-3"
-              style={{ fontFamily: "'Oswald', sans-serif", color: primaryColor }}
+              style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: primaryColor }}
             >
               Get Started
             </h1>
@@ -425,9 +425,15 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                   className="object-contain group-hover:scale-110 transition-transform" 
                 />
               </div>
-              <span className="font-bold text-lg sm:text-xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif", color: tenant?.primary_color || "#1e3a5f" }}>
-                {tenant?.name || "The Student Blueprint"}
-              </span>
+              {tenant?.name ? (
+                <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: tenant.primary_color || "#1E2849" }}>
+                  {tenant.name}
+                </span>
+              ) : (
+                <span className="text-lg sm:text-xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
+                </span>
+              )}
             </Link>
 
           <Link href="/resume">
@@ -446,7 +452,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
         >
           <h1
             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4"
-            style={{ fontFamily: "'Oswald', sans-serif", color: tenant?.primary_color || "#1e3a5f" }}
+            style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: tenant?.primary_color || "#1e3a5f" }}
           >
             Complete Your Purchase
           </h1>
@@ -461,7 +467,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
               <div className="text-white p-6" style={{ backgroundColor: tenant?.primary_color || "#1e3a5f" }}>
                 <div className="flex items-center gap-3 mb-1">
                   <Sparkles className="w-5 h-5" style={{ color: tenant?.secondary_color || "#c9a227" }} />
-                  <h3 className="text-xl font-semibold" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h3 className="text-xl font-semibold" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     {tenant?.name ? `${tenant.name} Assessment` : "Student Assessment"}
                   </h3>
                 </div>
@@ -470,7 +476,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                 <CardContent className="p-6 pt-8">
                   <div className="mb-8 flex items-baseline gap-2">
                     <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
-                      ${tenant?.assessment_price || "499"}
+                      ${tenant?.assessment_price || "497"}
                     </span>
                     <span className="text-lg text-[#5a7a9a] ml-1">USD</span>
                   </div>
@@ -529,7 +535,7 @@ localStorage.setItem("studentblueprint_coupon", data.code)
                       </>
                     ) : (
                       <>
-                        Pay ${tenant?.assessment_price || "499"}
+                        Pay ${tenant?.assessment_price || "497"}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </>
                     )}

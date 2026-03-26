@@ -242,7 +242,7 @@ export default function KnowledgeHub() {
                   {organization?.name?.[0] || 'A'}
                 </div>
               )}
-              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Oswald', sans-serif" }}>
+              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                 {organization?.name || 'Agency'} Hub
               </span>
             </Link>
@@ -262,7 +262,7 @@ export default function KnowledgeHub() {
                 <div className="p-2 rounded-xl bg-amber-50 text-[#c9a227]">
                   <BookOpen className="w-6 h-6" />
                 </div>
-                <h1 className="text-4xl font-black tracking-tight" style={{ fontFamily: "'Oswald', sans-serif", color: primaryColor }}>
+                <h1 className="text-4xl font-black tracking-tight" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: primaryColor }}>
                   Knowledge Hub
                 </h1>
               </div>

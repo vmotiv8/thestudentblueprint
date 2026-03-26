@@ -407,7 +407,7 @@ function Step1({
       <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
         <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Step 1</p>
         <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
           Choose your <span className="text-[#af8f5b]">plan</span>
         </h1>
         <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em] leading-relaxed">
@@ -436,7 +436,7 @@ function Step1({
                 if (!isNaN(v) && v >= 1) setQuantity(Math.min(2000, v))
               }}
               className="w-24 text-center text-5xl font-bold bg-transparent border-none outline-none text-[#1E2849] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] tracking-tight"
-              style={{ fontFamily: "'Oswald', sans-serif" }}
+              style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
             />
             <div className="text-xs text-[#af8f5b] font-bold uppercase tracking-[0.15em] mt-0.5">licenses</div>
           </div>
@@ -490,14 +490,14 @@ function Step1({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-2xl font-bold tracking-tight text-[#af8f5b]"
-              style={{ fontFamily: "'Oswald', sans-serif" }}
+              style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
             >
               {formatCurrency(pricePerStudent)}
             </motion.div>
           </div>
           <div>
             <div className="text-xs text-white/50 mb-1 font-bold uppercase tracking-[0.1em]">Quantity</div>
-            <div className="text-2xl font-bold tracking-tight text-white" style={{ fontFamily: "'Oswald', sans-serif" }}>{quantity}</div>
+            <div className="text-2xl font-bold tracking-tight text-white" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>{quantity}</div>
           </div>
           <div>
             <div className="text-xs text-white/50 mb-1 font-bold uppercase tracking-[0.1em]">Total</div>
@@ -506,7 +506,7 @@ function Step1({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-2xl font-bold tracking-tight text-white"
-              style={{ fontFamily: "'Oswald', sans-serif" }}
+              style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
             >
               {formatCurrency(total)}
             </motion.div>
@@ -548,7 +548,7 @@ function Step1({
                 <div className={`text-[11px] mb-0.5 font-bold uppercase tracking-wide ${isActive ? "text-white/60" : "text-[#1E2849]/40"}`}>
                   {tier.label}
                 </div>
-                <div className={`text-base font-bold ${isActive ? "text-[#af8f5b]" : "text-[#1E2849]/60"}`} style={{ fontFamily: "'Oswald', sans-serif" }}>
+                <div className={`text-base font-bold ${isActive ? "text-[#af8f5b]" : "text-[#1E2849]/60"}`} style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                   ${tier.price}
                 </div>
               </button>
@@ -680,7 +680,7 @@ function Step2({
       <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
         <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Step 2</p>
         <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
           Create your <span className="text-[#af8f5b]">account</span>
         </h1>
         <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em]">
@@ -836,7 +836,7 @@ function Step3({
       <motion.div className="text-center" variants={fadeIn} initial="hidden" animate="visible" custom={0}>
         <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-4">Step 3</p>
         <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-4" />
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight mb-3" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
           Review & <span className="text-[#af8f5b]">pay</span>
         </h1>
         <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em]">
@@ -873,7 +873,7 @@ function Step3({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-2xl font-bold tracking-tight text-[#af8f5b]"
-              style={{ fontFamily: "'Oswald', sans-serif" }}
+              style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
             >
               {formatCurrency(total)}
             </motion.span>

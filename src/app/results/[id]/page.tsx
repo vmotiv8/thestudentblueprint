@@ -809,7 +809,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </div>
               )}
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-base sm:text-xl leading-none tracking-tight truncate" style={{ fontFamily: "'Oswald', sans-serif" }}>{orgName}</span>
+                <span className="font-bold text-base sm:text-xl leading-none tracking-tight truncate" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>{orgName}</span>
                 <span className="text-[7px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold truncate" style={{ color: secondaryColor }}>Results Portal</span>
               </div>
             </Link>
@@ -899,7 +899,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 sm:gap-8">
                   <div>
                     <p className="text-white/60 mb-1 sm:mb-2 text-sm sm:text-base">Congratulations,</p>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                       {studentName}
                     </h1>
                     <div className="flex items-center gap-3 mb-4">
@@ -1187,7 +1187,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   {assessment.grade_by_grade_roadmap ? (
                     <>
                       <div className="bg-gradient-to-r from-[#1e3a5f] to-[#c9a227] text-white rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
-                        <h3 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                        <h3 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                           Your Multi-Year Roadmap
                         </h3>
                         <p className="text-white/90 text-sm sm:text-base">
@@ -1395,7 +1395,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           <Card className="border-[#e5e0d5] h-full hover:shadow-2xl transition-all duration-500 flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden bg-white group">
                             <CardHeader className="pb-3 sm:pb-4 pt-5 sm:pt-8 px-4 sm:px-8 relative">
                               <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
-                                <CardTitle className="text-xl sm:text-2xl md:text-3xl text-[#1e3a5f] font-bold leading-tight group-hover:text-[#c9a227] transition-colors" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                                <CardTitle className="text-xl sm:text-2xl md:text-3xl text-[#1e3a5f] font-bold leading-tight group-hover:text-[#c9a227] transition-colors" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                                   {project.title}
                                 </CardTitle>
                               </div>
@@ -1950,7 +1950,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             <TabsContent value="scholarships" className="mt-6">
               {!assessment.scholarship_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="scholarships" /> : <div className="space-y-6">
                 <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
-                  <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     Scholarship Opportunities
                   </h3>
                   <p className="text-white/70 text-sm">
@@ -2320,7 +2320,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     <TabsContent value="network" className="mt-6">
                       {!assessment.mentor_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="network" /> : <div className="space-y-4 sm:space-y-6">
                         <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-4 sm:p-8 rounded-xl sm:rounded-2xl text-white">
-                          <h3 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                          <h3 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                             Strategic Network Targets
                           </h3>
                           <p className="text-white/70 text-sm sm:text-base">
@@ -2709,7 +2709,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             <TabsContent value="essays" className="mt-6">
               <div className="space-y-6">
                 <div className="bg-gradient-to-r from-[#1e3a5f] to-[#c9a227] text-white rounded-xl p-4 sm:p-6 mb-6">
-                  <h3 className="text-lg sm:text-2xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                  <h3 className="text-lg sm:text-2xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                     Personal Essay Brainstorm
                   </h3>
                   <p className="text-white/70 text-sm">Five compelling essay concepts that weave your unique experiences into an Ivy League-worthy narrative.</p>
@@ -2722,7 +2722,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         <div className="w-8 h-8 rounded-full bg-[#c9a227] flex items-center justify-center text-[#1e3a5f] font-bold text-sm">
                           {idx + 1}
                         </div>
-                        <h4 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                        <h4 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                           {essay.title}
                         </h4>
                       </div>
@@ -2775,7 +2775,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             className="rounded-3xl p-8 md:p-12 text-center"
             style={{ background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColor}dd)` }}
           >
-            <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Oswald', sans-serif" }}>
+            <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
               Your Personalized Roadmap
             </h2>
             <p className="text-white/70 mb-8 max-w-2xl mx-auto">

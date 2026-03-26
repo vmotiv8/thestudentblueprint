@@ -17,10 +17,29 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "The Student Blueprint - Your Personalized Ivy League Roadmap",
-  description: "Take our comprehensive profile assessment and receive a custom action plan designed by college admissions experts.",
+  title: "The Student Blueprint",
+  description: "Data-driven personalized college admissions roadmaps",
   icons: {
     icon: '/logo.png',
+  },
+  openGraph: {
+    title: "The Student Blueprint",
+    description: "Data-driven personalized college admissions roadmaps",
+    images: [
+      {
+        url: "/og-thumbnail.png",
+        width: 1200,
+        height: 630,
+        alt: "The Student Blueprint - Data-driven personalized college admissions roadmaps",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Student Blueprint",
+    description: "Data-driven personalized college admissions roadmaps",
+    images: ["/og-thumbnail.png"],
   },
 };
 

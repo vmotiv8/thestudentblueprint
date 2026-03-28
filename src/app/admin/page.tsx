@@ -996,7 +996,7 @@ export default function SuperAdminDashboard() {
               </TabsTrigger>
               <TabsTrigger value="questions" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <ClipboardList className="w-4 h-4 mr-2" />
-                Assessment Questions
+                Form Questions
               </TabsTrigger>
               <TabsTrigger value="team" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Shield className="w-4 h-4 mr-2" />

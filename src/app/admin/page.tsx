@@ -298,6 +298,18 @@ export default function SuperAdminDashboard() {
     discountValue: ""
   })
 
+  // Referrals tab state
+  const [referralTiers, setReferralTiers] = useState<any[]>([])
+  const [referralPartners, setReferralPartners] = useState<any[]>([])
+  const [referralStats, setReferralStats] = useState({ totalActivePartners: 0, totalStudents: 0, totalCompleted: 0, totalRevenue: 0 })
+  const [referralsLoading, setReferralsLoading] = useState(false)
+  const [showAddTierForm, setShowAddTierForm] = useState(false)
+  const [showAddPartnerForm, setShowAddPartnerForm] = useState(false)
+  const [isCreatingTier, setIsCreatingTier] = useState(false)
+  const [isCreatingPartner, setIsCreatingPartner] = useState(false)
+  const [newTier, setNewTier] = useState({ label: "", discount_percent: "" })
+  const [newPartner, setNewPartner] = useState({ name: "", email: "", organization: "", referral_code: "" })
+
   const isSuperAdmin = admin?.role === 'super_admin'
 
   useEffect(() => {
@@ -477,7 +489,132 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     if (activeTab === "all-students" && allStudents.length === 0) fetchAllStudents()
     if (activeTab === "coupons" && coupons.length === 0) fetchCoupons()
+    if (activeTab === "referrals" && referralTiers.length === 0 && referralPartners.length === 0) fetchReferralData()
   }, [activeTab])
+
+  const fetchReferralData = async () => {
+    setReferralsLoading(true)
+    try {
+      const [tiersRes, partnersRes] = await Promise.all([
+        fetch("/api/admin/referral-tiers"),
+        fetch("/api/admin/referral-partners"),
+      ])
+      const tiersData = await tiersRes.json()
+      const partnersData = await partnersRes.json()
+      if (Array.isArray(tiersData.tiers)) setReferralTiers(tiersData.tiers)
+      if (Array.isArray(partnersData.partners)) setReferralPartners(partnersData.partners)
+      if (partnersData.stats) setReferralStats(partnersData.stats)
+    } catch (error) {
+      console.error("Error fetching referral data:", error)
+    } finally {
+      setReferralsLoading(false)
+    }
+  }
+
+  const handleCreateTier = async () => {
+    if (!newTier.label || !newTier.discount_percent) { toast.error("Label and discount % required"); return }
+    setIsCreatingTier(true)
+    try {
+      const res = await fetch("/api/admin/referral-tiers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: newTier.label.toUpperCase(), discount_percent: parseInt(newTier.discount_percent) }),
+      })
+      if (res.ok) {
+        toast.success("Tier created")
+        setNewTier({ label: "", discount_percent: "" })
+        setShowAddTierForm(false)
+        fetchReferralData()
+      } else {
+        const d = await res.json()
+        toast.error(d.error || "Failed to create tier")
+      }
+    } catch { toast.error("Failed to create tier") }
+    finally { setIsCreatingTier(false) }
+  }
+
+  const handleToggleTierActive = async (id: string, isActive: boolean) => {
+    try {
+      await fetch("/api/admin/referral-tiers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_active: isActive }),
+      })
+      setReferralTiers(prev => prev.map(t => t.id === id ? { ...t, is_active: isActive } : t))
+    } catch { toast.error("Failed to update tier") }
+  }
+
+  const handleDeleteTier = async (id: string) => {
+    try {
+      const res = await fetch("/api/admin/referral-tiers", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      })
+      if (res.ok) {
+        setReferralTiers(prev => prev.filter(t => t.id !== id))
+        toast.success("Tier deleted")
+      } else {
+        const d = await res.json()
+        toast.error(d.error || "Failed to delete tier")
+      }
+    } catch { toast.error("Failed to delete tier") }
+  }
+
+  const handleCreatePartner = async () => {
+    if (!newPartner.name || !newPartner.email) { toast.error("Name and email required"); return }
+    setIsCreatingPartner(true)
+    try {
+      const res = await fetch("/api/admin/referral-partners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newPartner.name,
+          email: newPartner.email,
+          organization: newPartner.organization || null,
+          discount_tier_id: referralTiers.length > 0 ? referralTiers[0].id : null,
+          referral_code: newPartner.referral_code || undefined,
+        }),
+      })
+      if (res.ok) {
+        toast.success("Partner created")
+        setNewPartner({ name: "", email: "", organization: "", referral_code: "" })
+        setShowAddPartnerForm(false)
+        fetchReferralData()
+      } else {
+        const d = await res.json()
+        toast.error(d.error || "Failed to create partner")
+      }
+    } catch { toast.error("Failed to create partner") }
+    finally { setIsCreatingPartner(false) }
+  }
+
+  const handleDeletePartner = async (id: string) => {
+    try {
+      const res = await fetch("/api/admin/referral-partners", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      })
+      if (res.ok) {
+        setReferralPartners(prev => prev.filter(p => p.id !== id))
+        toast.success("Partner deleted")
+      } else { toast.error("Failed to delete partner") }
+    } catch { toast.error("Failed to delete partner") }
+  }
+
+  const handleToggleResultsAccess = async (id: string, canView: boolean) => {
+    try {
+      await fetch("/api/admin/referral-partners", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, can_view_results: canView }),
+      })
+      setReferralPartners(prev => prev.map(p => p.id === id ? { ...p, can_view_results: canView } : p))
+    } catch { toast.error("Failed to update") }
+  }
+
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 
   const handleLogout = async () => {
     try {
@@ -1083,6 +1220,10 @@ export default function SuperAdminDashboard() {
               <TabsTrigger value="coupons" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Ticket className="w-4 h-4 mr-2" />
                 Coupons
+              </TabsTrigger>
+              <TabsTrigger value="referrals" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Referrals
               </TabsTrigger>
               <TabsTrigger value="questions" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <ClipboardList className="w-4 h-4 mr-2" />
@@ -2376,6 +2517,303 @@ export default function SuperAdminDashboard() {
                     </Table>
                   </CardContent>
                 </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="referrals" className="space-y-6">
+              {referralsLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#0a192f]" />
+                </div>
+              ) : (
+                <>
+                  {/* Discount Tiers */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#0a192f] flex items-center gap-2">
+                        <Ticket className="w-6 h-6 text-[#c9a227]" />
+                        Discount Tiers
+                      </h2>
+                      <p className="text-sm text-[#5a7a9a]">Configure discount levels for referral partners</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setShowAddTierForm(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Tier
+                    </Button>
+                  </div>
+
+                  <Card className="border-[#e5e0d5]">
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
+                            <TableHead className="font-bold text-[#0a192f] px-6">Coupon Code</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Discount %</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Student Pays</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Partner Earns (20%)</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">You Keep (80%)</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Active</TableHead>
+                            <TableHead className="font-bold text-[#0a192f] text-right px-6">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {referralTiers.map((tier) => {
+                            const studentPays = 497 * (1 - tier.discount_percent / 100)
+                            const partnerEarns = studentPays * 0.20
+                            const youKeep = studentPays * 0.80
+                            return (
+                              <TableRow key={tier.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
+                                <TableCell className="px-6 py-4">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded bg-[#c9a227]/20 text-[#0a192f] text-xs font-bold tracking-wider">
+                                    {tier.label}
+                                  </span>
+                                </TableCell>
+                                <TableCell><span className="text-sm font-bold">{tier.discount_percent}%</span></TableCell>
+                                <TableCell><span className="text-sm">{formatCurrency(studentPays)}</span></TableCell>
+                                <TableCell><span className="text-sm font-bold text-green-600">{formatCurrency(partnerEarns)}</span></TableCell>
+                                <TableCell><span className="text-sm">{formatCurrency(youKeep)}</span></TableCell>
+                                <TableCell>
+                                  <Switch checked={tier.is_active} onCheckedChange={(v) => handleToggleTierActive(tier.id, v)} />
+                                </TableCell>
+                                <TableCell className="px-6 text-right">
+                                  <div className="flex items-center justify-end gap-1">
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]" onClick={() => {/* TODO: edit tier */}}>
+                                      <FileText className="w-4 h-4" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:text-red-600" onClick={() => handleDeleteTier(tier.id)}>
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                          {referralTiers.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={7} className="h-20 text-center text-[#5a7a9a]">No discount tiers created yet.</TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* Add Tier Dialog */}
+                  <Dialog open={showAddTierForm} onOpenChange={setShowAddTierForm}>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Add Discount Tier</DialogTitle>
+                        <DialogDescription>Create a new discount tier for referral partners</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label className="text-sm font-bold">Coupon Code</Label>
+                          <Input placeholder="e.g., PARTNER10" value={newTier.label} onChange={(e) => setNewTier({ ...newTier, label: e.target.value.toUpperCase() })} className="mt-1 border-[#e5e0d5]" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Discount Percent (1-100)</Label>
+                          <Input type="number" min="1" max="100" placeholder="e.g., 10" value={newTier.discount_percent} onChange={(e) => setNewTier({ ...newTier, discount_percent: e.target.value })} className="mt-1 border-[#e5e0d5]" />
+                        </div>
+                        {newTier.discount_percent && (
+                          <div className="rounded-lg bg-[#faf8f3] border border-[#e5e0d5] p-3 text-sm">
+                            <p>Student pays: <strong>{formatCurrency(497 * (1 - parseInt(newTier.discount_percent || "0") / 100))}</strong></p>
+                            <p>Partner earns (20%): <strong className="text-green-600">{formatCurrency(497 * (1 - parseInt(newTier.discount_percent || "0") / 100) * 0.20)}</strong></p>
+                            <p>You keep (80%): <strong>{formatCurrency(497 * (1 - parseInt(newTier.discount_percent || "0") / 100) * 0.80)}</strong></p>
+                          </div>
+                        )}
+                        <Button className="w-full bg-[#0a192f] hover:bg-[#0a192f]/90 text-white font-bold" onClick={handleCreateTier} disabled={isCreatingTier}>
+                          {isCreatingTier ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                          Create Tier
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="border-[#e5e0d5]">
+                      <CardContent className="p-5 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-[#5a7a9a]">Active Partners</p>
+                          <p className="text-2xl font-bold text-[#0a192f]">{referralStats.totalActivePartners}</p>
+                        </div>
+                        <UserPlus className="w-10 h-10 text-[#c9a227]/30" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border-[#e5e0d5]">
+                      <CardContent className="p-5 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-[#5a7a9a]">Students Referred</p>
+                          <p className="text-2xl font-bold text-[#0a192f]">{referralStats.totalStudents}</p>
+                        </div>
+                        <Users className="w-10 h-10 text-[#c9a227]/30" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border-[#e5e0d5]">
+                      <CardContent className="p-5 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-[#5a7a9a]">Completed</p>
+                          <p className="text-2xl font-bold text-[#0a192f]">{referralStats.totalCompleted}</p>
+                          <p className="text-xs text-[#5a7a9a]">{referralStats.totalStudents > 0 ? Math.round((referralStats.totalCompleted / referralStats.totalStudents) * 100) : 0}% rate</p>
+                        </div>
+                        <CheckCircle2 className="w-10 h-10 text-green-400/30" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border-[#e5e0d5]">
+                      <CardContent className="p-5 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-[#5a7a9a]">Total Revenue</p>
+                          <p className="text-2xl font-bold text-[#0a192f]">{formatCurrency(referralStats.totalRevenue)}</p>
+                        </div>
+                        <DollarSign className="w-10 h-10 text-[#c9a227]/30" />
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Referral Partners */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-[#0a192f]">Referral Partners</h2>
+                      <p className="text-sm text-[#5a7a9a]">Manage referral partners and track their performance</p>
+                    </div>
+                    <Button className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f] font-bold" onClick={() => setShowAddPartnerForm(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Referral Partner
+                    </Button>
+                  </div>
+
+                  {/* Add Partner Dialog */}
+                  <Dialog open={showAddPartnerForm} onOpenChange={setShowAddPartnerForm}>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Add Referral Partner</DialogTitle>
+                        <DialogDescription>Create a new referral partner</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label className="text-sm font-bold">Full Name *</Label>
+                          <Input placeholder="e.g., John Smith" value={newPartner.name} onChange={(e) => setNewPartner({ ...newPartner, name: e.target.value })} className="mt-1 border-[#e5e0d5]" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Email *</Label>
+                          <Input type="email" placeholder="e.g., john@example.com" value={newPartner.email} onChange={(e) => setNewPartner({ ...newPartner, email: e.target.value })} className="mt-1 border-[#e5e0d5]" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Organization (Optional)</Label>
+                          <Input placeholder="e.g., ABC Tutoring" value={newPartner.organization} onChange={(e) => setNewPartner({ ...newPartner, organization: e.target.value })} className="mt-1 border-[#e5e0d5]" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Custom Referral Code (Optional)</Label>
+                          <Input placeholder="Auto-generated if blank" value={newPartner.referral_code} onChange={(e) => setNewPartner({ ...newPartner, referral_code: e.target.value.toUpperCase() })} className="mt-1 border-[#e5e0d5]" />
+                        </div>
+                        {referralTiers.length > 0 && (
+                          <div className="rounded-lg bg-[#faf8f3] border border-[#e5e0d5] p-3 text-xs text-[#5a7a9a]">
+                            Available coupon codes: {referralTiers.filter(t => t.is_active).map(t => t.label).join(", ") || "None active"}
+                          </div>
+                        )}
+                        <Button className="w-full bg-[#0a192f] hover:bg-[#0a192f]/90 text-white font-bold" onClick={handleCreatePartner} disabled={isCreatingPartner}>
+                          {isCreatingPartner ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                          Create Partner
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Card className="border-[#e5e0d5]">
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
+                            <TableHead className="font-bold text-[#0a192f] px-6">Partner</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Referral Link</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Coupon Codes</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Students</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Completed</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Unpaid Balance</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Results Access</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
+                            <TableHead className="font-bold text-[#0a192f] text-right px-6">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {referralPartners.map((partner) => (
+                            <TableRow key={partner.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
+                              <TableCell className="px-6 py-4">
+                                <div>
+                                  <p className="font-bold text-[#0a192f]">{partner.name}</p>
+                                  <p className="text-xs text-[#5a7a9a]">{partner.email}</p>
+                                  {partner.organization && <p className="text-xs text-[#5a7a9a]">{partner.organization}</p>}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs bg-[#faf8f3] border border-[#e5e0d5] rounded px-2 py-1 font-mono">
+                                    thestudentblueprint.com?ref={partner.referral_code}
+                                  </span>
+                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-[#5a7a9a]" onClick={() => {
+                                    navigator.clipboard.writeText(`${window.location.origin}?ref=${partner.referral_code}`)
+                                    toast.success("Referral link copied!")
+                                  }}>
+                                    <Copy className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-1 flex-wrap">
+                                  {referralTiers.filter(t => t.is_active).map(t => (
+                                    <span key={t.id} className="inline-flex px-2 py-0.5 rounded bg-[#0a192f] text-white text-[10px] font-bold tracking-wider">
+                                      {t.label}
+                                    </span>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell><span className="text-sm font-bold">{partner.student_count || 0}</span></TableCell>
+                              <TableCell><span className="text-sm font-bold text-green-600">{partner.completed_count || 0}</span></TableCell>
+                              <TableCell>
+                                <span className={`text-sm font-bold ${(partner.unpaid_balance || 0) > 0 ? 'text-amber-600' : 'text-[#5a7a9a]'}`}>
+                                  {formatCurrency(partner.unpaid_balance || 0)}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <Switch checked={partner.can_view_results} onCheckedChange={(v) => handleToggleResultsAccess(partner.id, v)} />
+                              </TableCell>
+                              <TableCell>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${
+                                  partner.status === 'active' ? 'bg-green-100 text-green-700' :
+                                  partner.status === 'invited' ? 'bg-amber-100 text-amber-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {partner.status.charAt(0).toUpperCase() + partner.status.slice(1)}
+                                </span>
+                              </TableCell>
+                              <TableCell className="px-6 text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]" title="View Details" onClick={() => window.open(`/results/${partner.id}`, '_blank')}>
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]" title="Resend Invite" onClick={async () => {
+                                    await fetch("/api/admin/referral-partners", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: partner.id, resend_invite: true }) })
+                                    toast.success("Invite resent!")
+                                  }}>
+                                    <Send className="w-4 h-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:text-red-600" title="Delete" onClick={() => handleDeletePartner(partner.id)}>
+                                    <XCircle className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {referralPartners.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={9} className="h-20 text-center text-[#5a7a9a]">No referral partners yet.</TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </>
               )}
             </TabsContent>
 

@@ -282,6 +282,22 @@ export default function SuperAdminDashboard() {
   const [paymentFilter, setPaymentFilter] = useState("all")
   const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null)
 
+  // Coupons tab state
+  const [coupons, setCoupons] = useState<any[]>([])
+  const [couponsLoading, setCouponsLoading] = useState(false)
+  const [showCouponDialog, setShowCouponDialog] = useState(false)
+  const [isCreatingCoupon, setIsCreatingCoupon] = useState(false)
+  const [newCoupon, setNewCoupon] = useState({
+    code: "",
+    description: "",
+    maxUses: "",
+    expiresAt: "",
+    organization: "",
+    notes: "",
+    discountType: "free",
+    discountValue: ""
+  })
+
   const isSuperAdmin = admin?.role === 'super_admin'
 
   useEffect(() => {
@@ -389,8 +405,78 @@ export default function SuperAdminDashboard() {
     }
   }
 
+  const fetchCoupons = async () => {
+    setCouponsLoading(true)
+    try {
+      const res = await fetch("/api/admin/coupons")
+      const data = await res.json()
+      if (Array.isArray(data.coupons)) setCoupons(data.coupons)
+    } catch (error) {
+      console.error("Error fetching coupons:", error)
+    } finally {
+      setCouponsLoading(false)
+    }
+  }
+
+  const handleCreateCoupon = async () => {
+    if (!newCoupon.code.trim()) {
+      toast.error("Coupon code is required")
+      return
+    }
+    setIsCreatingCoupon(true)
+    try {
+      const res = await fetch("/api/admin/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: newCoupon.code,
+          discount_type: newCoupon.discountType,
+          discount_value: newCoupon.discountType === "free" ? 100 : parseFloat(newCoupon.discountValue) || 0,
+          max_uses: newCoupon.maxUses ? parseInt(newCoupon.maxUses) : null,
+          valid_until: newCoupon.expiresAt || null,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.success("Coupon created successfully")
+        setShowCouponDialog(false)
+        setNewCoupon({ code: "", description: "", maxUses: "", expiresAt: "", organization: "", notes: "", discountType: "free", discountValue: "" })
+        fetchCoupons()
+      } else {
+        toast.error(data.error || "Failed to create coupon")
+      }
+    } catch {
+      toast.error("Failed to create coupon")
+    } finally {
+      setIsCreatingCoupon(false)
+    }
+  }
+
+  const toggleCouponStatus = async (id: string, isActive: boolean) => {
+    try {
+      await fetch("/api/admin/coupons", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_active: isActive }),
+      })
+      setCoupons(prev => prev.map(c => c.id === id ? { ...c, is_active: isActive } : c))
+    } catch {
+      toast.error("Failed to update coupon")
+    }
+  }
+
+  const generateRandomCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    let code = ""
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    setNewCoupon(prev => ({ ...prev, code }))
+  }
+
   useEffect(() => {
     if (activeTab === "all-students" && allStudents.length === 0) fetchAllStudents()
+    if (activeTab === "coupons" && coupons.length === 0) fetchCoupons()
   }, [activeTab])
 
   const handleLogout = async () => {
@@ -993,6 +1079,10 @@ export default function SuperAdminDashboard() {
               <TabsTrigger value="all-students" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Users className="w-4 h-4 mr-2" />
                 All Students
+              </TabsTrigger>
+              <TabsTrigger value="coupons" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+                <Ticket className="w-4 h-4 mr-2" />
+                Coupons
               </TabsTrigger>
               <TabsTrigger value="questions" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <ClipboardList className="w-4 h-4 mr-2" />
@@ -2069,6 +2159,224 @@ export default function SuperAdminDashboard() {
                   </div>
                 </DialogContent>
               </Dialog>
+            </TabsContent>
+
+            <TabsContent value="coupons" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#0a192f]">Coupon Codes</h2>
+                  <p className="text-sm text-[#5a7a9a]">Generate invite codes for students to skip payment</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={fetchCoupons} disabled={couponsLoading}>
+                    <RefreshCw className={`w-4 h-4 ${couponsLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                  <Dialog open={showCouponDialog} onOpenChange={setShowCouponDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f] font-bold">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Coupon
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Create New Coupon Code</DialogTitle>
+                        <DialogDescription>Generate a coupon code for students to skip the payment</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label className="text-sm font-bold">Coupon Code</Label>
+                          <div className="flex gap-2 mt-1">
+                            <Input
+                              placeholder="E.G., HARVARD2024"
+                              value={newCoupon.code}
+                              onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                              className="border-[#e5e0d5]"
+                            />
+                            <Button variant="outline" size="sm" onClick={generateRandomCode} title="Generate random code">
+                              <Sparkles className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Discount Type</Label>
+                          <Select value={newCoupon.discountType} onValueChange={(v) => setNewCoupon({ ...newCoupon, discountType: v })}>
+                            <SelectTrigger className="mt-1 border-[#e5e0d5]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free Access (100% off)</SelectItem>
+                              <SelectItem value="percentage">Percentage Discount</SelectItem>
+                              <SelectItem value="fixed_amount">Fixed Amount Off</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {newCoupon.discountType !== "free" && (
+                          <div>
+                            <Label className="text-sm font-bold">
+                              {newCoupon.discountType === "percentage" ? "Discount (%)" : "Discount Amount ($)"}
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder={newCoupon.discountType === "percentage" ? "e.g., 50" : "e.g., 100"}
+                              value={newCoupon.discountValue}
+                              onChange={(e) => setNewCoupon({ ...newCoupon, discountValue: e.target.value })}
+                              className="mt-1 border-[#e5e0d5]"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <Label className="text-sm font-bold">Description</Label>
+                          <Input
+                            placeholder="e.g., Free assessment for program participants"
+                            value={newCoupon.description}
+                            onChange={(e) => setNewCoupon({ ...newCoupon, description: e.target.value })}
+                            className="mt-1 border-[#e5e0d5]"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-sm font-bold">Max Uses (Optional)</Label>
+                            <Input
+                              type="number"
+                              placeholder="Unlimited"
+                              value={newCoupon.maxUses}
+                              onChange={(e) => setNewCoupon({ ...newCoupon, maxUses: e.target.value })}
+                              className="mt-1 border-[#e5e0d5]"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-bold">Expires (Optional)</Label>
+                            <Input
+                              type="date"
+                              value={newCoupon.expiresAt}
+                              onChange={(e) => setNewCoupon({ ...newCoupon, expiresAt: e.target.value })}
+                              className="mt-1 border-[#e5e0d5]"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Notes (Internal)</Label>
+                          <Textarea
+                            placeholder="Internal notes about this coupon..."
+                            value={newCoupon.notes}
+                            onChange={(e) => setNewCoupon({ ...newCoupon, notes: e.target.value })}
+                            className="mt-1 border-[#e5e0d5]"
+                            rows={2}
+                          />
+                        </div>
+                        <Button
+                          className="w-full bg-[#0a192f] hover:bg-[#0a192f]/90 text-white font-bold"
+                          onClick={handleCreateCoupon}
+                          disabled={isCreatingCoupon}
+                        >
+                          {isCreatingCoupon ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                          Create Coupon
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+
+              {couponsLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#0a192f]" />
+                </div>
+              ) : (
+                <Card className="border-[#e5e0d5]">
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
+                          <TableHead className="font-bold text-[#0a192f] px-6">Code</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Organization</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Description</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Usage</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Expires</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
+                          <TableHead className="font-bold text-[#0a192f] text-right px-6">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {coupons.map((coupon) => (
+                          <TableRow key={coupon.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
+                            <TableCell className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded bg-[#0a192f] text-white text-xs font-bold tracking-wider">
+                                  {coupon.code}
+                                </span>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(coupon.code)
+                                    toast.success("Copied to clipboard!")
+                                  }}
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-[#5a7a9a]">{coupon.organization || '\u2014'}</span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-[#5a7a9a] truncate max-w-[200px] block">{coupon.description || '\u2014'}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-[#0a192f]">{coupon.current_uses || 0}</span>
+                                <span className="text-xs text-[#5a7a9a]">/ {coupon.max_uses || '\u221E'}</span>
+                                <div className="w-16 h-2 bg-[#e5e0d5] rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-[#0a192f] rounded-full"
+                                    style={{ width: coupon.max_uses ? `${Math.min(100, ((coupon.current_uses || 0) / coupon.max_uses) * 100)}%` : `${Math.min(100, (coupon.current_uses || 0) * 2)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-[#5a7a9a]">
+                                {coupon.valid_until
+                                  ? new Date(coupon.valid_until).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
+                                  : 'Never'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {coupon.is_active ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Active
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold text-red-500">
+                                  <XCircle className="w-3.5 h-3.5" />
+                                  Inactive
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="px-6 text-right">
+                              <Switch
+                                checked={coupon.is_active}
+                                onCheckedChange={(checked) => toggleCouponStatus(coupon.id, checked)}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {coupons.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={7} className="h-40 text-center text-[#5a7a9a]">
+                              No coupons created yet.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="questions" className="space-y-6">

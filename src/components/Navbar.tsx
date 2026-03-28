@@ -34,15 +34,15 @@ export default function Navbar({ isScrolled }: NavbarProps) {
           <Link href={isB2B ? "/" : "/b2b"} className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
             {isB2B ? "For Families" : "B2B Self-Service"}
           </Link>
-          <Link href="/login" className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
-            Login
-          </Link>
-          <Link href="/resume" className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
-            Resume
-          </Link>
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6">
+          <Link href="/login" className="hidden lg:inline text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
+            Login
+          </Link>
+          <Link href="/resume" className="hidden lg:inline text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
+            Resume
+          </Link>
           <Button asChild className="hidden sm:inline-flex bg-[#1E2849] hover:bg-[#1E2849]/90 text-white font-semibold text-xs px-6 py-3 h-auto rounded-full transition-all duration-500 tracking-wide">
             <Link href="/checkout">
               Start Assessment

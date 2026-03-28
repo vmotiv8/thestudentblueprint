@@ -298,6 +298,9 @@ export default function SuperAdminDashboard() {
     discountValue: ""
   })
 
+  // Analytics/Demographics state
+  const [demographics, setDemographics] = useState<{ locations: any[]; genders: any[]; countries: any[] } | null>(null)
+
   // Referrals tab state
   const [referralTiers, setReferralTiers] = useState<any[]>([])
   const [referralPartners, setReferralPartners] = useState<any[]>([])
@@ -347,6 +350,7 @@ export default function SuperAdminDashboard() {
           return
         }
         fetchData()
+        fetchAnalytics()
       } else {
         router.push("/admin/login")
       }
@@ -382,6 +386,24 @@ export default function SuperAdminDashboard() {
     }
     // Also fetch super admins in parallel
     fetchSuperAdmins()
+  }
+
+  const fetchAnalytics = async () => {
+    try {
+      const [assessRes, demoRes, couponsRes] = await Promise.all([
+        fetch("/api/admin/assessments?limit=100&include_demos=false"),
+        fetch("/api/admin/demographics"),
+        fetch("/api/admin/coupons"),
+      ])
+      const assessData = await assessRes.json()
+      const demoData = await demoRes.json()
+      const couponsData = await couponsRes.json()
+      if (Array.isArray(assessData.assessments) && allStudents.length === 0) setAllStudents(assessData.assessments)
+      if (demoData.data) setDemographics(demoData.data)
+      if (Array.isArray(couponsData.coupons) && coupons.length === 0) setCoupons(couponsData.coupons)
+    } catch (error) {
+      console.error("Error fetching analytics:", error)
+    }
   }
 
   const fetchAllStudents = async () => {
@@ -1590,6 +1612,263 @@ export default function SuperAdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* ── Analytics Widgets ──────────────────────────────────────── */}
+              <div className="grid lg:grid-cols-2 gap-6 mt-8">
+                {/* Archetype Distribution */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader>
+                    <CardTitle className="text-[#0a192f] text-lg">Archetype Distribution</CardTitle>
+                    <CardDescription>Student personality archetypes breakdown</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[280px]">
+                      {(() => {
+                        const archetypeData = allStudents
+                          .filter(a => a.student_archetype)
+                          .reduce((acc: Record<string, number>, a) => {
+                            const name = (a.student_archetype || '').length > 20
+                              ? (a.student_archetype || '').slice(0, 18) + '...'
+                              : a.student_archetype || ''
+                            acc[name] = (acc[name] || 0) + 1
+                            return acc
+                          }, {})
+                        const chartData = Object.entries(archetypeData)
+                          .map(([name, value]) => ({ name, value }))
+                          .sort((a, b) => b.value - a.value)
+                          .slice(0, 12)
+                        return chartData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 20 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
+                              <XAxis type="number" tick={{ fontSize: 11 }} />
+                              <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 10 }} />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#c9a227" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-[#5a7a9a] text-sm">No archetype data yet</div>
+                        )
+                      })()}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Grade Distribution */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader>
+                    <CardTitle className="text-[#0a192f] text-lg">Grade Distribution</CardTitle>
+                    <CardDescription>Students by grade level</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[280px]">
+                      {(() => {
+                        const gradeData = allStudents
+                          .filter(a => a.student?.grade_level)
+                          .reduce((acc: Record<string, number>, a) => {
+                            const grade = a.student?.grade_level || 'Unknown'
+                            acc[grade] = (acc[grade] || 0) + 1
+                            return acc
+                          }, {})
+                        const chartData = Object.entries(gradeData).map(([name, value]) => ({ name, value }))
+                        return chartData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RechartsPieChart>
+                              <Pie data={chartData} cx="50%" cy="50%" labelLine label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} outerRadius={90} dataKey="value">
+                                {chartData.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-[#5a7a9a] text-sm">No grade data yet</div>
+                        )
+                      })()}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Top Performing / Top Coupons / Recent Completions */}
+              <div className="grid lg:grid-cols-3 gap-6 mt-6">
+                {/* Top Performing */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-[#0a192f] text-base flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-[#c9a227]" />
+                      Top Performing
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {allStudents
+                        .filter(a => a.competitiveness_score)
+                        .sort((a, b) => (b.competitiveness_score || 0) - (a.competitiveness_score || 0))
+                        .slice(0, 5)
+                        .map((a, i) => (
+                          <div key={a.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-[#c9a227]">#{i + 1}</span>
+                              <span className="text-sm text-[#0a192f] font-medium truncate max-w-[140px]">
+                                {a.student?.full_name || `${a.student?.first_name || ''} ${a.student?.last_name || ''}`.trim() || 'Unknown'}
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-[#0a192f]">{a.competitiveness_score}/100</span>
+                          </div>
+                        ))}
+                      {allStudents.filter(a => a.competitiveness_score).length === 0 && (
+                        <p className="text-sm text-[#5a7a9a] text-center py-4">No scores yet</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top Coupons */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-[#0a192f] text-base flex items-center gap-2">
+                      <Ticket className="w-4 h-4 text-[#c9a227]" />
+                      Top Coupons
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {coupons
+                        .sort((a, b) => (b.current_uses || 0) - (a.current_uses || 0))
+                        .slice(0, 5)
+                        .map((c) => (
+                          <div key={c.id} className="flex items-center justify-between">
+                            <div>
+                              <span className="text-xs font-bold bg-[#0a192f] text-white px-2 py-0.5 rounded tracking-wider">{c.code}</span>
+                              <p className="text-xs text-[#5a7a9a] mt-1">{c.description || c.organization || 'No org'}</p>
+                            </div>
+                            <span className="text-xs font-bold bg-[#faf8f3] border border-[#e5e0d5] px-2 py-1 rounded">{c.current_uses || 0} uses</span>
+                          </div>
+                        ))}
+                      {coupons.length === 0 && (
+                        <p className="text-sm text-[#5a7a9a] text-center py-4">No coupons yet</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Recent Completions */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-[#0a192f] text-base flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-[#c9a227]" />
+                      Recent Completions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {allStudents
+                        .filter(a => a.status === 'completed')
+                        .sort((a, b) => new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime())
+                        .slice(0, 5)
+                        .map((a) => (
+                          <div key={a.id} className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-bold text-[#0a192f]">
+                                {a.student?.full_name || `${a.student?.first_name || ''} ${a.student?.last_name || ''}`.trim() || 'Unknown'}
+                              </p>
+                              <p className="text-xs text-[#c9a227]">{a.student_archetype || 'No archetype'}</p>
+                            </div>
+                            <span className="text-xs text-[#5a7a9a]">
+                              {new Date(a.completed_at || a.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                            </span>
+                          </div>
+                        ))}
+                      {allStudents.filter(a => a.status === 'completed').length === 0 && (
+                        <p className="text-sm text-[#5a7a9a] text-center py-4">No completions yet</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Gender / States / Countries */}
+              <div className="grid lg:grid-cols-3 gap-6 mt-6">
+                {/* Gender Distribution */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader>
+                    <CardTitle className="text-[#0a192f] text-lg">Gender Distribution</CardTitle>
+                    <CardDescription>Student gender breakdown</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[220px]">
+                      {demographics?.genders && demographics.genders.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsPieChart>
+                            <Pie data={demographics.genders} cx="50%" cy="50%" labelLine label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} outerRadius={70} dataKey="value">
+                              {demographics.genders.map((_, i) => (
+                                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </RechartsPieChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-[#5a7a9a] text-sm">No gender data yet</div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top States */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader>
+                    <CardTitle className="text-[#0a192f] text-lg">Top States</CardTitle>
+                    <CardDescription>Students by state (top 10)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[220px]">
+                      {demographics?.locations && demographics.locations.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={demographics.locations.slice(0, 10)} layout="vertical" margin={{ left: 5, right: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
+                            <XAxis type="number" tick={{ fontSize: 11 }} />
+                            <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} />
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#0a192f" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-[#5a7a9a] text-sm">No state data yet</div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top Countries */}
+                <Card className="border-[#e5e0d5]">
+                  <CardHeader>
+                    <CardTitle className="text-[#0a192f] text-lg">Top Countries</CardTitle>
+                    <CardDescription>Students by country (top 10)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[220px]">
+                      {demographics?.countries && demographics.countries.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={demographics.countries.slice(0, 10)} layout="vertical" margin={{ left: 5, right: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
+                            <XAxis type="number" tick={{ fontSize: 11 }} />
+                            <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} />
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#c9a227" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-[#5a7a9a] text-sm">No country data yet</div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
             </TabsContent>
 
             <TabsContent value="agencies">

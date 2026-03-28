@@ -411,10 +411,10 @@ function FamiliesHomePage() {
 
       <ProductDemo />
 
-      {/* ── Section 6: What's In Your Report ──────────────────────────────── */}
-      <section className="py-32 sm:py-48 bg-[#FFFAF0] px-6">
-        <div className="max-w-6xl mx-auto">
-          <motion.div {...fadeUp} className="text-center mb-16 sm:mb-24">
+      {/* ── Inside Your Report (below the demo tabs) ──────────────────────── */}
+      <section className="pb-32 sm:pb-48 bg-[#FFFAF0] px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
             <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">WHAT YOU GET</p>
             <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-6" />
             <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold uppercase text-[#1E2849]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>

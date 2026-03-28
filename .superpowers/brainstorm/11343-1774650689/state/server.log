@@ -1,0 +1,11 @@
+{"type":"server-started","port":58143,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:58143","screen_dir":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content","state_dir":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/state"}
+{"type":"screen-added","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/nav-structure.html"}
+{"type":"screen-updated","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/nav-structure.html"}
+{"type":"screen-added","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/hero-section.html"}
+{"type":"screen-added","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/hero-section-v2.html"}
+{"type":"screen-updated","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/hero-section-v2.html"}
+{"type":"screen-added","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/hero-section-v3.html"}
+{"type":"screen-updated","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/hero-section-v3.html"}
+{"type":"screen-added","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/full-page-sections.html"}
+{"type":"screen-updated","file":"/Users/vish/Documents/Platforms/thestudentblueprint/.superpowers/brainstorm/11343-1774650689/content/full-page-sections.html"}
+{"type":"server-stopped","reason":"idle timeout"}

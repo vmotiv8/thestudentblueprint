@@ -43,7 +43,14 @@
       "Bash(sed -i '' '/QSTASH_URL/d' /Users/vish/Documents/Platforms/thestudentblueprint/.env.local)",
       "Bash(sed -i '' '/QStash EU region/d' /Users/vish/Documents/Platforms/thestudentblueprint/.env.local)",
       "Bash(npx vercel:*)",
-      "Bash(while read:*)"
+      "Bash(while read:*)",
+      "Bash(grep -r \"use client\\\\|''''use client''''\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/*.tsx)",
+      "Read(//Users/vish/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6/skills/brainstorming/**)",
+      "Read(//Users/vish/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6/scripts/**)",
+      "Read(//Users/vish/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
+      "Bash(/Users/vish/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6/skills/brainstorming/scripts/start-server.sh --project-dir /Users/vish/Documents/Platforms/thestudentblueprint)",
+      "Bash(ls /Users/vish/Documents/Platforms/thestudentblueprint/src/components/Navbar*)",
+      "Bash(xargs kill:*)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

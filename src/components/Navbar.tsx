@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 
 interface NavbarProps {
   isScrolled: boolean
@@ -14,6 +15,8 @@ interface NavbarProps {
 
 export default function Navbar({ isScrolled }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const isB2B = pathname === "/b2b"
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#FFFAF0]/90 backdrop-blur-2xl py-4 border-b border-[#1E2849]/5" : "bg-transparent py-6"}`}>
@@ -28,8 +31,8 @@ export default function Navbar({ isScrolled }: NavbarProps) {
         </Link>
 
         <div className="hidden lg:flex items-center gap-10">
-          <Link href="/b2b" className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
-            B2B Self-Service
+          <Link href={isB2B ? "/" : "/b2b"} className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
+            {isB2B ? "For Families" : "B2B Self-Service"}
           </Link>
           <Link href="/login" className="text-[#1E2849]/60 hover:text-[#1E2849] text-xs font-medium tracking-[0.2em] uppercase transition-colors">
             Login
@@ -65,11 +68,11 @@ export default function Navbar({ isScrolled }: NavbarProps) {
             <div className="flex flex-col gap-6">
               <div className="h-px bg-[#1E2849]/10 my-2" />
               <Link
-                href="/b2b"
+                href={isB2B ? "/" : "/b2b"}
                 className="text-[#1E2849]/70 hover:text-[#af8f5b] text-sm font-medium tracking-[0.15em] uppercase transition-all duration-300"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                B2B Self-Service
+                {isB2B ? "For Families" : "B2B Self-Service"}
               </Link>
               <Link
                 href="/login"

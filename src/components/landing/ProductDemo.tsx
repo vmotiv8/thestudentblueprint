@@ -14,6 +14,9 @@ import {
   School,
   Check,
   ArrowRight,
+  Briefcase,
+  Users,
+  Pen,
 } from "lucide-react"
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -120,6 +123,46 @@ const demoTabs = [
         { tier: "Reach", schools: [{ name: "MIT", match: 62 }, { name: "Stanford", match: 58 }, { name: "Carnegie Mellon", match: 68 }] },
         { tier: "Target", schools: [{ name: "Georgia Tech", match: 79 }, { name: "UIUC", match: 82 }, { name: "Purdue", match: 85 }] },
         { tier: "Safety", schools: [{ name: "Virginia Tech", match: 91 }, { name: "RPI", match: 88 }, { name: "RIT", match: 93 }] },
+      ]
+    }
+  },
+  {
+    id: "career",
+    label: "Career",
+    icon: Briefcase,
+    content: {
+      careers: [
+        { title: "Software Engineering", match: 92, salary: "$120K - $200K+", majors: ["Computer Science", "Software Engineering", "Mathematics"], why: "Strong alignment with your technical skills, CS coursework, and passion for building tools. High demand and clear growth trajectory." },
+        { title: "Product Management", match: 78, salary: "$110K - $180K+", majors: ["Computer Science", "Business", "Cognitive Science"], why: "Combines your leadership experience with technical fluency. Your entrepreneurial projects demonstrate product thinking." },
+        { title: "Data Science", match: 74, salary: "$100K - $170K+", majors: ["Statistics", "Computer Science", "Applied Math"], why: "Your quantitative strengths and research interests align well. Consider building a portfolio of data projects." },
+      ]
+    }
+  },
+  {
+    id: "activities",
+    label: "Activities",
+    icon: Users,
+    content: {
+      keep: [
+        { name: "Robotics Club (President)", impact: "high", reason: "Leadership + technical depth. National competition path strengthens profile significantly." },
+        { name: "Math Team (Captain)", impact: "high", reason: "Demonstrates quantitative rigor. AMC/AIME scores add competitive edge." },
+        { name: "Community Tech Tutoring", impact: "medium", reason: "Shows service orientation and communication skills. Admissions officers value community impact." },
+      ],
+      drop: [
+        { name: "JV Tennis", reason: "No competitive distinction. Time better spent deepening STEM leadership." },
+        { name: "French Club", reason: "Passive membership with no leadership role. Not contributing to your narrative." },
+      ]
+    }
+  },
+  {
+    id: "essays",
+    label: "Essays",
+    icon: Pen,
+    content: {
+      themes: [
+        { title: "The Builder's Mindset", desc: "Frame your journey through the lens of someone who sees problems as opportunities to create solutions. Connect your robotics projects, tech tutoring, and entrepreneurial instincts into a cohesive narrative about building things that matter.", strength: "high" },
+        { title: "Bridging the Digital Divide", desc: "Your community tech tutoring reveals a deeper story about equity and access. Explore how teaching others to code changed your own understanding of technology's role in society.", strength: "medium" },
+        { title: "From Competition to Collaboration", desc: "Use your transition from individual math competitions to leading a robotics team as a metaphor for growth. Show how you learned that the best innovations come from bringing people together.", strength: "medium" },
       ]
     }
   },
@@ -348,6 +391,104 @@ function DemoColleges({ data }: { data: any }) {
   )
 }
 
+function DemoCareer({ data }: { data: any }) {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-2xl font-bold text-white uppercase tracking-[0.1em]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+        Career <span className="text-[#af8f5b]">Pathways</span>
+      </h3>
+      <div className="space-y-3">
+        {data.careers.map((c: any, i: number) => (
+          <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-white">{c.title}</p>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-white/30 font-medium">{c.salary}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="w-12 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#af8f5b] rounded-full" style={{ width: `${c.match}%` }} />
+                  </div>
+                  <span className="text-xs font-bold text-[#af8f5b] w-8 text-right">{c.match}%</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-white/40 leading-relaxed mb-2">{c.why}</p>
+            <div className="flex gap-2 flex-wrap">
+              {c.majors.map((m: string, j: number) => (
+                <span key={j} className="text-[10px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded bg-[#af8f5b]/10 text-[#af8f5b]">{m}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DemoActivities({ data }: { data: any }) {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-2xl font-bold text-white uppercase tracking-[0.1em]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+        Activities & <span className="text-[#af8f5b]">Leadership</span>
+      </h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="rounded-xl bg-white/5 border border-white/10 p-5">
+          <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.15em] mb-4">Keep & Deepen</p>
+          <div className="space-y-3">
+            {data.keep.map((a: any, i: number) => (
+              <div key={i} className="flex items-start gap-3">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-white">{a.name}</p>
+                  <p className="text-xs text-white/40 mt-1">{a.reason}</p>
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded shrink-0 ${a.impact === "high" ? "bg-emerald-400/10 text-emerald-400" : "bg-amber-400/10 text-amber-400"}`}>{a.impact}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl bg-white/5 border border-white/10 p-5">
+          <p className="text-xs font-bold text-red-400 uppercase tracking-[0.15em] mb-4">Deprioritize</p>
+          <div className="space-y-3">
+            {data.drop.map((a: any, i: number) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-4 h-0.5 bg-red-400/50 shrink-0 mt-2.5" />
+                <div>
+                  <p className="text-sm font-bold text-white/50 line-through">{a.name}</p>
+                  <p className="text-xs text-white/30 mt-1">{a.reason}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DemoEssays({ data }: { data: any }) {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-2xl font-bold text-white uppercase tracking-[0.1em]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+        Essay <span className="text-[#af8f5b]">Strategy</span>
+      </h3>
+      <div className="space-y-3">
+        {data.themes.map((t: any, i: number) => (
+          <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-bold text-white">{t.title}</p>
+              <span className={`text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded ${t.strength === "high" ? "bg-[#af8f5b]/10 text-[#af8f5b]" : "bg-white/5 text-white/40"}`}>
+                {t.strength === "high" ? "Recommended" : "Alternative"}
+              </span>
+            </div>
+            <p className="text-xs text-white/40 leading-relaxed">{t.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ProductDemo() {
@@ -426,6 +567,9 @@ export default function ProductDemo() {
                 {activeTab === "testing" && <DemoTesting data={tab.content} />}
                 {activeTab === "scholarships" && <DemoScholarships data={tab.content} />}
                 {activeTab === "colleges" && <DemoColleges data={tab.content} />}
+                {activeTab === "career" && <DemoCareer data={tab.content} />}
+                {activeTab === "activities" && <DemoActivities data={tab.content} />}
+                {activeTab === "essays" && <DemoEssays data={tab.content} />}
               </motion.div>
             </AnimatePresence>
           </div>

@@ -411,62 +411,6 @@ function FamiliesHomePage() {
 
       <ProductDemo />
 
-      {/* ── Inside Your Report (below the demo tabs) ──────────────────────── */}
-      <section className="pb-32 sm:pb-48 bg-[#FFFAF0] px-6">
-        <div className="max-w-5xl mx-auto">
-          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-bold tracking-[0.4em] uppercase text-[#af8f5b] mb-6">WHAT YOU GET</p>
-            <div className="w-12 h-px bg-[#1E2849]/30 mx-auto mb-6" />
-            <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold uppercase text-[#1E2849]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-              Inside <span className="text-[#af8f5b]">Your Report</span>
-            </h2>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Featured card: Archetype + Competitiveness Score */}
-            <motion.div {...fadeUp} className="sm:col-span-2 rounded-xl p-6 sm:p-8" style={{ backgroundColor: "#1b2034" }}>
-              <div className="grid lg:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-xs font-bold tracking-[0.2em] uppercase text-[#af8f5b] mb-3">Student Archetype & Competitiveness Score</p>
-                  <p className="text-sm text-white/60 leading-relaxed">
-                    Discover your child&apos;s unique applicant identity &mdash; like &ldquo;Analytical Entrepreneur&rdquo; or &ldquo;Creative Humanitarian&rdquo; &mdash; plus a 0-100 competitiveness score benchmarked against real admits.
-                  </p>
-                </div>
-                <div className="rounded-lg bg-white/5 border border-white/10 p-4">
-                  <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-white/40 mb-3">What Your Score Means</p>
-                  <div className="space-y-2">
-                    {scoreTiers.map((tier, i) => (
-                      <div key={i} className="flex items-start gap-3 text-xs">
-                        <span className="font-bold text-white w-14 shrink-0">{tier.range}</span>
-                        <span className={`${tier.dot} w-2 h-2 rounded-full mt-1 shrink-0`} />
-                        <span className={`font-bold ${tier.color} w-28 shrink-0`}>{tier.tier}</span>
-                        <span className="text-white/40 hidden sm:inline">{tier.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Remaining cards */}
-            {reportSections.filter(s => !s.featured).map((section, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: i * 0.05, ease }}
-                className="rounded-xl p-6 sm:p-8"
-                style={{ backgroundColor: "#1b2034" }}
-              >
-                <p className="text-xs font-bold tracking-[0.2em] uppercase text-[#af8f5b] mb-3">{section.title}</p>
-                <p className="text-sm text-white/60 leading-relaxed">{section.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Section 7: Testimonials ──────────────────────────────────────── */}
       <section className="relative py-32 sm:py-48 bg-[#FFFAF0] overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#af8f5b]/20 to-transparent" />

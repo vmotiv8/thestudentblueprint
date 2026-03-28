@@ -82,6 +82,8 @@ import {
   ExternalLink,
   UserPlus,
   ClipboardList,
+  Link2,
+  ChevronLeft,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -275,6 +277,10 @@ export default function SuperAdminDashboard() {
   const [allStudents, setAllStudents] = useState<any[]>([])
   const [studentsLoading, setStudentsLoading] = useState(false)
   const [studentSearch, setStudentSearch] = useState("")
+  const [gradeFilter, setGradeFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [paymentFilter, setPaymentFilter] = useState("all")
+  const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null)
 
   const isSuperAdmin = admin?.role === 'super_admin'
 
@@ -360,6 +366,26 @@ export default function SuperAdminDashboard() {
       console.error("Error fetching students:", error)
     } finally {
       setStudentsLoading(false)
+    }
+  }
+
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    try {
+      const res = await fetch("/api/admin/delete-assessment", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentId }),
+      })
+      if (res.ok) {
+        setAllStudents(prev => prev.filter(a => a.id !== assessmentId))
+        toast.success("Assessment deleted")
+      } else {
+        toast.error("Failed to delete assessment")
+      }
+    } catch {
+      toast.error("Failed to delete assessment")
+    } finally {
+      setDeletingAssessmentId(null)
     }
   }
 
@@ -1769,23 +1795,66 @@ export default function SuperAdminDashboard() {
             <TabsContent value="all-students" className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#0a192f]">All Students</h2>
-                  <p className="text-sm text-[#5a7a9a]">Students across all agencies with their assessment results</p>
+                  <h2 className="text-2xl font-bold text-[#0a192f]">Student Assessments</h2>
+                  <p className="text-sm text-[#5a7a9a]">View and manage all student assessments</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={fetchAllStudents} disabled={studentsLoading}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${studentsLoading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a7a9a]" />
+                    <Input
+                      placeholder="Search students..."
+                      value={studentSearch}
+                      onChange={(e) => setStudentSearch(e.target.value)}
+                      className="pl-10 h-9 w-64 border-[#e5e0d5] text-sm"
+                    />
+                  </div>
+                  <Button variant="outline" size="sm" onClick={fetchAllStudents} disabled={studentsLoading}>
+                    <RefreshCw className={`w-4 h-4 ${studentsLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </div>
 
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a7a9a]" />
-                <Input
-                  placeholder="Search by student name, email, or school..."
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                  className="pl-10 h-11 border-[#e5e0d5]"
-                />
+              {/* Filters Row */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <Select value={gradeFilter} onValueChange={setGradeFilter}>
+                  <SelectTrigger className="w-[180px] h-9 border-[#e5e0d5] text-sm">
+                    <SelectValue placeholder="All Grades" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Grades</SelectItem>
+                    {[...new Set(allStudents.map(a => a.student?.grade_level).filter(Boolean))].sort().map(grade => (
+                      <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[160px] h-9 border-[#e5e0d5] text-sm">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="partial">Generating</SelectItem>
+                    <SelectItem value="started">Started</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger className="w-[180px] h-9 border-[#e5e0d5] text-sm">
+                    <SelectValue placeholder="All Payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payment</SelectItem>
+                    {[...new Set(allStudents.map(a => {
+                      if (a.coupon_code) return a.coupon_code
+                      return a.payment_status || 'unknown'
+                    }).filter(Boolean))].sort().map(p => (
+                      <SelectItem key={p} value={p}>{p.toUpperCase()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {studentsLoading ? (
@@ -1799,22 +1868,35 @@ export default function SuperAdminDashboard() {
                       <TableHeader>
                         <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
                           <TableHead className="font-bold text-[#0a192f] px-6">Student</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Agency</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Grade</TableHead>
                           <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
                           <TableHead className="font-bold text-[#0a192f]">Score</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Archetype</TableHead>
-                          <TableHead className="font-bold text-[#0a192f] text-right px-6">Results</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Payment</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Date</TableHead>
+                          <TableHead className="font-bold text-[#0a192f] text-right px-6">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {allStudents
                           .filter(a => {
-                            if (!studentSearch) return true
-                            const search = studentSearch.toLowerCase()
-                            const name = `${a.student?.first_name || ''} ${a.student?.last_name || ''}`.toLowerCase()
-                            const email = (a.student?.email || '').toLowerCase()
-                            const school = (a.student?.school_name || '').toLowerCase()
-                            return name.includes(search) || email.includes(search) || school.includes(search)
+                            // Search filter
+                            if (studentSearch) {
+                              const search = studentSearch.toLowerCase()
+                              const name = `${a.student?.first_name || ''} ${a.student?.last_name || ''} ${a.student?.full_name || ''}`.toLowerCase()
+                              const email = (a.student?.email || '').toLowerCase()
+                              const school = (a.student?.school_name || '').toLowerCase()
+                              if (!name.includes(search) && !email.includes(search) && !school.includes(search)) return false
+                            }
+                            // Grade filter
+                            if (gradeFilter !== 'all' && a.student?.grade_level !== gradeFilter) return false
+                            // Status filter
+                            if (statusFilter !== 'all' && a.status !== statusFilter) return false
+                            // Payment filter
+                            if (paymentFilter !== 'all') {
+                              const paymentVal = a.coupon_code || a.payment_status || 'unknown'
+                              if (paymentVal !== paymentFilter) return false
+                            }
+                            return true
                           })
                           .map((assessment) => (
                           <TableRow key={assessment.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
@@ -1824,58 +1906,141 @@ export default function SuperAdminDashboard() {
                                   {assessment.student?.full_name || `${assessment.student?.first_name || ''} ${assessment.student?.last_name || ''}`.trim() || 'Unknown'}
                                 </p>
                                 <p className="text-xs text-[#5a7a9a]">{assessment.student?.email}</p>
-                                {assessment.student?.school_name && (
-                                  <p className="text-xs text-[#5a7a9a]">{assessment.student?.school_name}</p>
-                                )}
                               </div>
                             </TableCell>
                             <TableCell>
                               <span className="text-sm text-[#5a7a9a]">
-                                {assessment.organization?.name || 'Direct'}
+                                {assessment.student?.grade_level || '\u2014'}
                               </span>
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
-                                assessment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                assessment.status === 'partial' ? 'bg-blue-100 text-blue-700' :
-                                assessment.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-gray-100 text-gray-600'
-                              }`}>
-                                {assessment.status === 'partial' ? 'Generating...' : assessment.status}
-                              </span>
+                              {assessment.status === 'completed' ? (
+                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-600">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Completed
+                                </span>
+                              ) : assessment.status === 'partial' ? (
+                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  Generating...
+                                </span>
+                              ) : assessment.status === 'in_progress' ? (
+                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  Section {assessment.current_section || '?'}/15
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  Started
+                                </span>
+                              )}
                             </TableCell>
                             <TableCell>
                               {assessment.competitiveness_score ? (
-                                <span className="font-bold text-[#0a192f]">{assessment.competitiveness_score}/100</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-[#0a192f] text-sm w-6">{assessment.competitiveness_score}</span>
+                                  <div className="w-16 h-2 bg-[#e5e0d5] rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${
+                                        assessment.competitiveness_score >= 80 ? 'bg-green-500' :
+                                        assessment.competitiveness_score >= 60 ? 'bg-amber-500' :
+                                        'bg-red-400'
+                                      }`}
+                                      style={{ width: `${assessment.competitiveness_score}%` }}
+                                    />
+                                  </div>
+                                </div>
                               ) : (
                                 <span className="text-[#5a7a9a]">&mdash;</span>
                               )}
                             </TableCell>
                             <TableCell>
-                              {assessment.student_archetype ? (
-                                <span className="text-sm font-medium text-[#0a192f]">{assessment.student_archetype}</span>
+                              {assessment.coupon_code ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700">
+                                  <Ticket className="w-3 h-3 mr-1" />
+                                  {assessment.coupon_code}
+                                </span>
+                              ) : assessment.payment_status === 'paid' ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">
+                                  PAID
+                                </span>
+                              ) : assessment.payment_status === 'free' ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">
+                                  FREE
+                                </span>
                               ) : (
-                                <span className="text-[#5a7a9a]">&mdash;</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-500">
+                                  {(assessment.payment_status || 'unpaid').toUpperCase()}
+                                </span>
                               )}
                             </TableCell>
-                            <TableCell className="px-6 text-right">
-                              {(assessment.status === 'completed' || assessment.status === 'partial') && (
+                            <TableCell>
+                              <span className="text-sm text-[#5a7a9a]">
+                                {new Date(assessment.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </TableCell>
+                            <TableCell className="px-6">
+                              <div className="flex items-center justify-end gap-1">
+                                {(assessment.status === 'completed' || assessment.status === 'partial') && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                      title="View Results"
+                                      onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                      title="View Report"
+                                      onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                      title="Download PDF"
+                                      onClick={() => window.open(`/api/pdf/${assessment.id}`, '_blank')}
+                                    >
+                                      <Download className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                )}
                                 <Button
                                   size="sm"
-                                  variant="outline"
-                                  className="text-xs"
-                                  onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                  title="Copy Link"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(`${window.location.origin}/results/${assessment.id}`)
+                                    toast.success("Link copied to clipboard")
+                                  }}
                                 >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  View Results
+                                  <Link2 className="w-4 h-4" />
                                 </Button>
-                              )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-400 hover:text-red-600"
+                                  title="Delete"
+                                  onClick={() => setDeletingAssessmentId(assessment.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
                         {allStudents.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={6} className="h-40 text-center text-[#5a7a9a]">
+                            <TableCell colSpan={7} className="h-40 text-center text-[#5a7a9a]">
                               No student assessments found.
                             </TableCell>
                           </TableRow>
@@ -1885,6 +2050,25 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Delete Confirmation Dialog */}
+              <Dialog open={!!deletingAssessmentId} onOpenChange={(open) => { if (!open) setDeletingAssessmentId(null) }}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete Assessment</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this assessment? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" onClick={() => setDeletingAssessmentId(null)}>Cancel</Button>
+                    <Button variant="destructive" onClick={() => deletingAssessmentId && handleDeleteAssessment(deletingAssessmentId)}>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
 
             <TabsContent value="questions" className="space-y-6">

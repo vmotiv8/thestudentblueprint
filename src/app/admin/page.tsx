@@ -766,7 +766,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-[#faf8f3]">
       <nav className="bg-[#0a192f] text-white sticky top-0 z-50 shadow-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <Image src="/logo.png" alt="The Student Blueprint Logo" width={42} height={42} className="w-9 h-9 object-contain" />
@@ -843,7 +843,7 @@ export default function SuperAdminDashboard() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-[1600px] mx-auto px-6 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
@@ -979,9 +979,9 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="!flex !flex-row gap-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="!flex !flex-row gap-4">
             {/* Sidebar */}
-            <TabsList className="!flex !flex-col !w-56 !h-auto items-stretch gap-1 bg-white border border-[#e5e0d5] p-2 rounded-2xl shadow-sm shrink-0 sticky top-24 self-start">
+            <TabsList className="!flex !flex-col !w-48 !h-auto items-stretch gap-1 bg-white border border-[#e5e0d5] p-2 rounded-2xl shadow-sm shrink-0 sticky top-24 self-start">
               <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Overview

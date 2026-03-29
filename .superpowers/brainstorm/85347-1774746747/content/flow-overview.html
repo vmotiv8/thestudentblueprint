@@ -1,0 +1,106 @@
+<h2>Student Info Collection Flow</h2>
+<p class="subtitle">Modified payment success page — 3 states on one page</p>
+
+<div class="section">
+  <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
+
+    <!-- State 1 -->
+    <div style="flex: 1; min-width: 280px; max-width: 340px;">
+      <div class="mockup">
+        <div class="mockup-header">State 1: Payment Confirmed</div>
+        <div class="mockup-body" style="text-align: center; padding: 24px;">
+          <div style="background: #10b981; color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">&#10003;</div>
+            <div style="font-weight: bold; font-size: 18px;">Payment Successful!</div>
+            <div style="opacity: 0.9; font-size: 13px;">Thank you for your purchase</div>
+          </div>
+          <p style="color: #666; font-size: 13px; margin-bottom: 16px;">Your payment has been confirmed. Please provide your details to get started.</p>
+
+          <div style="text-align: left; margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 600; color: #333;">Full Name <span style="color: red;">*</span></label>
+            <input class="mock-input" placeholder="Enter your full name" style="width: 100%; margin-top: 4px;">
+          </div>
+          <div style="text-align: left; margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 600; color: #333;">Email Address</label>
+            <input class="mock-input" value="jane@email.com" style="width: 100%; margin-top: 4px; background: #f3f4f6; color: #888;" disabled>
+            <div style="font-size: 11px; color: #888; margin-top: 2px;">Pre-filled from payment</div>
+          </div>
+          <div style="text-align: left; margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 600; color: #333;">Phone Number <span style="color: #888; font-weight: normal;">(optional)</span></label>
+            <input class="mock-input" placeholder="(555) 123-4567" style="width: 100%; margin-top: 4px;">
+          </div>
+
+          <button class="mock-button" style="width: 100%; background: #1e3a5f; color: white; padding: 10px; border-radius: 6px;">Continue &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 2 -->
+    <div style="flex: 1; min-width: 280px; max-width: 340px;">
+      <div class="mockup">
+        <div class="mockup-header">State 2: Resume Code Displayed</div>
+        <div class="mockup-body" style="text-align: center; padding: 24px;">
+          <div style="background: #10b981; color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">&#10003;</div>
+            <div style="font-weight: bold; font-size: 18px;">You're All Set!</div>
+            <div style="opacity: 0.9; font-size: 13px;">Your account has been created</div>
+          </div>
+
+          <p style="color: #666; font-size: 13px; margin-bottom: 12px;">Here's your unique resume code. Use it to continue your assessment anytime.</p>
+
+          <div style="background: #fef3c7; border: 2px dashed #c9a227; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #92710a; font-weight: 600; margin-bottom: 4px;">Your Resume Code</div>
+            <div style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #1e3a5f; font-family: monospace;">K7PH3N</div>
+          </div>
+
+          <div style="background: #f0fdf4; border-radius: 6px; padding: 10px; margin-bottom: 16px; font-size: 12px; color: #166534;">
+            &#9993; We've also emailed this code to <strong>jane@email.com</strong>
+          </div>
+
+          <button class="mock-button" style="width: 100%; background: #1e3a5f; color: white; padding: 10px; border-radius: 6px;">Start Assessment &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow for coupon/free -->
+    <div style="flex: 1; min-width: 280px; max-width: 340px;">
+      <div class="mockup">
+        <div class="mockup-header">Coupon/Free Flow (same page)</div>
+        <div class="mockup-body" style="text-align: center; padding: 24px;">
+          <div style="background: #1e3a5f; color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">&#127891;</div>
+            <div style="font-weight: bold; font-size: 18px;">Welcome!</div>
+            <div style="opacity: 0.9; font-size: 13px;">Your access has been confirmed</div>
+          </div>
+          <p style="color: #666; font-size: 13px; margin-bottom: 16px;">Please provide your details to get started with your assessment.</p>
+
+          <div style="text-align: left; margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 600; color: #333;">Full Name <span style="color: red;">*</span></label>
+            <input class="mock-input" placeholder="Enter your full name" style="width: 100%; margin-top: 4px;">
+          </div>
+          <div style="text-align: left; margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 600; color: #333;">Email Address <span style="color: red;">*</span></label>
+            <input class="mock-input" placeholder="your@email.com" style="width: 100%; margin-top: 4px;">
+          </div>
+          <div style="text-align: left; margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 600; color: #333;">Phone Number <span style="color: #888; font-weight: normal;">(optional)</span></label>
+            <input class="mock-input" placeholder="(555) 123-4567" style="width: 100%; margin-top: 4px;">
+          </div>
+
+          <button class="mock-button" style="width: 100%; background: #1e3a5f; color: white; padding: 10px; border-radius: 6px;">Continue &rarr;</button>
+
+          <div style="font-size: 11px; color: #888; margin-top: 8px;">Email is editable (not pre-filled from Stripe)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Flow Summary</h3>
+  <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; font-size: 14px; line-height: 1.8;">
+    <strong>Paid flow:</strong> Checkout → Stripe → <code>/payment/success?session_id=X</code> → State 1 (email pre-filled, read-only) → Submit → State 2 (resume code) → Assessment<br>
+    <strong>Coupon flow:</strong> Checkout (coupon applied) → redirect to <code>/payment/success?coupon=X</code> → State 1 (email editable) → Submit → State 2 (resume code) → Assessment<br>
+    <strong>Free org flow:</strong> Checkout → redirect to <code>/payment/success?free=true</code> → State 1 (email editable) → Submit → State 2 (resume code) → Assessment
+  </div>
+</div>

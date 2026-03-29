@@ -2779,7 +2779,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="rounded-3xl p-8 md:p-12 text-center"
+            className="rounded-3xl p-8 md:p-12 text-center mt-12"
             style={{ background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColor}dd)` }}
           >
             <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>

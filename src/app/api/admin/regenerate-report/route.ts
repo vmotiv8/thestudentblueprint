@@ -175,7 +175,7 @@ Generate JSON with each activity as {name, description, dates, relevance}:
   "cultureArtsRecommendations": { "performingArts": [], "visualArts": [], "creativeWriting": [], "culturalClubs": [] },
   "leadershipRecommendations": { "clubLeadership": [], "schoolWideRoles": [], "communityLeadership": [], "leadershipDevelopment": [] }
 }
-Be SPECIFIC — name real programs, competitions, deadlines.`, 12000, 60000)
+Be SPECIFIC — name real programs, competitions, deadlines. Generate EXACTLY 5 items per array/category.`, 12000, 60000)
     if (phase4.success) { Object.assign(allResults, phase4.data) }
     else console.error(`[Regenerate] Phase 4 failed (non-fatal):`, phase4.error)
 

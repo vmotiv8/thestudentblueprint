@@ -114,7 +114,7 @@ Generate DETAILED JSON for each activity item as an object with {name, descripti
   }
 }
 
-Be SPECIFIC — name real programs, competitions, and deadlines.`, 12000, 90000)
+Be SPECIFIC — name real programs, competitions, and deadlines. Generate EXACTLY 5 items per array/category.`, 12000, 90000)
 
     if (!result.success) {
       console.error(`[Phase4] Failed for ${assessmentId}:`, result.error)

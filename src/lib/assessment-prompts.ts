@@ -158,7 +158,8 @@ IMPORTANT GUIDELINES:
 2. If the student is planning to study abroad, update the "Reach/Target/Safety schools" and recommendations based on the admissions data of universities in their target countries.
 3. Tailor the roadmap actions, goals, and projects to the student's specific location and curriculum (${curriculum}).
 4. If the student is in a specific curriculum (like CBSE or IB), ensure the academic suggestions respect that curriculum's requirements and timelines.
-5. If school-specific resources are listed above (courses, clubs, competitions, extracurriculars), PRIORITIZE recommending those specific options over generic alternatives wherever applicable.`
+5. If school-specific resources are listed above (courses, clubs, competitions, extracurriculars), PRIORITIZE recommending those specific options over generic alternatives wherever applicable.
+6. For ALL activity/recommendation arrays (summer programs, sports, competitions, internships, service, culture/arts, leadership, etc.), generate EXACTLY 5 items per category unless otherwise specified.`
 
 /**
  * Phase 1 prompt: Core analysis (archetype, scores, strengths, gaps, roadmap, timeline, essays).

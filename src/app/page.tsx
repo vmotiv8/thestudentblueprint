@@ -206,6 +206,21 @@ function FamiliesHomePage() {
   const stmtOpacity = useTransform(stmtProgress, [0.1, 0.35, 0.65, 0.9], [0, 1, 1, 0])
   const stmtY = useTransform(stmtProgress, [0.1, 0.35], [60, 0])
 
+  const [checkoutUrl, setCheckoutUrl] = useState('/checkout')
+
+  // Capture referral code from ?ref= query param and build checkout URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) {
+      localStorage.setItem('tsb_ref', ref.toUpperCase().trim())
+    }
+    const storedRef = localStorage.getItem('tsb_ref')
+    if (storedRef) {
+      setCheckoutUrl(`/checkout?ref=${encodeURIComponent(storedRef)}`)
+    }
+  }, [])
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener("scroll", handleScroll)
@@ -303,7 +318,7 @@ function FamiliesHomePage() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
           >
             <Button asChild size="lg" className="bg-[#1E2849] hover:bg-[#1E2849]/90 text-white px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-none transition-all duration-500 shadow-2xl shadow-[#1E2849]/20 tracking-wide">
-              <Link href="/checkout">
+              <Link href={checkoutUrl}>
                 Get My Child&apos;s Roadmap <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
@@ -487,7 +502,7 @@ function FamiliesHomePage() {
             </p>
 
             <Button asChild size="lg" className="bg-[#1E2849] hover:bg-[#1E2849]/90 text-white px-8 sm:px-12 py-5 sm:py-6 h-auto text-sm font-bold rounded-none transition-all duration-500 shadow-2xl shadow-[#1E2849]/20 tracking-wide">
-              <Link href="/checkout">
+              <Link href={checkoutUrl}>
                 Get My Child&apos;s Roadmap <ArrowRight className="ml-3 w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>

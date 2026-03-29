@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       sessionId?: string
       couponCode?: string
       organizationSlug?: string
+      referralCode?: string
     }
     try {
       body = await request.json()
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
     }
 
-    const { fullName, email, phone, sessionId, couponCode, organizationSlug } = body
+    const { fullName, email, phone, sessionId, couponCode, organizationSlug, referralCode } = body
 
     // Validate required fields
     if (!fullName || fullName.trim().length < 2) {
@@ -251,6 +252,47 @@ export async function POST(request: Request) {
 
     if (assessmentError) throw assessmentError
     assessmentId = assessment.id
+
+    // Track referral if referral code provided
+    if (referralCode) {
+      try {
+        const { data: refPartner } = await supabase
+          .from('referral_partners')
+          .select('id')
+          .eq('referral_code', referralCode.toUpperCase().trim())
+          .in('status', ['active', 'invited'])
+          .single()
+
+        if (refPartner) {
+          // Determine sale amount
+          let saleAmount = Number(organization.assessment_price) || 0
+          if (sessionId) {
+            const { data: paymentRecord } = await supabase
+              .from('payments')
+              .select('amount')
+              .eq('stripe_session_id', sessionId)
+              .single()
+            if (paymentRecord?.amount != null) {
+              saleAmount = Number(paymentRecord.amount)
+            }
+          } else if (couponCode || organization.free_assessments) {
+            saleAmount = 0
+          }
+
+          await supabase.from('referral_students').insert({
+            partner_id: refPartner.id,
+            student_email: email.trim(),
+            student_name: trimmedName,
+            payment_status: 'paid',
+            sale_amount: saleAmount,
+            stripe_session_id: sessionId || null,
+          })
+        }
+      } catch (refErr) {
+        console.error('[StudentRegister] Referral tracking error:', refErr)
+        // Non-blocking — don't fail registration for referral issues
+      }
+    }
 
     // Send resume code email (fire and forget — don't block response)
     sendResumeCodeEmail(email.trim(), trimmedName, uniqueCode).catch((err) => {

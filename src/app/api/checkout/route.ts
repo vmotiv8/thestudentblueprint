@@ -5,6 +5,7 @@ import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 import { getOriginFromRequest } from '@/lib/url'
 import { validateRequest, checkoutSchema } from '@/lib/validations'
 import { applyRateLimit } from '@/lib/rate-limit'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   // Apply standard rate limiting for checkout (30 per minute per IP)
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
       return validation.error
     }
 
-    const { email, organization_slug } = validation.data
+    const { email, organization_slug, referral_code } = validation.data
 
     const organization = organization_slug
       ? await getOrganizationBySlug(organization_slug)
@@ -56,7 +57,39 @@ export async function POST(request: Request) {
       )
     }
 
-    const priceInCents = Math.round(assessmentPrice * 100)
+    // Check for referral discount
+    let finalPrice = assessmentPrice
+    let referralPartnerId: string | null = null
+
+    if (referral_code) {
+      const supabase = createServerSupabaseClient()
+      const { data: partner } = await supabase
+        .from('referral_partners')
+        .select(`
+          id,
+          referral_code,
+          status,
+          discount_tier:referral_discount_tiers (
+            id,
+            discount_percent,
+            discounted_price,
+            is_active
+          )
+        `)
+        .eq('referral_code', referral_code)
+        .in('status', ['active', 'invited'])
+        .single()
+
+      if (partner) {
+        const tier = Array.isArray(partner.discount_tier) ? partner.discount_tier[0] : partner.discount_tier
+        if (tier?.is_active && tier.discounted_price != null) {
+          finalPrice = Number(tier.discounted_price)
+          referralPartnerId = partner.id
+        }
+      }
+    }
+
+    const priceInCents = Math.round(finalPrice * 100)
     const origin = getOriginFromRequest(request)
 
     // Build Stripe checkout session options
@@ -83,6 +116,8 @@ export async function POST(request: Request) {
         product: 'assessment',
         organization_id: organization.id,
         organization_slug: organization.slug,
+        ...(referral_code ? { referral_code } : {}),
+        ...(referralPartnerId ? { referral_partner_id: referralPartnerId } : {}),
       },
     }
 

@@ -34,6 +34,13 @@ export default function CheckoutPage() {
   const [tenant, setTenant] = useState<any>(null)
   const [tenantLoaded, setTenantLoaded] = useState(false)
   const [isCustomOrg, setIsCustomOrg] = useState(false)
+  const [referralData, setReferralData] = useState<{
+    partner_name: string
+    discount_percent: number
+    discounted_price: number | null
+    referral_code: string
+    partner_id: string
+  } | null>(null)
 
   // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
   const getOrgSlug = () => {
@@ -65,6 +72,36 @@ export default function CheckoutPage() {
       }
     }
     fetchTenant()
+  }, [])
+
+  // Validate referral code from URL or localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const refFromUrl = params.get('ref')
+    const refCode = refFromUrl?.toUpperCase().trim() || localStorage.getItem('tsb_ref')
+    if (!refCode) return
+
+    // Store it so it persists across navigation
+    localStorage.setItem('tsb_ref', refCode)
+
+    const validateReferral = async () => {
+      try {
+        const res = await fetch(`/api/referral/validate?code=${encodeURIComponent(refCode)}`)
+        const data = await res.json()
+        if (data.valid) {
+          setReferralData({
+            partner_name: data.partner_name,
+            discount_percent: data.discount_percent,
+            discounted_price: data.discounted_price,
+            referral_code: data.referral_code,
+            partner_id: data.partner_id,
+          })
+        }
+      } catch (err) {
+        console.error('Error validating referral code:', err)
+      }
+    }
+    validateReferral()
   }, [])
 
   // Auto-resume if ?code= is in the URL (from email link)
@@ -153,9 +190,10 @@ export default function CheckoutPage() {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email,
-          organization_slug: tenant?.slug 
+          organization_slug: tenant?.slug,
+          referral_code: referralData?.referral_code || undefined,
         }),
       })
 
@@ -327,6 +365,18 @@ export default function CheckoutPage() {
           </p>
         </motion.div>
 
+        {referralData && referralData.discount_percent > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-emerald-50 border border-emerald-200 rounded-xl px-6 py-4 text-center"
+          >
+            <p className="text-emerald-800 font-semibold text-lg">
+              Referred by {referralData.partner_name} &mdash; {referralData.discount_percent}% off!
+            </p>
+          </motion.div>
+        )}
+
         <div className="grid lg:grid-cols-2 gap-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
             <Card className="border-[#e5e0d5] shadow-lg overflow-hidden rounded-xl">
@@ -341,9 +391,20 @@ export default function CheckoutPage() {
               </div>
                 <CardContent className="p-6 pt-8">
                   <div className="mb-8 flex items-baseline gap-2">
-                    <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
-                      ${tenant?.assessment_price || "497"}
-                    </span>
+                    {referralData?.discounted_price != null ? (
+                      <>
+                        <span className="text-2xl font-bold line-through text-[#5a7a9a]/60">
+                          ${tenant?.assessment_price || "497"}
+                        </span>
+                        <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
+                          ${referralData.discounted_price}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
+                        ${tenant?.assessment_price || "497"}
+                      </span>
+                    )}
                     <span className="text-lg text-[#5a7a9a] ml-1">USD</span>
                   </div>
 
@@ -401,7 +462,7 @@ export default function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        Pay ${tenant?.assessment_price || "497"}
+                        Pay ${referralData?.discounted_price != null ? referralData.discounted_price : (tenant?.assessment_price || "497")}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </>
                     )}

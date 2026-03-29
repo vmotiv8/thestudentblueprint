@@ -121,6 +121,7 @@ function SuccessContent() {
           sessionId: sessionId || undefined,
           couponCode: couponCode || undefined,
           organizationSlug: orgSlug || undefined,
+          referralCode: localStorage.getItem('tsb_ref') || undefined,
         }),
       })
 
@@ -136,6 +137,9 @@ function SuccessContent() {
       localStorage.setItem("studentblueprint_student_name", fullName.trim())
       if (phone.trim()) localStorage.setItem("studentblueprint_student_phone", phone.trim())
       localStorage.setItem("studentblueprint_resume_code", data.uniqueCode)
+
+      // Clear referral code after successful registration
+      localStorage.removeItem('tsb_ref')
 
       setUniqueCode(data.uniqueCode)
       setAssessmentId(data.assessmentId)

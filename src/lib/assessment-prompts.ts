@@ -368,9 +368,9 @@ Generate detailed recommendations with the following structure in JSON format:
   },
   "collegeRecommendations": {
     "collegeBreakdown": {
-      "reach": ["EXACTLY 10 reach schools. Format each as 'University Name: 1-2 sentence reason WHY this is a reach for THIS student, referencing their GPA, test scores, extracurriculars, or profile gaps. ALL Ivy League schools (Harvard, Yale, Princeton, Columbia, UPenn, Brown, Dartmouth, Cornell) MUST be in reach."],
-      "target": ["EXACTLY 10 target schools. Format each as 'University Name: 1-2 sentence reason WHY this is a target for THIS student, referencing their academic profile, interests, and competitive advantages.'"],
-      "safety": ["EXACTLY 10 safety schools. Format each as 'University Name: 1-2 sentence reason WHY this is a safety for THIS student, referencing their stats, acceptance rates, and fit.'"]
+      "reach": ["EXACTLY 10 reach schools. ALL Ivy League schools MUST be reach. Format: 'University Name: BRUTALLY HONEST reason why this is a reach — cite the student's SPECIFIC weaknesses (e.g., 3.7 GPA is below Harvard's 3.95 median, no research experience, limited extracurricular leadership, no test scores submitted, acceptance rate is X%). Do NOT flatter — explain why they would likely be rejected without significant improvement.'"],
+      "target": ["EXACTLY 10 target schools. Format: 'University Name: Honest assessment of fit — reference the student's SPECIFIC stats (GPA, scores, activities) vs. the school's median admits. Explain what makes this realistic but not guaranteed (e.g., GPA is competitive but lack of X weakens the application).'"],
+      "safety": ["EXACTLY 10 safety schools. Format: 'University Name: Why this student is likely to be admitted — cite specific stats that exceed the school's median (e.g., student's 3.7 GPA exceeds the school's 3.4 average, acceptance rate is X%, strong fit with their Y program).'"]
     },
     "schoolMatches": [
       { "schoolName": "University Name", "matchScore": 0-100, "why": "Detailed explanation" }
@@ -561,9 +561,9 @@ Generate a comprehensive analysis with the following structure in JSON format:
   },
   "collegeRecommendations": {
     "collegeBreakdown": {
-      "reach": ["EXACTLY 10 reach schools. Format each as 'University Name: 1-2 sentence reason WHY this is a reach for THIS student, referencing their GPA, test scores, extracurriculars, or profile gaps. ALL Ivy League schools (Harvard, Yale, Princeton, Columbia, UPenn, Brown, Dartmouth, Cornell) MUST be in reach."],
-      "target": ["EXACTLY 10 target schools. Format each as 'University Name: 1-2 sentence reason WHY this is a target for THIS student, referencing their academic profile, interests, and competitive advantages.'"],
-      "safety": ["EXACTLY 10 safety schools. Format each as 'University Name: 1-2 sentence reason WHY this is a safety for THIS student, referencing their stats, acceptance rates, and fit.'"]
+      "reach": ["EXACTLY 10 reach schools. ALL Ivy League schools MUST be reach. Format: 'University Name: BRUTALLY HONEST reason why this is a reach — cite the student's SPECIFIC weaknesses (e.g., 3.7 GPA is below Harvard's 3.95 median, no research experience, limited extracurricular leadership, no test scores submitted, acceptance rate is X%). Do NOT flatter — explain why they would likely be rejected without significant improvement.'"],
+      "target": ["EXACTLY 10 target schools. Format: 'University Name: Honest assessment of fit — reference the student's SPECIFIC stats (GPA, scores, activities) vs. the school's median admits. Explain what makes this realistic but not guaranteed (e.g., GPA is competitive but lack of X weakens the application).'"],
+      "safety": ["EXACTLY 10 safety schools. Format: 'University Name: Why this student is likely to be admitted — cite specific stats that exceed the school's median (e.g., student's 3.7 GPA exceeds the school's 3.4 average, acceptance rate is X%, strong fit with their Y program).'"]
     },
     "schoolMatches": [
       { "schoolName": "University Name", "matchScore": 0-100, "why": "Detailed explanation" }

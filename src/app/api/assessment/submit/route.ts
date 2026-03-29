@@ -149,10 +149,10 @@ Generate JSON:
 {
   "academicCoursesRecommendations": { "apCourses": [], "ibCourses": [], "curriculumSpecificCourses": {"label": "curriculum", "courses": []}, "honorsCourses": [], "electivesRecommended": [] },
   "satActGoals": { "targetSATScore": "", "satSectionGoals": {"reading":"","math":""}, "targetACTScore": "", "actSectionGoals": {"english":"","math":"","reading":"","science":""}, "prepStrategy": "", "timeline": "" },
-  "collegeRecommendations": { "collegeBreakdown": { "reach": ["10 schools - format: 'University Name: reason WHY reach for THIS student'. ALL Ivy League schools MUST be reach."], "target": ["10 schools - format: 'University Name: reason WHY target for THIS student'"], "safety": ["10 schools - format: 'University Name: reason WHY safety for THIS student'"] }, "schoolMatches": [{"schoolName":"","matchScore":0,"why":""}] },
+  "collegeRecommendations": { "collegeBreakdown": { "reach": ["10 schools. ALL Ivy League MUST be reach. Format: 'Name: BRUTALLY HONEST why reach — cite student's SPECIFIC weaknesses like low GPA vs median, missing test scores, weak extracurriculars, no research, acceptance rate'"], "target": ["10 schools. Format: 'Name: honest fit assessment — cite student's specific stats vs school's median admits, what's competitive and what's weak'"], "safety": ["10 schools. Format: 'Name: why likely admitted — cite how student's stats exceed school averages, acceptance rate, program fit'"] }, "schoolMatches": [{"schoolName":"","matchScore":0,"why":""}] },
   "careerRecommendations": { "jobTitles": [], "blueOceanIndustries": [{"industry":"","why":""}], "salaryPotential": "", "linkedInBioHeadline": "" }
 }
-Generate 12+ schoolMatches. For EVERY school in reach/target/safety, include a colon-separated reason tied to the student's profile.`, 16000, 60000)
+Generate 12+ schoolMatches. For EVERY school in reach/target/safety, the reason MUST reference the student's actual stats, gaps, and weaknesses — not generic praise about the school's programs.`, 16000, 60000)
     if (phase2.success) { Object.assign(allResults, phase2.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Submit/Sync] Phase 2 failed (non-fatal):`, phase2.error)
 

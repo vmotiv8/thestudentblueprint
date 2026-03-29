@@ -107,6 +107,7 @@ function AssessmentContent() {
   const [currentTestType, setCurrentTestType] = useState<"sat" | "act" | "psat" | null>(null)
   const [showLoadingScreen, setShowLoadingScreen] = useState(false)
   const [tenant, setTenant] = useState<any>(null)
+  const [isCustomOrg, setIsCustomOrg] = useState(false)
 
   useEffect(() => { formDataRef.current = formData }, [formData])
 
@@ -123,6 +124,7 @@ function AssessmentContent() {
     const fetchTenant = async () => {
       try {
         const slug = getOrgSlug()
+        if (slug) setIsCustomOrg(true)
         const apiUrl = slug
           ? `/api/platform/organizations/me?org=${encodeURIComponent(slug)}`
           : '/api/platform/organizations/me'
@@ -3246,7 +3248,7 @@ function AssessmentContent() {
                     className="object-contain"
                   />
                 </div>
-                {tenant?.name ? (
+                {isCustomOrg && tenant?.name ? (
                   <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: tenant.primary_color || "#1E2849" }}>
                     {tenant.name}
                   </span>

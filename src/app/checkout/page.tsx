@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [isCheckingPayment, setIsCheckingPayment] = useState(true)
   const [tenant, setTenant] = useState<any>(null)
   const [tenantLoaded, setTenantLoaded] = useState(false)
+  const [isCustomOrg, setIsCustomOrg] = useState(false)
 
   // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
   const getOrgSlug = () => {
@@ -47,6 +48,7 @@ export default function CheckoutPage() {
     const fetchTenant = async () => {
       try {
         const slug = getOrgSlug()
+        if (slug) setIsCustomOrg(true)
         const apiUrl = slug
           ? `/api/platform/organizations/me?org=${encodeURIComponent(slug)}`
           : '/api/platform/organizations/me'
@@ -289,7 +291,7 @@ export default function CheckoutPage() {
                   className="object-contain group-hover:scale-110 transition-transform" 
                 />
               </div>
-              {tenant?.name ? (
+              {isCustomOrg && tenant?.name ? (
                 <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, color: tenant.primary_color || "#1E2849" }}>
                   {tenant.name}
                 </span>
@@ -332,7 +334,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-3 mb-1">
                   <Sparkles className="w-5 h-5" style={{ color: tenant?.secondary_color || "#c9a227" }} />
                   <h3 className="text-xl font-semibold" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-                    {tenant?.name ? `${tenant.name} Assessment` : "Student Assessment"}
+                    {isCustomOrg && tenant?.name ? `${tenant.name} Assessment` : "Student Blueprint Assessment"}
                   </h3>
                 </div>
                 <p className="text-white/70 text-sm">One-time payment for full access</p>

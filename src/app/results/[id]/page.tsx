@@ -295,7 +295,8 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   // Organization branding colors (with defaults)
   const primaryColor = tenant?.primary_color || "#1e3a5f"
   const secondaryColor = tenant?.secondary_color || "#c9a227"
-  const orgName = tenant?.name || "The Student Blueprint"
+  const isCustomOrg = tenant?.slug && tenant.slug !== 'studentblueprint'
+  const orgName = isCustomOrg ? tenant?.name || "The Student Blueprint" : "The Student Blueprint"
   const logoUrl = tenant?.logo_url
 
   const updateAssessmentState = useCallback((data: Assessment) => {
@@ -809,7 +810,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </div>
               )}
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-base sm:text-xl leading-none tracking-tight truncate" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>{orgName}</span>
+                {isCustomOrg ? (
+                  <span className="font-bold text-base sm:text-xl leading-none tracking-tight truncate" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>{orgName}</span>
+                ) : (
+                  <span className="text-base sm:text-xl leading-none tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
+                  </span>
+                )}
                 <span className="text-[7px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold truncate" style={{ color: secondaryColor }}>Results Portal</span>
               </div>
             </Link>

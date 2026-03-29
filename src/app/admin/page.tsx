@@ -84,6 +84,7 @@ import {
   ClipboardList,
   Link2,
   ChevronLeft,
+  GraduationCap,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -112,6 +113,11 @@ import {
   Cell,
   LineChart,
   Line,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts"
 
 interface Admin {
@@ -194,6 +200,17 @@ const changelogData = [
     type: "feature"
   },
 ]
+
+const shortenArchetype = (text: string | null | undefined): string => {
+  if (!text) return 'Not determined'
+  let short = text
+  if (short.includes(':')) short = short.split(':')[0].trim()
+  if (short.includes('—')) short = short.split('—')[0].trim()
+  if (short.includes(' - ')) short = short.split(' - ')[0].trim()
+  const words = short.split(/\s+/)
+  if (words.length > 6) short = words.slice(0, 5).join(' ')
+  return short
+}
 
 export default function SuperAdminDashboard() {
   const router = useRouter()
@@ -304,6 +321,10 @@ export default function SuperAdminDashboard() {
   const [assessmentInviteName, setAssessmentInviteName] = useState("")
   const [isSendingAssessment, setIsSendingAssessment] = useState(false)
 
+  // Student Details modal state
+  const [showStudentDialog, setShowStudentDialog] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+
   // Analytics/Demographics state
   const [demographics, setDemographics] = useState<{ locations: any[]; genders: any[]; countries: any[] } | null>(null)
 
@@ -392,6 +413,34 @@ export default function SuperAdminDashboard() {
     }
     // Also fetch super admins in parallel
     fetchSuperAdmins()
+  }
+
+  const handleRegenerateReport = async (assessmentId: string) => {
+    if (!confirm("Are you sure you want to regenerate this report? This will create a new analysis based on the current assessment data and send a new email to the student.")) {
+      return
+    }
+
+    toast.loading("Regenerating report... This may take a moment.", { id: "regenerate" })
+
+    try {
+      const response = await fetch("/api/admin/regenerate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentId }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success("Done! Report regenerated successfully.", { id: "regenerate" })
+        fetchData()
+        setShowStudentDialog(false)
+      } else {
+        toast.error(data.error || "Failed to regenerate report", { id: "regenerate" })
+      }
+    } catch {
+      toast.error("Failed to regenerate report", { id: "regenerate" })
+    }
   }
 
   const handleSendAssessment = async () => {
@@ -2534,7 +2583,10 @@ export default function SuperAdminDashboard() {
                                       variant="ghost"
                                       className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
                                       title="View Results"
-                                      onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                                      onClick={() => {
+                                        setSelectedStudent(assessment)
+                                        setShowStudentDialog(true)
+                                      }}
                                     >
                                       <Eye className="w-4 h-4" />
                                     </Button>
@@ -3749,6 +3801,339 @@ export default function SuperAdminDashboard() {
               Send Assessment Link
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Details Modal */}
+      <Dialog open={showStudentDialog} onOpenChange={setShowStudentDialog}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-[#c9a227]" />
+              Student Details
+            </DialogTitle>
+            <DialogDescription>
+              Comprehensive profile and analysis for this student
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStudent && (
+            <Tabs defaultValue="analysis" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="analysis">Analysis & Profile</TabsTrigger>
+                <TabsTrigger value="answers">Raw Answers</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="analysis" className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Full Name</Label>
+                      <p className="font-semibold text-[#1e3a5f] text-lg">{selectedStudent.student?.full_name || selectedStudent.responses?.basicInfo?.fullName || "—"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Email</Label>
+                      <p className="text-[#1e3a5f]">{selectedStudent.student?.email || selectedStudent.responses?.basicInfo?.email || "—"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Parent Name</Label>
+                      <p className="text-[#1e3a5f]">{selectedStudent.responses?.basicInfo?.parentName || "—"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Parent Email</Label>
+                      <p className="text-[#1e3a5f]">{selectedStudent.student?.parent_email || selectedStudent.responses?.basicInfo?.parentEmail || "—"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Parent Phone</Label>
+                      <p className="text-[#1e3a5f]">{selectedStudent.student?.parent_phone || selectedStudent.responses?.basicInfo?.parentPhone || "—"}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-[#5a7a9a] text-xs">Date of Birth</Label>
+                        <p className="text-[#1e3a5f]">{selectedStudent.responses?.basicInfo?.dateOfBirth || "—"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-[#5a7a9a] text-xs">Gender</Label>
+                        <p className="text-[#1e3a5f]">{selectedStudent.responses?.basicInfo?.gender || "—"}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-[#5a7a9a] text-xs">Grade</Label>
+                        <p className="text-[#1e3a5f]">{selectedStudent.student?.grade_level || selectedStudent.responses?.basicInfo?.currentGrade || "—"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-[#5a7a9a] text-xs">Target Year</Label>
+                        <p className="text-[#1e3a5f]">{selectedStudent.student?.metadata?.targetCollegeYear || selectedStudent.responses?.basicInfo?.targetCollegeYear || "—"}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">School</Label>
+                      <p className="text-[#1e3a5f]">{selectedStudent.student?.school_name || selectedStudent.responses?.basicInfo?.schoolName || "—"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Address</Label>
+                      <p className="text-[#1e3a5f]">
+                        {[selectedStudent.responses?.basicInfo?.address, selectedStudent.responses?.basicInfo?.city, selectedStudent.responses?.basicInfo?.state, selectedStudent.responses?.basicInfo?.country].filter(Boolean).join(", ") || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-[#5a7a9a] text-xs">Ethnicity</Label>
+                      <p className="text-[#1e3a5f]">{selectedStudent.responses?.basicInfo?.ethnicity || "—"}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-br from-[#1e3a5f] to-[#2d4a6f] rounded-xl p-4 text-white">
+                      <p className="text-white/60 text-xs mb-1">Student Archetype</p>
+                      <p className="text-xl font-bold text-[#c9a227]">{shortenArchetype(selectedStudent.student_archetype)}</p>
+                    </div>
+
+                    <div className="bg-[#f0ece3] rounded-xl p-4">
+                      <p className="text-[#5a7a9a] text-xs mb-1">Competitiveness Score</p>
+                      <div className="flex items-end gap-2">
+                        <span className="text-4xl font-bold text-[#1e3a5f]">
+                          {selectedStudent.competitiveness_score || "—"}
+                        </span>
+                        {selectedStudent.competitiveness_score && (
+                          <span className="text-[#5a7a9a] mb-1">/ 100</span>
+                        )}
+                      </div>
+                      {selectedStudent.competitiveness_score && (
+                        <Progress value={selectedStudent.competitiveness_score} className="mt-2" />
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white border border-[#e5e0d5] rounded-lg p-3">
+                        <p className="text-[#5a7a9a] text-xs">Status</p>
+                        {selectedStudent.status === 'completed' ? (
+                          <Badge className="bg-green-100 text-green-700 border-0 mt-1">Completed</Badge>
+                        ) : (
+                          <Badge className="bg-amber-100 text-amber-700 border-0 mt-1">Section {selectedStudent.current_section}/15</Badge>
+                        )}
+                      </div>
+                      <div className="bg-white border border-[#e5e0d5] rounded-lg p-3">
+                        <p className="text-[#5a7a9a] text-xs">Payment</p>
+                        {selectedStudent.coupon_code ? (
+                          <Badge className="bg-purple-100 text-purple-700 border-0 mt-1">{selectedStudent.coupon_code}</Badge>
+                        ) : (selectedStudent.payment_status === "completed" || selectedStudent.payment_status === "paid" || selectedStudent.payment_status === "free") ? (
+                          <Badge className="bg-green-100 text-green-700 border-0 mt-1">{selectedStudent.payment_status === "free" ? "Free" : "Paid"}</Badge>
+                        ) : (
+                          <Badge className="bg-gray-100 text-gray-600 border-0 mt-1">Unpaid</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedStudent.archetype_scores && (
+                  <div>
+                    <Label className="text-[#5a7a9a] text-xs mb-3 block">Archetype Scores</Label>
+                    <div className="h-[250px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart data={[
+                          { subject: "Visionary", score: selectedStudent.archetype_scores.Visionary || 0, fullMark: 100 },
+                          { subject: "Builder", score: selectedStudent.archetype_scores.Builder || 0, fullMark: 100 },
+                          { subject: "Healer", score: selectedStudent.archetype_scores.Healer || 0, fullMark: 100 },
+                          { subject: "Analyst", score: selectedStudent.archetype_scores.Analyst || 0, fullMark: 100 },
+                          { subject: "Artist", score: selectedStudent.archetype_scores.Artist || 0, fullMark: 100 },
+                          { subject: "Advocate", score: selectedStudent.archetype_scores.Advocate || 0, fullMark: 100 },
+                          { subject: "Entrepreneur", score: selectedStudent.archetype_scores.Entrepreneur || 0, fullMark: 100 },
+                          { subject: "Researcher", score: selectedStudent.archetype_scores.Researcher || 0, fullMark: 100 },
+                        ]}>
+                          <PolarGrid stroke="#e5e0d5" />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: "#5a7a9a", fontSize: 11 }} />
+                          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#5a7a9a" }} />
+                          <Radar name="Score" dataKey="score" stroke="#1e3a5f" fill="#c9a227" fillOpacity={0.5} />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {selectedStudent.strengths_analysis && (
+                  <div>
+                    <Label className="text-[#5a7a9a] text-xs mb-2 block">Strengths Analysis</Label>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <ul className="space-y-1">
+                        {(selectedStudent.strengths_analysis as any).competitiveAdvantages?.map((s: string, i: number) => (
+                          <li key={i} className="text-sm text-green-800 flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {selectedStudent.gap_analysis && (
+                  <div>
+                    <Label className="text-[#5a7a9a] text-xs mb-2 block">Gap Analysis</Label>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <ul className="space-y-1">
+                        {(selectedStudent.gap_analysis as any).missingElements?.map((g: string, i: number) => (
+                          <li key={i} className="text-sm text-amber-800 flex items-start gap-2">
+                            <Target className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            {g}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-[#e5e0d5]">
+                  {selectedStudent.status === 'completed' && (
+                    <>
+                      <Button
+                        onClick={() => window.open(`/results/${selectedStudent.id}`, "_blank")}
+                        className="bg-[#1e3a5f] hover:bg-[#152a45]"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Results
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => window.open(`/api/pdf/${selectedStudent.id}`, "_blank")}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download PDF
+                      </Button>
+                      {isSuperAdmin && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleRegenerateReport(selectedStudent.id)}
+                          className="border-[#c9a227] text-[#c9a227] hover:bg-[#c9a227]/10"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Regenerate Report
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  <Button variant="outline" onClick={() => copyToClipboard(selectedStudent.student?.unique_code || "")}>
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Resume Code
+                  </Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="answers">
+                <div className="space-y-8">
+                  {[
+                    { title: "Section 1: Basic Information", data: selectedStudent.responses?.basicInfo, fieldOrder: ["fullName", "email", "parentName", "parentEmail", "parentPhone", "dateOfBirth", "gender", "ethnicity", "currentGrade", "schoolName", "address", "city", "state", "country", "targetCollegeYear", "dreamSchools"] },
+                    { title: "Section 2: Academic Profile", data: selectedStudent.responses?.academicProfile, fieldOrder: ["curriculum", "gpaScale", "gpaUnweighted", "gpaWeighted", "coursesTaken", "coursesPlanned", "regularCoursesTaken", "regularCoursesPlanned", "favoriteSubjects", "academicAwards", "apScores"] },
+                    { title: "Section 3: Standardized Testing", data: selectedStudent.responses?.testingInfo, fieldOrder: ["satScore", "actScore", "apScores", "ibScores", "satSubjectTests"] },
+                    { title: "Section 4: Extracurricular Activities", data: selectedStudent.responses?.extracurriculars, fieldOrder: ["noExtracurriculars", "activities"] },
+                    { title: "Section 5: Leadership Experience", data: selectedStudent.responses?.leadership },
+                    { title: "Section 6: Competitions & Awards", data: selectedStudent.responses?.competitions },
+                    { title: "Section 7: Passions & Interests", data: selectedStudent.responses?.passions, fieldOrder: ["topicsYouLove", "industriesCurious", "hobbies", "booksMedia"] },
+                    { title: "Section 8: Career Aspirations", data: selectedStudent.responses?.careerAspirations, fieldOrder: ["career1", "career2", "career3", "dreamJobTitle", "dreamJobDescription", "careerStatement"] },
+                    { title: "Section 9: Research Experience", data: selectedStudent.responses?.researchExperience },
+                    { title: "Section 10: Summer Programs", data: selectedStudent.responses?.summerPrograms, fieldOrder: ["noSummerPrograms", "programs"] },
+                    { title: "Section 11: Special Talents", data: selectedStudent.responses?.specialTalents },
+                    { title: "Section 12: Family Context", data: selectedStudent.responses?.familyContext, fieldOrder: ["fatherProfession", "motherProfession", "siblingProfessions", "legacyEntries", "financialAidNeeded", "financialAidDetails"] },
+                    { title: "Section 13: Personality", data: selectedStudent.responses?.personality, fieldOrder: ["archetype", "introvertExtrovert", "learningStyle", "strengthsWeaknesses", "workStyle"] },
+                    { title: "Section 14: Personal Stories", data: selectedStudent.responses?.personalStories, fieldOrder: ["definingMoment", "biggestChallenge", "proudestAchievement", "communityImpact", "uniqueBackground"] },
+                    { title: "Section 15: Time Commitment", data: selectedStudent.responses?.timeCommitment },
+                  ].map((section, idx) => (
+                    <div key={idx} className="space-y-3">
+                      <h3 className="text-lg font-bold text-[#1e3a5f] border-b border-[#e5e0d5] pb-2">
+                        {section.title}
+                      </h3>
+                      {section.data ? (
+                        <div className="grid grid-cols-1 gap-4">
+                          {(() => {
+                            const entries = Object.entries(section.data as Record<string, unknown>)
+                            const orderedEntries = section.fieldOrder
+                              ? section.fieldOrder
+                                  .filter((key: string) => entries.some(([k]) => k === key))
+                                  .map((key: string) => [key, (section.data as Record<string, unknown>)[key]] as [string, unknown])
+                                  .concat(entries.filter(([k]) => !section.fieldOrder!.includes(k)))
+                              : entries
+                            return orderedEntries
+                          })().map(([key, value]) => {
+                            if (value === null || value === undefined || value === "") return null
+                            if (key === "noLeadershipExperience" || key === "noCompetitions" || key === "noResearchExperience") return null
+
+                            const labelMap: Record<string, string> = {
+                              fullName: "Full Name", email: "Email", parentName: "Parent Name", parentEmail: "Parent Email",
+                              parentPhone: "Parent Phone", dateOfBirth: "Date of Birth", currentGrade: "Current Grade",
+                              schoolName: "School Name", address: "Home Address", city: "City", state: "State",
+                              country: "Country", targetCollegeYear: "Target College Year", gender: "Gender",
+                              ethnicity: "Ethnicity", dreamSchools: "Dream Schools", gpaScale: "GPA Scale",
+                              gpaUnweighted: "GPA (Unweighted)", gpaWeighted: "GPA (Weighted)", curriculum: "Curriculum",
+                              coursesTaken: "Advanced Courses Taken", coursesPlanned: "Advanced Courses Planned",
+                              regularCoursesTaken: "Regular Courses Taken", regularCoursesPlanned: "Regular Courses Planned",
+                              favoriteSubjects: "Favorite Subjects", academicAwards: "Academic Awards",
+                              apScores: "AP/IB Scores", satScore: "SAT Score", actScore: "ACT Score",
+                              noExtracurriculars: "No Extracurriculars", noSummerPrograms: "No Summer Programs",
+                              topicsYouLove: "Topics You Love", industriesCurious: "Industries Curious About",
+                              dreamJobTitle: "Dream Job Title", dreamJobDescription: "Dream Job Description",
+                              careerStatement: "Career Statement", fatherProfession: "Father's Profession",
+                              motherProfession: "Mother's Profession", siblingProfessions: "Sibling Professions",
+                              legacyEntries: "Legacy Entries", financialAidNeeded: "Financial Aid Needed",
+                              financialAidDetails: "Financial Aid Details", introvertExtrovert: "Introvert / Extrovert",
+                              learningStyle: "Learning Style", strengthsWeaknesses: "Strengths & Weaknesses",
+                              definingMoment: "Defining Moment", biggestChallenge: "Biggest Challenge",
+                              proudestAchievement: "Proudest Achievement", communityImpact: "Community Impact",
+                              uniqueBackground: "Unique Background", workStyle: "Work Style",
+                              hobbies: "Hobbies", booksMedia: "Books & Media",
+                            }
+                            const displayLabel = labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()
+
+                            return (
+                              <div key={key} className="bg-white border border-[#e5e0d5] rounded-lg p-4">
+                                <Label className="text-[#5a7a9a] text-xs uppercase tracking-wider mb-1 block">
+                                  {displayLabel}
+                                </Label>
+                                <div className="text-[#1e3a5f] text-sm whitespace-pre-wrap">
+                                  {Array.isArray(value) ? (
+                                    <ul className="list-disc pl-4 space-y-2">
+                                      {value.map((item: any, i: number) => (
+                                        <li key={i}>
+                                          {typeof item === 'object' ? (
+                                            <div className="grid grid-cols-1 gap-1">
+                                              {Object.entries(item).map(([k, v]) => (
+                                                <div key={k} className="flex gap-2">
+                                                  <span className="font-semibold text-xs min-w-[100px]">{k}:</span>
+                                                  <span>{String(v)}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            String(item)
+                                          )}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : typeof value === 'object' ? (
+                                    <div className="grid grid-cols-1 gap-1">
+                                      {Object.entries(value as Record<string, unknown>).map(([k, v]) => (
+                                        <div key={k} className="flex gap-2">
+                                          <span className="font-semibold text-xs min-w-[100px]">{k}:</span>
+                                          <span>{String(v)}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    String(value)
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[#5a7a9a] italic">No data available for this section.</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
         </DialogContent>
       </Dialog>
     </div>

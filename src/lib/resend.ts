@@ -1406,3 +1406,120 @@ export async function sendRevisionEmail(
     return { success: false, error }
   }
 }
+
+export async function sendPartnerWelcomeEmail(
+  to: string,
+  partnerName: string,
+  referralCode: string,
+  setupPasswordUrl: string
+) {
+  const safePartnerName = escapeHtml(partnerName)
+  const safeReferralCode = escapeHtml(referralCode)
+  const appUrl = getAppUrl()
+  const referralLink = `${appUrl}/?ref=${encodeURIComponent(referralCode)}`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to The Student Blueprint Partner Program</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+          <tr>
+            <td style="background-color: #1e3a5f; padding: 60px 40px 50px; text-align: center;">
+              <div style="font-size: 64px; line-height: 1; margin-bottom: 24px;">🤝</div>
+              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
+              <p style="margin: 12px 0 0; color: #c9a227; font-size: 18px; font-weight: 600;">Partner Program</p>
+              <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 50px 40px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="margin: 0 0 16px; color: #1e3a5f; font-size: 28px; font-weight: 700;">Welcome, ${safePartnerName}!</h2>
+                <p style="margin: 0; color: #5a7a9a; font-size: 17px; line-height: 1.7; max-width: 500px; margin: 0 auto;">
+                  You've been invited as a referral partner for The Student Blueprint. Share your unique link and earn <strong style="color: #c9a227;">20% commission</strong> on every sale.
+                </p>
+              </div>
+
+              <div style="background-color: #c9a227; border-radius: 20px; padding: 3px; margin: 30px 0;">
+                <div style="background-color: #fef9e7; border-radius: 18px; padding: 30px; text-align: center;">
+                  <p style="margin: 0 0 8px; color: #1e3a5f; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Your Referral Code</p>
+                  <h3 style="margin: 0 0 16px; color: #1e3a5f; font-size: 42px; font-weight: 800; letter-spacing: 6px; font-family: 'Courier New', monospace;">${safeReferralCode}</h3>
+                  <p style="margin: 0; color: #5a7a9a; font-size: 14px;">Share this link with students:</p>
+                  <p style="margin: 8px 0 0; color: #c9a227; font-size: 16px; font-weight: 700; word-break: break-all;">${escapeHtml(referralLink)}</p>
+                </div>
+              </div>
+
+              <div style="background-color: #f8f6f1; border-radius: 16px; padding: 30px; margin: 30px 0;">
+                <h3 style="margin: 0 0 20px; color: #1e3a5f; font-size: 18px; font-weight: 700;">How It Works</h3>
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr><td style="padding: 8px 0; color: #5a7a9a; font-size: 15px; line-height: 1.6;">
+                    <strong style="color: #c9a227;">1.</strong> Share your unique referral link with students and families
+                  </td></tr>
+                  <tr><td style="padding: 8px 0; color: #5a7a9a; font-size: 15px; line-height: 1.6;">
+                    <strong style="color: #c9a227;">2.</strong> Students who use your link get an exclusive discount
+                  </td></tr>
+                  <tr><td style="padding: 8px 0; color: #5a7a9a; font-size: 15px; line-height: 1.6;">
+                    <strong style="color: #c9a227;">3.</strong> You earn 20% commission on every completed purchase
+                  </td></tr>
+                  <tr><td style="padding: 8px 0; color: #5a7a9a; font-size: 15px; line-height: 1.6;">
+                    <strong style="color: #c9a227;">4.</strong> Track your earnings and manage payouts from your partner dashboard
+                  </td></tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${escapeHtml(setupPasswordUrl)}" style="display: inline-block; background-color: #c9a227; color: #1e3a5f; padding: 18px 48px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 17px;">
+                  Set Up Your Password →
+                </a>
+                <p style="margin: 16px 0 0; color: #5a7a9a; font-size: 13px;">
+                  Set up your password to access your partner dashboard at<br>
+                  <a href="${appUrl}/partner/login" style="color: #c9a227; font-weight: 600;">${appUrl}/partner/login</a>
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700;">The Student Blueprint</h4>
+              <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Partner Program</p>
+              <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: '🤝 Welcome to The Student Blueprint Partner Program',
+      html
+    })
+
+    await logEmailSend('partner-welcome', to, !error, error)
+
+    if (error) {
+      console.error('Partner welcome email error:', error)
+      return { success: false, error }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Failed to send partner welcome email:', error)
+    await logEmailSend('partner-welcome', to, false, error)
+    return { success: false, error }
+  }
+}

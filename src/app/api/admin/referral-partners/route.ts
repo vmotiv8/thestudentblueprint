@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
+import crypto from "crypto"
 import { createServerSupabaseClient } from "@/lib/supabase"
 import { getAdminAuth } from "@/lib/admin-auth"
 import { logAction } from "@/lib/audit"
-// Partner invite emails not yet implemented for this project
+import { sendPartnerWelcomeEmail } from "@/lib/resend"
+import { getAppUrl } from "@/lib/url"
 
 function generateReferralCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -148,7 +150,19 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // TODO: Send invite email to partner
+  // Generate setup-password token and send welcome email
+  const setupToken = crypto.randomUUID()
+  const setupTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
+  await supabase
+    .from("referral_partners")
+    .update({ setup_token: setupToken, setup_token_expires_at: setupTokenExpiry })
+    .eq("id", partner.id)
+
+  const appUrl = getAppUrl()
+  const setupPasswordUrl = `${appUrl}/partner/setup-password?token=${setupToken}`
+
+  await sendPartnerWelcomeEmail(email.toLowerCase(), name, code, setupPasswordUrl)
 
   await logAction({
     adminId: auth.adminId,
@@ -192,8 +206,18 @@ export async function PATCH(request: Request) {
       .single()
 
     if (partner) {
-      // TODO: Send invite email to partner
-      console.log("Resend invite requested for:", partner.email)
+      const setupToken = crypto.randomUUID()
+      const setupTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      await supabase
+        .from("referral_partners")
+        .update({ setup_token: setupToken, setup_token_expires_at: setupTokenExpiry })
+        .eq("id", id)
+
+      const appUrl = getAppUrl()
+      const setupPasswordUrl = `${appUrl}/partner/setup-password?token=${setupToken}`
+
+      await sendPartnerWelcomeEmail(partner.email, partner.name, partner.referral_code, setupPasswordUrl)
     }
     return NextResponse.json({ success: true })
   }

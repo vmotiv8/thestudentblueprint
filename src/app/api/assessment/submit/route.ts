@@ -169,7 +169,7 @@ Generate JSON:
   "mentorRecommendations": { "mentors": [{"name":"","university":"","department":"","why":""}] },
   "wasteOfTimeActivities": { "activities": [{"activity":"","whyQuit":""}] }
 }
-Generate exactly 3 passion projects. Generate 5+ mentors.`, 10000, 60000)
+Generate exactly 3 passion projects. Generate 5+ mentors. RESEARCH TOPICS: Generate EXACTLY 5 PhD-level, unexplored research topics that correlate with the student's interests. Format each as "Concise Title: Detailed description with methodology, target variable/outcome, and real-world application."`, 10000, 60000)
     if (phase3.success) { Object.assign(allResults, phase3.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Submit/Sync] Phase 3 failed (non-fatal):`, phase3.error)
 

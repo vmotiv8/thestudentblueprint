@@ -293,7 +293,7 @@ Generate detailed recommendations with the following structure in JSON format:
     "timeline": "When to take tests"
   },
   "researchPublicationsRecommendations": {
-    "researchTopics": ["4-5 specific research topics"],
+    "researchTopics": ["string - EXACTLY 5 topics. Format: 'Concise Title (5-10 words): Detailed description with methodology, scope, and application'. MUST be PhD-level, HIGHLY SPECIFIC, and UNEXPLORED. Each must include: specific methodology, target variable/outcome, and real-world application. Must correlate with the student's interests and career goals. Example: 'Drug Synergy via Graph Networks: Developing GNN to predict synergistic drug combinations for triple-negative breast cancer via protein-protein interaction networks.'"],
     "publicationOpportunities": ["3-4 publication venues"],
     "mentorshipSuggestions": ["3-4 strategies for finding mentors"],
     "timeline": "Timeline for research activities"
@@ -486,7 +486,7 @@ Generate a comprehensive analysis with the following structure in JSON format:
     "timeline": "When to take tests"
   },
   "researchPublicationsRecommendations": {
-    "researchTopics": ["4-5 specific research topics"],
+    "researchTopics": ["string - EXACTLY 5 topics. Format: 'Concise Title (5-10 words): Detailed description with methodology, scope, and application'. MUST be PhD-level, HIGHLY SPECIFIC, and UNEXPLORED. Each must include: specific methodology, target variable/outcome, and real-world application. Must correlate with the student's interests and career goals. Example: 'Drug Synergy via Graph Networks: Developing GNN to predict synergistic drug combinations for triple-negative breast cancer via protein-protein interaction networks.'"],
     "publicationOpportunities": ["3-4 publication venues"],
     "mentorshipSuggestions": ["3-4 strategies for finding mentors"],
     "timeline": "Timeline for research activities"

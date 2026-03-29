@@ -73,7 +73,7 @@ Generate DETAILED JSON:
     }
   ],
   "researchPublicationsRecommendations": {
-    "researchTopics": ["5-7 SPECIFIC PhD-level research topics"],
+    "researchTopics": ["string - EXACTLY 5 topics. Format: 'Concise Title (5-10 words): Detailed description with methodology, scope, and application'. MUST be PhD-level, HIGHLY SPECIFIC, and UNEXPLORED. Each must include: specific methodology, target variable/outcome, and real-world application. Must correlate with the student's interests and career goals. Example: 'Drug Synergy via Graph Networks: Developing GNN to predict synergistic drug combinations for triple-negative breast cancer via protein-protein interaction networks.'"],
     "publicationOpportunities": ["5-6 REAL journals and conferences for high school students"],
     "mentorshipSuggestions": ["4-5 specific strategies to find research mentors"],
     "timeline": "Detailed research timeline"

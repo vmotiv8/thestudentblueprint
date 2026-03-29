@@ -212,6 +212,85 @@ const shortenArchetype = (text: string | null | undefined): string => {
   return short
 }
 
+function AddPartnerDialog({ open, onOpenChange, referralTiers, onCreated }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  referralTiers: { id: string; label: string; is_active: boolean }[]
+  onCreated: () => void
+}) {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [organization, setOrganization] = useState("")
+  const [referralCode, setReferralCode] = useState("")
+  const [isCreating, setIsCreating] = useState(false)
+
+  const handleCreate = async () => {
+    if (!name || !email) { toast.error("Name and email required"); return }
+    setIsCreating(true)
+    try {
+      const res = await fetch("/api/admin/referral-partners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          organization: organization || null,
+          discount_tier_id: referralTiers.length > 0 ? referralTiers[0].id : null,
+          referral_code: referralCode || undefined,
+        }),
+      })
+      if (res.ok) {
+        toast.success("Partner created")
+        setName(""); setEmail(""); setOrganization(""); setReferralCode("")
+        onOpenChange(false)
+        onCreated()
+      } else {
+        const d = await res.json()
+        toast.error(d.error || "Failed to create partner")
+      }
+    } catch { toast.error("Failed to create partner") }
+    finally { setIsCreating(false) }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add Referral Partner</DialogTitle>
+          <DialogDescription>Create a new referral partner</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 mt-4">
+          <div>
+            <Label className="text-sm font-bold">Full Name *</Label>
+            <Input placeholder="e.g., John Smith" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 border-[#e5e0d5]" />
+          </div>
+          <div>
+            <Label className="text-sm font-bold">Email *</Label>
+            <Input type="email" placeholder="e.g., john@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 border-[#e5e0d5]" />
+          </div>
+          <div>
+            <Label className="text-sm font-bold">Organization (Optional)</Label>
+            <Input placeholder="e.g., ABC Tutoring" value={organization} onChange={(e) => setOrganization(e.target.value)} className="mt-1 border-[#e5e0d5]" />
+          </div>
+          <div>
+            <Label className="text-sm font-bold">Custom Referral Code (Optional)</Label>
+            <Input placeholder="Auto-generated if blank" value={referralCode} onChange={(e) => setReferralCode(e.target.value.toUpperCase())} className="mt-1 border-[#e5e0d5]" />
+          </div>
+          {referralTiers.length > 0 && (
+            <div className="rounded-lg bg-[#faf8f3] border border-[#e5e0d5] p-3 text-xs text-[#5a7a9a]">
+              Available coupon codes: {referralTiers.filter(t => t.is_active).map(t => t.label).join(", ") || "None active"}
+            </div>
+          )}
+          <Button className="w-full bg-[#0a192f] hover:bg-[#0a192f]/90 text-white font-bold" onClick={handleCreate} disabled={isCreating}>
+            {isCreating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Create Partner
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function SuperAdminDashboard() {
   const router = useRouter()
   const [admin, setAdmin] = useState<Admin | null>(null)
@@ -336,9 +415,7 @@ export default function SuperAdminDashboard() {
   const [showAddTierForm, setShowAddTierForm] = useState(false)
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false)
   const [isCreatingTier, setIsCreatingTier] = useState(false)
-  const [isCreatingPartner, setIsCreatingPartner] = useState(false)
   const [newTier, setNewTier] = useState({ label: "", discount_percent: "" })
-  const [newPartner, setNewPartner] = useState({ name: "", email: "", organization: "", referral_code: "" })
 
   const isSuperAdmin = admin?.role === 'super_admin'
 
@@ -691,33 +768,6 @@ export default function SuperAdminDashboard() {
     } catch { toast.error("Failed to delete tier") }
   }
 
-  const handleCreatePartner = async () => {
-    if (!newPartner.name || !newPartner.email) { toast.error("Name and email required"); return }
-    setIsCreatingPartner(true)
-    try {
-      const res = await fetch("/api/admin/referral-partners", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newPartner.name,
-          email: newPartner.email,
-          organization: newPartner.organization || null,
-          discount_tier_id: referralTiers.length > 0 ? referralTiers[0].id : null,
-          referral_code: newPartner.referral_code || undefined,
-        }),
-      })
-      if (res.ok) {
-        toast.success("Partner created")
-        setNewPartner({ name: "", email: "", organization: "", referral_code: "" })
-        setShowAddPartnerForm(false)
-        fetchReferralData()
-      } else {
-        const d = await res.json()
-        toast.error(d.error || "Failed to create partner")
-      }
-    } catch { toast.error("Failed to create partner") }
-    finally { setIsCreatingPartner(false) }
-  }
 
   const handleDeletePartner = async (id: string) => {
     try {
@@ -3076,42 +3126,13 @@ export default function SuperAdminDashboard() {
                     </Button>
                   </div>
 
-                  {/* Add Partner Dialog */}
-                  <Dialog open={showAddPartnerForm} onOpenChange={setShowAddPartnerForm}>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Add Referral Partner</DialogTitle>
-                        <DialogDescription>Create a new referral partner</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 mt-4">
-                        <div>
-                          <Label className="text-sm font-bold">Full Name *</Label>
-                          <Input placeholder="e.g., John Smith" value={newPartner.name} onChange={(e) => setNewPartner({ ...newPartner, name: e.target.value })} className="mt-1 border-[#e5e0d5]" />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-bold">Email *</Label>
-                          <Input type="email" placeholder="e.g., john@example.com" value={newPartner.email} onChange={(e) => setNewPartner({ ...newPartner, email: e.target.value })} className="mt-1 border-[#e5e0d5]" />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-bold">Organization (Optional)</Label>
-                          <Input placeholder="e.g., ABC Tutoring" value={newPartner.organization} onChange={(e) => setNewPartner({ ...newPartner, organization: e.target.value })} className="mt-1 border-[#e5e0d5]" />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-bold">Custom Referral Code (Optional)</Label>
-                          <Input placeholder="Auto-generated if blank" value={newPartner.referral_code} onChange={(e) => setNewPartner({ ...newPartner, referral_code: e.target.value.toUpperCase() })} className="mt-1 border-[#e5e0d5]" />
-                        </div>
-                        {referralTiers.length > 0 && (
-                          <div className="rounded-lg bg-[#faf8f3] border border-[#e5e0d5] p-3 text-xs text-[#5a7a9a]">
-                            Available coupon codes: {referralTiers.filter(t => t.is_active).map(t => t.label).join(", ") || "None active"}
-                          </div>
-                        )}
-                        <Button className="w-full bg-[#0a192f] hover:bg-[#0a192f]/90 text-white font-bold" onClick={handleCreatePartner} disabled={isCreatingPartner}>
-                          {isCreatingPartner ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                          Create Partner
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  {/* Add Partner Dialog — isolated to prevent re-renders of entire page */}
+                  <AddPartnerDialog
+                    open={showAddPartnerForm}
+                    onOpenChange={setShowAddPartnerForm}
+                    referralTiers={referralTiers}
+                    onCreated={fetchReferralData}
+                  />
 
                   <Card className="border-[#e5e0d5]">
                     <CardContent className="p-0">

@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       .from("admins")
       .select("id, email, role")
       .eq("id", adminSession)
+      .eq("is_active", true)
       .single()
 
     if (adminError || !currentAdmin) {

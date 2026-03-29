@@ -21,7 +21,7 @@ export async function callAI(
   // Try Gemini first
   const geminiKey = process.env.GEMINI_API_KEY
   if (geminiKey) {
-    const result = await callGemini(prompt, timeoutMs)
+    const result = await callGemini(prompt, maxTokens, timeoutMs)
     if (result.success) return result
     console.warn('[AI] Gemini failed, falling back to Claude')
   } else {
@@ -40,6 +40,7 @@ export async function callAI(
 
 async function callGemini(
   prompt: string,
+  maxTokens: number,
   timeoutMs: number,
 ): Promise<AIResult> {
   const apiKey = process.env.GEMINI_API_KEY
@@ -56,6 +57,7 @@ async function callGemini(
           contents: prompt,
           config: {
             responseMimeType: 'application/json',
+            maxOutputTokens: maxTokens,
           },
         }),
         new Promise<never>((_, reject) =>

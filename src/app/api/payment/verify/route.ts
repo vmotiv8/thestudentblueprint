@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       // First check our database
       const { data: payment } = await supabase
         .from('payments')
-        .select('*')
+        .select('id, email, status, stripe_session_id')
         .eq('stripe_session_id', sessionId)
         .single()
 
@@ -38,18 +38,38 @@ export async function GET(request: Request) {
         const session = await stripe.checkout.sessions.retrieve(sessionId)
         
         if (session.payment_status === 'paid') {
-          // Update our database to avoid redundant Stripe calls
+          const paidEmail = session.customer_details?.email || payment?.email
+
+          // Update payments table
           await supabase
             .from('payments')
-            .update({ 
+            .update({
               status: 'completed',
-              email: session.customer_details?.email || payment?.email
+              email: paidEmail
             })
             .eq('stripe_session_id', sessionId)
 
-          return NextResponse.json({ 
-            paid: true, 
-            email: session.customer_details?.email || payment?.email
+          // Also update assessment payment_status so submit route accepts it
+          if (paidEmail) {
+            const { data: student } = await supabase
+              .from('students')
+              .select('id')
+              .eq('email', paidEmail.toLowerCase())
+              .limit(1)
+              .maybeSingle()
+
+            if (student) {
+              await supabase
+                .from('assessments')
+                .update({ payment_status: 'paid' })
+                .eq('student_id', student.id)
+                .in('payment_status', ['unpaid', 'pending'])
+            }
+          }
+
+          return NextResponse.json({
+            paid: true,
+            email: paidEmail
           })
         }
       } catch (stripeError) {
@@ -60,7 +80,7 @@ export async function GET(request: Request) {
     if (email) {
       const { data: payment } = await supabase
         .from('payments')
-        .select('*')
+        .select('id, email, status')
         .eq('email', email.toLowerCase())
         .eq('status', 'completed')
         .limit(1)

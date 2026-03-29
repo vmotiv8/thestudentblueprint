@@ -3,11 +3,16 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 import { sendResumeCodeEmail } from '@/lib/resend'
+import { applyRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
+  // Issue #2: Rate limiting
+  const rateLimitResponse = await applyRateLimit(request, 'standard', 'student-register')
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
-    const body = await request.json()
-    const { fullName, email, phone, sessionId, couponCode, organizationSlug } = body as {
+    // Issue #4: Wrap request.json() in try/catch
+    let body: {
       fullName: string
       email: string
       phone?: string
@@ -15,6 +20,14 @@ export async function POST(request: Request) {
       couponCode?: string
       organizationSlug?: string
     }
+    try {
+      body = await request.json()
+    } catch (e) {
+      console.error('[StudentRegister] Invalid JSON body:', e)
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
+    }
+
+    const { fullName, email, phone, sessionId, couponCode, organizationSlug } = body
 
     // Validate required fields
     if (!fullName || fullName.trim().length < 2) {
@@ -75,6 +88,18 @@ export async function POST(request: Request) {
       }
 
       paymentStatus = coupon.discount_type === 'free' ? 'free' : 'paid'
+
+      // Issue #1: Increment coupon usage with optimistic lock
+      const previousUses = coupon.current_uses || 0
+      const { error: incrementError } = await supabase
+        .from('coupons')
+        .update({ current_uses: previousUses + 1 })
+        .eq('id', coupon.id)
+        .eq('current_uses', previousUses)
+
+      if (incrementError) {
+        return NextResponse.json({ error: 'Coupon usage conflict. Please try again.' }, { status: 409 })
+      }
     }
 
     // Check org student limits
@@ -166,6 +191,7 @@ export async function POST(request: Request) {
     // Check for existing in-progress assessment
     let assessmentId: string
 
+    // Issue #3: Deduplicated assessment insert — resolve existing or fall through to single insert
     if (existingStudent) {
       const { data: existingAssessment } = await supabase
         .from('assessments')
@@ -186,58 +212,45 @@ export async function POST(request: Request) {
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingAssessment.id)
-      } else {
-        // Create new assessment for existing student
-        const { data: assessment, error: assessmentError } = await supabase
-          .from('assessments')
-          .insert({
-            organization_id: organization.id,
-            student_id: studentId,
-            status: 'in_progress',
-            current_section: 1,
-            payment_status: paymentStatus,
-            coupon_code: couponCode ? couponCode.toUpperCase() : null,
-            responses: {
-              basicInfo: {
-                fullName: trimmedName,
-                email: email.trim(),
-                phone: phone?.trim() || '',
-              },
-            },
-            started_at: new Date().toISOString(),
-          })
-          .select('id')
-          .single()
 
-        if (assessmentError) throw assessmentError
-        assessmentId = assessment.id
-      }
-    } else {
-      // Create new assessment for new student
-      const { data: assessment, error: assessmentError } = await supabase
-        .from('assessments')
-        .insert({
-          organization_id: organization.id,
-          student_id: studentId,
-          status: 'in_progress',
-          current_section: 1,
-          payment_status: paymentStatus,
-          coupon_code: couponCode ? couponCode.toUpperCase() : null,
-          responses: {
-            basicInfo: {
-              fullName: trimmedName,
-              email: email.trim(),
-              phone: phone?.trim() || '',
-            },
-          },
-          started_at: new Date().toISOString(),
+        // Send resume code email (fire and forget — don't block response)
+        sendResumeCodeEmail(email.trim(), trimmedName, uniqueCode).catch((err) => {
+          console.error('[StudentRegister] Failed to send resume code email:', err)
         })
-        .select('id')
-        .single()
 
-      if (assessmentError) throw assessmentError
-      assessmentId = assessment.id
+        return NextResponse.json({
+          success: true,
+          studentId,
+          assessmentId,
+          uniqueCode,
+        })
+      }
     }
+
+    // Single assessment insert for both new students and existing students without an in-progress assessment
+    const { data: assessment, error: assessmentError } = await supabase
+      .from('assessments')
+      .insert({
+        organization_id: organization.id,
+        student_id: studentId,
+        status: 'in_progress',
+        current_section: 1,
+        payment_status: paymentStatus,
+        coupon_code: couponCode ? couponCode.toUpperCase() : null,
+        responses: {
+          basicInfo: {
+            fullName: trimmedName,
+            email: email.trim(),
+            phone: phone?.trim() || '',
+          },
+        },
+        started_at: new Date().toISOString(),
+      })
+      .select('id')
+      .single()
+
+    if (assessmentError) throw assessmentError
+    assessmentId = assessment.id
 
     // Send resume code email (fire and forget — don't block response)
     sendResumeCodeEmail(email.trim(), trimmedName, uniqueCode).catch((err) => {
@@ -251,7 +264,17 @@ export async function POST(request: Request) {
       uniqueCode,
     })
   } catch (error) {
-    console.error('[StudentRegister] Error:', error)
+    // Issue #5: Structured error logging
+    const err = error as { message?: string; code?: string; details?: string; hint?: string; stack?: string }
+    const errorMessage = err.message || (error instanceof Error ? error.message : JSON.stringify(error))
+    console.error('[StudentRegister] Error:', {
+      message: errorMessage,
+      code: err.code,
+      details: err.details,
+      hint: err.hint,
+      stack: err.stack || (error instanceof Error ? error.stack : undefined),
+      timestamp: new Date().toISOString(),
+    })
     return NextResponse.json(
       { error: 'Failed to register student. Please try again.' },
       { status: 500 }

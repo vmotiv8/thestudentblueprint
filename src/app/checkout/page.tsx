@@ -25,8 +25,6 @@ import Image from "next/image"
 export default function CheckoutPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
-  const [fullName, setFullName] = useState("")
-  const [phone, setPhone] = useState("")
   const [couponCode, setCouponCode] = useState("")
   const [resumeCode, setResumeCode] = useState("")
   const [isResuming, setIsResuming] = useState(false)
@@ -201,25 +199,6 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleFreeStart = () => {
-    if (!fullName.trim()) {
-      toast.error("Please enter your full name")
-      return
-    }
-    if (!email.trim()) {
-      toast.error("Please enter your email address")
-      return
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      toast.error("Please enter a valid email address")
-      return
-    }
-    const params = new URLSearchParams()
-    params.set("free", "true")
-    if (tenant?.slug) params.set("org", tenant.slug)
-    router.push(`/payment/success?${params.toString()}`)
-  }
-
   const handleCouponSubmit = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code")
@@ -268,8 +247,6 @@ export default function CheckoutPage() {
   ]
 
   const primaryColor = tenant?.primary_color || "#1e3a5f"
-  const secondaryColor = tenant?.secondary_color || "#c9a227"
-  const orgName = tenant?.name || "The Student Blueprint"
 
   if (isCheckingPayment) {
     return (

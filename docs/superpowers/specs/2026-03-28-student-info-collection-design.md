@@ -56,7 +56,18 @@ All flows route to `/payment/success` with different query params:
 
 ### Coupon Flow Changes
 
-Currently, when a valid 100% coupon is applied on the checkout page, it bypasses payment. This flow needs to redirect to `/payment/success?coupon=CODE&email=EMAIL` instead of going directly to the assessment. The checkout page already has the student's email from the email input field.
+Currently, when a valid coupon that makes the transaction free is applied on the checkout page, `handleCouponSubmit()` (line ~247 in `checkout/page.tsx`) redirects directly to `/assessment`, completely bypassing the payment success page and info collection.
+
+**Change:** After successful coupon validation, redirect to `/payment/success?coupon=CODE&email=EMAIL&org=SLUG` instead of `/assessment`. The payment success page detects the `coupon` query param, skips Stripe verification, shows the "Welcome!" variant header (not "Payment Successful!"), and presents the same info collection form with email pre-filled but editable.
+
+Specifically in `handleCouponSubmit()`, replace:
+```
+router.push(`/assessment${orgParam}`)
+```
+with:
+```
+router.push(`/payment/success?coupon=${data.code}&email=${encodeURIComponent(email)}${orgParam ? `&${orgParam.slice(1)}` : ''}`)
+```
 
 ### Free Org Flow Changes
 

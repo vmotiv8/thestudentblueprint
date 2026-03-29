@@ -1302,3 +1302,107 @@ export async function sendResumeReminderEmail(props: {
     return { success: false, error }
   }
 }
+
+export async function sendRevisionEmail(
+  to: string,
+  studentName: string,
+  uniqueCode: string,
+  adminMessage?: string
+) {
+  const resumeUrl = buildUrl('/resume')
+  const safeStudentName = escapeHtml(studentName)
+  const safeUniqueCode = escapeHtml(uniqueCode)
+
+  const messageBlock = adminMessage
+    ? `<div style="background-color: #fff3cd; border-left: 4px solid #c9a227; border-radius: 12px; padding: 24px; margin: 30px 0;">
+        <p style="margin: 0 0 8px; color: #1e3a5f; font-weight: 700; font-size: 16px;">Message from your counselor:</p>
+        <p style="margin: 0; color: #5a7a9a; font-size: 15px; line-height: 1.7;">${escapeHtml(adminMessage)}</p>
+      </div>`
+    : ''
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Action Required: Please Update Your Assessment</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #1e3a5f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 60px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+          <tr>
+            <td style="background-color: #1e3a5f; padding: 60px 40px 50px; text-align: center;">
+              <div style="font-size: 64px; line-height: 1; margin-bottom: 24px;">✏️</div>
+              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">The Student Blueprint</h1>
+              <p style="margin: 12px 0 0; color: #c9a227; font-size: 18px; font-weight: 600;">Assessment Update Requested</p>
+              <div style="width: 60px; height: 3px; background-color: #c9a227; margin: 16px auto 0;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 50px 40px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="margin: 0 0 16px; color: #1e3a5f; font-size: 28px; font-weight: 700;">Hi ${safeStudentName}!</h2>
+                <p style="margin: 0; color: #5a7a9a; font-size: 17px; line-height: 1.7; max-width: 500px; margin: 0 auto;">
+                  Your assessment has been sent back for revisions. Please review and update your responses, then resubmit to get your updated personalized roadmap.
+                </p>
+              </div>
+              ${messageBlock}
+              <div style="background-color: #c9a227; border-radius: 20px; padding: 3px; margin: 40px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="background-color: #fef9e7; border-radius: 18px; padding: 40px; text-align: center;">
+                  <div style="display: inline-block; background-color: #f4e4b8; border-radius: 12px; padding: 8px 20px; margin-bottom: 16px;">
+                    <p style="margin: 0; color: #1e3a5f; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Your Resume Code</p>
+                  </div>
+                  <h3 style="margin: 0; color: #1e3a5f; font-size: 48px; font-weight: 800; letter-spacing: 8px; font-family: 'Courier New', monospace;">${safeUniqueCode}</h3>
+                </div>
+              </div>
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${resumeUrl}" style="display: inline-block; background-color: #c9a227; color: #1e3a5f; padding: 18px 48px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 17px;">Edit My Assessment →</a>
+              </div>
+              <div style="background-color: #f8f6f1; border-left: 4px solid #c9a227; border-radius: 12px; padding: 24px; margin-top: 40px;">
+                <p style="margin: 0; color: #5a7a9a; font-size: 15px; line-height: 1.7;">
+                  <strong style="color: #1e3a5f; font-size: 16px;">📝 How to edit:</strong><br>
+                  Visit the link above or go to <a href="${resumeUrl}" style="color: #c9a227; font-weight: 600;">${resumeUrl}</a>, enter your resume code <strong style="color: #c9a227; font-family: 'Courier New', monospace;">${safeUniqueCode}</strong>, make your changes, and resubmit.
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #1e3a5f; padding: 40px; text-align: center; border-top: 1px solid #c9a227;">
+              <h4 style="margin: 0 0 8px; color: #c9a227; font-size: 20px; font-weight: 700;">The Student Blueprint</h4>
+              <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
+              <div style="width: 40px; height: 2px; background-color: #c9a227; margin: 20px auto 0;"></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: '✏️ Action Required: Please Update Your Assessment',
+      html
+    })
+
+    await logEmailSend('revision', to, !error, error)
+
+    if (error) {
+      console.error('Revision email error:', error)
+      return { success: false, error }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Failed to send revision email:', error)
+    await logEmailSend('revision', to, false, error)
+    return { success: false, error }
+  }
+}

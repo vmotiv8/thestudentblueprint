@@ -443,6 +443,34 @@ export default function SuperAdminDashboard() {
     }
   }
 
+  const handleSendBackForRevision = async (assessmentId: string) => {
+    const message = prompt("Optional: Add a message for the student explaining what needs to be updated (leave blank to skip):")
+    if (message === null) return
+
+    toast.loading("Sending assessment back for revision...", { id: "revision" })
+
+    try {
+      const response = await fetch("/api/admin/send-back-for-revision", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentId, message: message || undefined }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success(data.message, { id: "revision" })
+        fetchData()
+        setShowStudentDialog(false)
+      } else {
+        toast.error(data.error || "Failed to send back for revision", { id: "revision" })
+      }
+    } catch (err) {
+      console.error("Send back for revision error:", err)
+      toast.error("Failed to send back for revision", { id: "revision" })
+    }
+  }
+
   const handleSendAssessment = async () => {
     if (!assessmentInviteEmail.trim()) { toast.error("Email is required"); return }
     setIsSendingAssessment(true)
@@ -4010,6 +4038,14 @@ export default function SuperAdminDashboard() {
                           Regenerate Report
                         </Button>
                       )}
+                      <Button
+                        variant="outline"
+                        onClick={() => handleSendBackForRevision(selectedStudent.id)}
+                        className="border-amber-500 text-amber-600 hover:bg-amber-50"
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        Send Back for Revision
+                      </Button>
                     </>
                   )}
                   <Button variant="outline" onClick={() => copyToClipboard(selectedStudent.student?.unique_code || "")}>

@@ -794,6 +794,24 @@ export default function SuperAdminDashboard() {
     } catch { toast.error("Failed to update") }
   }
 
+  const handleClearPayment = async (partnerId: string, partnerName: string, unpaidBalance: number) => {
+    const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(unpaidBalance)
+    if (!confirm(`Mark ${formatted} as paid out to ${partnerName}?`)) return
+    try {
+      const res = await fetch("/api/admin/referral-commissions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partner_id: partnerId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to clear payment")
+      toast.success(`Cleared ${data.cleared_count} commission(s) totaling ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.cleared_amount)}`)
+      fetchReferralData()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to clear payment")
+    }
+  }
+
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 
   const handleLogout = async () => {
@@ -3185,9 +3203,16 @@ export default function SuperAdminDashboard() {
                               <TableCell><span className="text-sm font-bold">{partner.student_count || 0}</span></TableCell>
                               <TableCell><span className="text-sm font-bold text-green-600">{partner.completed_count || 0}</span></TableCell>
                               <TableCell>
-                                <span className={`text-sm font-bold ${(partner.unpaid_balance || 0) > 0 ? 'text-amber-600' : 'text-[#5a7a9a]'}`}>
-                                  {formatCurrency(partner.unpaid_balance || 0)}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-sm font-bold ${(partner.unpaid_balance || 0) > 0 ? 'text-amber-600' : 'text-[#5a7a9a]'}`}>
+                                    {formatCurrency(partner.unpaid_balance || 0)}
+                                  </span>
+                                  {(partner.unpaid_balance || 0) > 0 && (
+                                    <Button size="sm" variant="outline" className="h-6 px-2 text-[10px] font-bold border-amber-300 text-amber-700 hover:bg-amber-50" onClick={() => handleClearPayment(partner.id, partner.name, partner.unpaid_balance)}>
+                                      Clear Payment
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell>
                                 <Switch checked={partner.can_view_results} onCheckedChange={(v) => handleToggleResultsAccess(partner.id, v)} />

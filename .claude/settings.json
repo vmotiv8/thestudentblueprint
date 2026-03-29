@@ -50,7 +50,14 @@
       "Read(//Users/vish/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
       "Bash(/Users/vish/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6/skills/brainstorming/scripts/start-server.sh --project-dir /Users/vish/Documents/Platforms/thestudentblueprint)",
       "Bash(ls /Users/vish/Documents/Platforms/thestudentblueprint/src/components/Navbar*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint -path */supabase/* -name *.sql)",
+      "Bash(grep -n \"grade_level\\\\|counselor\\\\|payment_status\\\\|assessment_status\" /Users/vish/Documents/Platforms/thestudentblueprint/migrations/*.sql)",
+      "Read(//Users/vish/Documents/Platforms/**)",
+      "Bash(cp \"/Users/vish/Documents/Platforms/VMotiv8 Roadmap/vmotiv8roadmap-master/src/app/api/admin/referral-tiers/route.ts\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/admin/referral-tiers/route.ts)",
+      "Bash(cp \"/Users/vish/Documents/Platforms/VMotiv8 Roadmap/vmotiv8roadmap-master/src/app/api/admin/referral-partners/route.ts\" /Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/admin/referral-partners/route.ts)",
+      "Bash(cp \"/Users/vish/Documents/Platforms/VMotiv8 Roadmap/vmotiv8roadmap-master/supabase/migrations/001_referral_system.sql\" /Users/vish/Documents/Platforms/thestudentblueprint/supabase/migrations/001_referral_system.sql)",
+      "Bash(grep -E \"^[a-z-]+$\")"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

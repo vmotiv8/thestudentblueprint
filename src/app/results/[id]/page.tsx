@@ -1930,6 +1930,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                               }
                               return <p>{prep}</p>
                             })()}
+                            <div className="mt-3 p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg">
+                              <p className="text-sm text-[#1e3a5f] font-medium">
+                                Join <a href="https://vmotiv8.com" target="_blank" rel="noopener noreferrer" className="text-[#c9a227] font-bold hover:underline">VMotiv8</a> Intense Prep to secure a 1500+ SAT or 34+ ACT.
+                              </p>
+                            </div>
                           </div>
                         </AccordionContent>
                       </AccordionItem>

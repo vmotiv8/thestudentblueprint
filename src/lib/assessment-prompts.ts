@@ -368,12 +368,12 @@ Generate detailed recommendations with the following structure in JSON format:
   },
   "collegeRecommendations": {
     "collegeBreakdown": {
-      "reach": ["3 reach schools"],
-      "target": ["3 target schools"],
-      "safety": ["3 safety schools"]
+      "reach": ["EXACTLY 10 reach schools. Format each as 'University Name: 1-2 sentence reason WHY this is a reach for THIS student, referencing their GPA, test scores, extracurriculars, or profile gaps. ALL Ivy League schools (Harvard, Yale, Princeton, Columbia, UPenn, Brown, Dartmouth, Cornell) MUST be in reach."],
+      "target": ["EXACTLY 10 target schools. Format each as 'University Name: 1-2 sentence reason WHY this is a target for THIS student, referencing their academic profile, interests, and competitive advantages.'"],
+      "safety": ["EXACTLY 10 safety schools. Format each as 'University Name: 1-2 sentence reason WHY this is a safety for THIS student, referencing their stats, acceptance rates, and fit.'"]
     },
     "schoolMatches": [
-      { "schoolName": "University Name", "matchScore": number 0-100, "why": "Detailed explanation" }
+      { "schoolName": "University Name", "matchScore": 0-100, "why": "Detailed explanation" }
     ]
   },
   "mentorRecommendations": {
@@ -561,12 +561,12 @@ Generate a comprehensive analysis with the following structure in JSON format:
   },
   "collegeRecommendations": {
     "collegeBreakdown": {
-      "reach": ["3 reach schools"],
-      "target": ["3 target schools"],
-      "safety": ["3 safety schools"]
+      "reach": ["EXACTLY 10 reach schools. Format each as 'University Name: 1-2 sentence reason WHY this is a reach for THIS student, referencing their GPA, test scores, extracurriculars, or profile gaps. ALL Ivy League schools (Harvard, Yale, Princeton, Columbia, UPenn, Brown, Dartmouth, Cornell) MUST be in reach."],
+      "target": ["EXACTLY 10 target schools. Format each as 'University Name: 1-2 sentence reason WHY this is a target for THIS student, referencing their academic profile, interests, and competitive advantages.'"],
+      "safety": ["EXACTLY 10 safety schools. Format each as 'University Name: 1-2 sentence reason WHY this is a safety for THIS student, referencing their stats, acceptance rates, and fit.'"]
     },
     "schoolMatches": [
-      { "schoolName": "University Name", "matchScore": number 0-100, "why": "Detailed explanation" }
+      { "schoolName": "University Name", "matchScore": 0-100, "why": "Detailed explanation" }
     ]
   },
   "mentorRecommendations": {

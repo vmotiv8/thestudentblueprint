@@ -149,10 +149,10 @@ Generate JSON:
 {
   "academicCoursesRecommendations": { "apCourses": [], "ibCourses": [], "curriculumSpecificCourses": {"label": "curriculum", "courses": []}, "honorsCourses": [], "electivesRecommended": [] },
   "satActGoals": { "targetSATScore": "", "satSectionGoals": {"reading":"","math":""}, "targetACTScore": "", "actSectionGoals": {"english":"","math":"","reading":"","science":""}, "prepStrategy": "", "timeline": "" },
-  "collegeRecommendations": { "collegeBreakdown": { "reach": ["10 schools"], "target": ["10 schools"], "safety": ["10 schools"] }, "schoolMatches": [{"schoolName":"","matchScore":0,"why":""}] },
+  "collegeRecommendations": { "collegeBreakdown": { "reach": ["10 schools - format: 'University Name: reason WHY reach for THIS student'. ALL Ivy League schools MUST be reach."], "target": ["10 schools - format: 'University Name: reason WHY target for THIS student'"], "safety": ["10 schools - format: 'University Name: reason WHY safety for THIS student'"] }, "schoolMatches": [{"schoolName":"","matchScore":0,"why":""}] },
   "careerRecommendations": { "jobTitles": [], "blueOceanIndustries": [{"industry":"","why":""}], "salaryPotential": "", "linkedInBioHeadline": "" }
 }
-Generate 12+ schoolMatches.`, 16000, 60000)
+Generate 12+ schoolMatches. For EVERY school in reach/target/safety, include a colon-separated reason tied to the student's profile.`, 16000, 60000)
     if (phase2.success) { Object.assign(allResults, phase2.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Submit/Sync] Phase 2 failed (non-fatal):`, phase2.error)
 

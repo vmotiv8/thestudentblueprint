@@ -114,6 +114,19 @@ Changes needed in `src/app/assessment/page.tsx`:
 - Section 1 still displays normally — fields are pre-filled but editable
 - No sections are skipped
 
+### Frontend: Resume Code Visibility in Assessment
+
+The resume code should be persistently visible during the assessment so students can note it anytime.
+
+**Top-right display:** Show the resume code in the assessment page header/nav area (top-right). Small, non-intrusive format — e.g., a pill/badge like `Resume Code: K7PH3N` with a copy-to-clipboard icon. Visible on all sections, not just Section 1.
+
+**Save popup:** When the save confirmation dialog/toast appears after saving progress, include the resume code prominently. E.g., "Progress saved! Your resume code: **K7PH3N**" so the student is reminded of it each time they save.
+
+The resume code is available from:
+- `localStorage.studentblueprint_resume_code` (set during registration)
+- The `/api/assessment/save` response already returns `uniqueCode`
+- The assessment state (loaded on resume)
+
 ### localStorage Updates
 
 On successful student registration (State 1 → State 2 transition), set:
@@ -156,6 +169,6 @@ Form validation: name required (min 2 chars), email required (valid format), pho
 |------|--------|
 | `src/app/payment/success/page.tsx` | Add info form (State 1), resume code display (State 2) |
 | `src/app/checkout/page.tsx` | Redirect coupon/free flows to payment success page |
-| `src/app/assessment/page.tsx` | Auto-fill basicInfo from student record on load |
+| `src/app/assessment/page.tsx` | Auto-fill basicInfo from student record on load; show resume code in top-right header and in save confirmation popup |
 | `src/app/api/student/register/route.ts` | **New** — student creation + resume code generation + email |
 | `src/app/api/payment/verify/route.ts` | Possibly return student info if already registered |

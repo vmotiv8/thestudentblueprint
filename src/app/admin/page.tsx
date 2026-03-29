@@ -298,6 +298,12 @@ export default function SuperAdminDashboard() {
     discountValue: ""
   })
 
+  // Send Assessment state
+  const [showSendAssessmentDialog, setShowSendAssessmentDialog] = useState(false)
+  const [assessmentInviteEmail, setAssessmentInviteEmail] = useState("")
+  const [assessmentInviteName, setAssessmentInviteName] = useState("")
+  const [isSendingAssessment, setIsSendingAssessment] = useState(false)
+
   // Analytics/Demographics state
   const [demographics, setDemographics] = useState<{ locations: any[]; genders: any[]; countries: any[] } | null>(null)
 
@@ -386,6 +392,31 @@ export default function SuperAdminDashboard() {
     }
     // Also fetch super admins in parallel
     fetchSuperAdmins()
+  }
+
+  const handleSendAssessment = async () => {
+    if (!assessmentInviteEmail.trim()) { toast.error("Email is required"); return }
+    setIsSendingAssessment(true)
+    try {
+      const res = await fetch("/api/admin/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: assessmentInviteEmail, studentName: assessmentInviteName || undefined }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(`Assessment invitation sent to ${assessmentInviteEmail}`)
+        setShowSendAssessmentDialog(false)
+        setAssessmentInviteEmail("")
+        setAssessmentInviteName("")
+      } else {
+        toast.error(data.error || "Failed to send invitation")
+      }
+    } catch {
+      toast.error("Failed to send invitation")
+    } finally {
+      setIsSendingAssessment(false)
+    }
   }
 
   const fetchAnalytics = async () => {
@@ -1102,6 +1133,10 @@ export default function SuperAdminDashboard() {
               <Button variant="outline" className="border-[#e5e0d5]" onClick={fetchData} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
+              </Button>
+              <Button variant="outline" className="border-[#0a192f] text-[#0a192f] hover:bg-[#0a192f] hover:text-white" onClick={() => setShowSendAssessmentDialog(true)}>
+                <Send className="w-4 h-4 mr-2" />
+                Send Assessment
               </Button>
               <Dialog open={showCreateOrgDialog} onOpenChange={setShowCreateOrgDialog}>
                 <DialogTrigger asChild>
@@ -3669,6 +3704,49 @@ export default function SuperAdminDashboard() {
                 <ExternalLink className="w-4 h-4 mr-2" />
               )}
               Create & Open Demo
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Assessment Dialog */}
+      <Dialog open={showSendAssessmentDialog} onOpenChange={setShowSendAssessmentDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Assessment Invitation</DialogTitle>
+            <DialogDescription>Send a direct B2C assessment link to a student or family</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="text-sm font-bold">Student / Parent Name (Optional)</Label>
+              <Input
+                placeholder="e.g., John Smith"
+                value={assessmentInviteName}
+                onChange={(e) => setAssessmentInviteName(e.target.value)}
+                className="mt-1 border-[#e5e0d5]"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-bold">Email Address *</Label>
+              <Input
+                type="email"
+                placeholder="student@example.com"
+                value={assessmentInviteEmail}
+                onChange={(e) => setAssessmentInviteEmail(e.target.value)}
+                className="mt-1 border-[#e5e0d5]"
+              />
+            </div>
+            <div className="rounded-lg bg-[#faf8f3] border border-[#e5e0d5] p-3 text-xs text-[#5a7a9a]">
+              <p className="font-bold text-[#0a192f] mb-1">What gets sent:</p>
+              <p>An email with a link to <strong>thestudentblueprint.com/checkout</strong> where they can purchase the $497 assessment directly.</p>
+            </div>
+            <Button
+              className="w-full bg-[#0a192f] hover:bg-[#0a192f]/90 text-white font-bold"
+              onClick={handleSendAssessment}
+              disabled={isSendingAssessment || !assessmentInviteEmail}
+            >
+              {isSendingAssessment ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+              Send Assessment Link
             </Button>
           </div>
         </DialogContent>

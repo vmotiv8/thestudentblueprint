@@ -156,7 +156,7 @@ export async function POST(request: Request) {
 
   await supabase
     .from("referral_partners")
-    .update({ setup_token: setupToken, setup_token_expires_at: setupTokenExpiry })
+    .update({ password_setup_token: setupToken, password_setup_expires: setupTokenExpiry })
     .eq("id", partner.id)
 
   const appUrl = getAppUrl()
@@ -211,7 +211,7 @@ export async function PATCH(request: Request) {
 
       await supabase
         .from("referral_partners")
-        .update({ setup_token: setupToken, setup_token_expires_at: setupTokenExpiry })
+        .update({ password_setup_token: setupToken, password_setup_expires: setupTokenExpiry })
         .eq("id", id)
 
       const appUrl = getAppUrl()

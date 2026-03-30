@@ -640,7 +640,7 @@ export default function SuperAdminDashboard() {
         body: JSON.stringify({
           assessmentId,
           formData: demoFormData,
-          organization_slug: undefined,
+          reanalyze: true,
         }),
       })
       if (!submitRes.ok) throw new Error("Failed to submit for AI analysis")

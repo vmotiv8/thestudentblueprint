@@ -2841,20 +2841,20 @@ export default function SuperAdminDashboard() {
                             </TableCell>
                             <TableCell className="px-6">
                               <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                  title="Student Details"
+                                  onClick={() => {
+                                    setSelectedStudent(assessment)
+                                    setShowStudentDialog(true)
+                                  }}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
                                 {(assessment.status === 'completed' || assessment.status === 'partial') && (
                                   <>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
-                                      title="View Results"
-                                      onClick={() => {
-                                        setSelectedStudent(assessment)
-                                        setShowStudentDialog(true)
-                                      }}
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
                                     <Button
                                       size="sm"
                                       variant="ghost"

@@ -22,12 +22,47 @@ export async function GET() {
       return NextResponse.json({ error: 'Partner not found' }, { status: 404 })
     }
 
-    // Get referred students
-    const { data: students } = await supabase
+    // Get referred students with their assessment status
+    const { data: rawStudents } = await supabase
       .from('referral_students')
       .select('*')
       .eq('partner_id', auth.partnerId)
       .order('created_at', { ascending: false })
+
+    // Enrich with actual assessment data (completion status, assessment ID for results link)
+    const students = await Promise.all((rawStudents || []).map(async (rs) => {
+      if (!rs.student_email) return rs
+
+      // Find the student and their latest assessment
+      const { data: studentRecord } = await supabase
+        .from('students')
+        .select(`
+          id,
+          assessments (
+            id,
+            status,
+            student_archetype,
+            competitiveness_score,
+            completed_at
+          )
+        `)
+        .eq('email', rs.student_email)
+        .maybeSingle()
+
+      const assessments = (studentRecord?.assessments || []) as { id: string; status: string; student_archetype: string | null; competitiveness_score: number | null; completed_at: string | null }[]
+      const latestAssessment = assessments.sort((a, b) =>
+        new Date(b.completed_at || 0).getTime() - new Date(a.completed_at || 0).getTime()
+      )[0]
+
+      return {
+        ...rs,
+        assessment_id: latestAssessment?.id || null,
+        assessment_status: latestAssessment?.status || 'not_started',
+        student_archetype: latestAssessment?.student_archetype || null,
+        competitiveness_score: latestAssessment?.competitiveness_score || null,
+        completed_at: latestAssessment?.completed_at || null,
+      }
+    }))
 
     // Get commissions
     const { data: commissions } = await supabase

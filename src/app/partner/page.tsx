@@ -31,6 +31,11 @@ interface Student {
   commission_amount: number | null
   completed: boolean
   created_at: string
+  assessment_id: string | null
+  assessment_status: string
+  student_archetype: string | null
+  competitiveness_score: number | null
+  completed_at: string | null
 }
 
 interface Commission {
@@ -309,37 +314,60 @@ export default function PartnerDashboardPage() {
                     <thead>
                       <tr className="border-b border-[#e5e0d5]">
                         <th className="text-left py-3 px-2 text-[#5a7a9a] font-medium">Student Name</th>
-                        <th className="text-left py-3 px-2 text-[#5a7a9a] font-medium">Payment Status</th>
-                        <th className="text-right py-3 px-2 text-[#5a7a9a] font-medium">Sale Amount</th>
+                        <th className="text-left py-3 px-2 text-[#5a7a9a] font-medium">Assessment Status</th>
+                        <th className="text-right py-3 px-2 text-[#5a7a9a] font-medium">Score</th>
                         <th className="text-right py-3 px-2 text-[#5a7a9a] font-medium">Commission</th>
                         <th className="text-right py-3 px-2 text-[#5a7a9a] font-medium">Date</th>
+                        <th className="text-center py-3 px-2 text-[#5a7a9a] font-medium">Results</th>
                       </tr>
                     </thead>
                     <tbody>
                       {students.map((student) => (
                         <tr key={student.id} className="border-b border-[#e5e0d5]/50 hover:bg-[#faf8f3]">
-                          <td className="py-3 px-2 text-[#1e3a5f] font-medium">{student.student_name}</td>
+                          <td className="py-3 px-2">
+                            <div className="text-[#1e3a5f] font-medium">{student.student_name}</div>
+                            {student.student_archetype && (
+                              <div className="text-xs text-[#c9a227]">{student.student_archetype}</div>
+                            )}
+                          </td>
                           <td className="py-3 px-2">
                             <Badge
-                              variant={student.payment_status === "paid" ? "default" : "secondary"}
                               className={
-                                student.payment_status === "paid"
+                                student.assessment_status === "completed"
                                   ? "bg-green-100 text-green-700 hover:bg-green-100"
-                                  : student.payment_status === "pending"
+                                  : student.assessment_status === "in_progress"
+                                  ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
+                                  : student.assessment_status === "partial"
                                   ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
                                   : "bg-gray-100 text-gray-600 hover:bg-gray-100"
                               }
                             >
-                              {student.payment_status || "unknown"}
+                              {student.assessment_status === "completed" ? "Completed" :
+                               student.assessment_status === "in_progress" ? "In Progress" :
+                               student.assessment_status === "partial" ? "Partial" : "Not Started"}
                             </Badge>
                           </td>
-                          <td className="py-3 px-2 text-right text-[#1e3a5f]">
-                            {student.sale_amount != null ? formatCurrency(student.sale_amount) : "---"}
+                          <td className="py-3 px-2 text-right text-[#1e3a5f] font-medium">
+                            {student.competitiveness_score != null ? `${student.competitiveness_score}/100` : "---"}
                           </td>
                           <td className="py-3 px-2 text-right text-[#c9a227] font-medium">
                             {student.commission_amount != null ? formatCurrency(student.commission_amount) : "---"}
                           </td>
                           <td className="py-3 px-2 text-right text-[#5a7a9a]">{formatDate(student.created_at)}</td>
+                          <td className="py-3 px-2 text-center">
+                            {student.assessment_status === "completed" && student.assessment_id ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white"
+                                onClick={() => window.open(`/results/${student.assessment_id}`, '_blank')}
+                              >
+                                View
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-[#5a7a9a]">---</span>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

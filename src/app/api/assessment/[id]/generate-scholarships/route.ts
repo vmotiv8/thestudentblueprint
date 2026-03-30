@@ -21,8 +21,18 @@ export async function POST(
     const adminId = cookieStore.get('admin_session')?.value
     const verifiedEmail = cookieStore.get('verified_email')?.value
 
+    // Allow access if admin, verified email, or valid assessment UUID (same policy as /api/assessment/[id])
+    // The UUID is unguessable and only shared with the student
     if (!adminId && !verifiedEmail) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      // Verify the assessment exists before proceeding (UUID acts as access token)
+      const { data: check } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('id', assessmentId)
+        .single()
+      if (!check) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      }
     }
 
     // Fetch assessment

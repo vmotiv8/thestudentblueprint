@@ -29,7 +29,14 @@ export async function POST(
     const verifiedEmail = cookieStore.get('verified_email')?.value
 
     if (!adminId && !verifiedEmail) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      const { data: check } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('id', assessmentId)
+        .single()
+      if (!check) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      }
     }
 
     // Atomic lock: only proceed if status is 'partial' and phase2 isn't already running

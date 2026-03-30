@@ -4263,9 +4263,16 @@ export default function SuperAdminDashboard() {
                       </Button>
                     </>
                   )}
-                  <Button variant="outline" onClick={() => copyToClipboard(selectedStudent.student?.unique_code || "")}>
+                  <Button variant="outline" onClick={() => {
+                    const code = selectedStudent.student?.unique_code
+                    if (code) {
+                      copyToClipboard(code)
+                    } else {
+                      toast.error("No resume code found for this student")
+                    }
+                  }}>
                     <Copy className="w-4 h-4 mr-2" />
-                    Copy Resume Code
+                    {selectedStudent.student?.unique_code ? `Copy: ${selectedStudent.student.unique_code}` : "No Resume Code"}
                   </Button>
                 </div>
               </TabsContent>

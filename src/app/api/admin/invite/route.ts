@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       .from('admins')
       .select('organization_id, organization:organizations(*)')
       .eq('id', adminId)
+      .eq('is_active', true)
       .single()
 
     if (adminError || !admin) {

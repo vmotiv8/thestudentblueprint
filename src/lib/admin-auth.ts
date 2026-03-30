@@ -22,7 +22,7 @@ export async function getAdminAuth() {
       adminEmail: admin.email, 
       role: admin.role,
       organizationId: admin.organization_id,
-      isSuperAdmin: admin.role === 'super_admin'
+      isSuperAdmin: admin.role === 'super_admin' || admin.role === 'god'
     }
   } catch {
     return null

@@ -59,23 +59,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Atomic increment: only update if current_uses hasn't changed since we read it
-    // This prevents race conditions where concurrent requests bypass max_uses
-    const previousUses = coupon.current_uses || 0
-    const { data: updated, error: updateError } = await supabase
-      .from('coupons')
-      .update({ current_uses: previousUses + 1 })
-      .eq('id', coupon.id)
-      .eq('current_uses', previousUses)
-      .select('id')
-
-    if (updateError || !updated || updated.length === 0) {
-      return NextResponse.json(
-        { valid: false, error: 'Coupon is currently being used, please try again' },
-        { status: 409 }
-      )
-    }
-
     if (email) {
       const { data: student } = await supabase
         .from('students')

@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         organization_id: targetOrgId,
         is_active: true,
       })
-      .select()
+      .select('id, email, first_name, last_name, role, is_active, organization_id, created_at')
       .single()
 
     if (insertError) throw insertError

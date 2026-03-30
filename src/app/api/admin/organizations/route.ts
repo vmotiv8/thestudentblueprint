@@ -19,6 +19,7 @@ export async function GET() {
       .from("admins")
       .select("role")
       .eq("id", adminId)
+      .eq("is_active", true)
       .single()
 
     if (!admin || admin.role !== "super_admin") {
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
       .from("admins")
       .select("role")
       .eq("id", adminId)
+      .eq("is_active", true)
       .single()
 
     if (!admin || admin.role !== "super_admin") {
@@ -189,6 +191,7 @@ export async function PATCH(req: Request) {
       .from("admins")
       .select("role")
       .eq("id", adminId)
+      .eq("is_active", true)
       .single()
 
     if (!admin || admin.role !== "super_admin") {
@@ -260,6 +263,7 @@ export async function DELETE(req: Request) {
       .from("admins")
       .select("role")
       .eq("id", adminId)
+      .eq("is_active", true)
       .single()
 
     if (!admin || admin.role !== "super_admin") {

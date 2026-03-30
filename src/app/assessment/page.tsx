@@ -188,6 +188,7 @@ function AssessmentContent() {
 
   useEffect(() => {
     const loadAssessment = async () => {
+      try {
       setIsLoading(true)
 
       const orgSlug = getOrgSlug()
@@ -329,8 +330,12 @@ function AssessmentContent() {
       }
       
       setIsLoading(false)
+      } catch (e) {
+        console.error('[Assessment] Fatal load error:', e)
+        setIsLoading(false)
+      }
     }
-    
+
     loadAssessment()
   }, [searchParams, router])
 
@@ -377,15 +382,22 @@ function AssessmentContent() {
 
     // If responses has the full form data (in-progress), merge with defaults to fill missing sections
     if (hasResponses && responses.basicInfo) {
-      // Deep merge each section with defaults so partially-saved assessments don't crash
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const merged: any = { ...initialFormData }
-      for (const key of Object.keys(initialFormData)) {
-        if (responses[key] && typeof responses[key] === 'object') {
-          merged[key] = { ...(initialFormData as any)[key], ...(responses[key] as object) }
+      try {
+        // Deep-clone initialFormData so we never mutate the original defaults
+        const merged = JSON.parse(JSON.stringify(initialFormData))
+        for (const key of Object.keys(initialFormData)) {
+          if (responses[key] && typeof responses[key] === 'object' && !Array.isArray(responses[key])) {
+            merged[key] = { ...merged[key], ...(responses[key] as object) }
+          } else if (responses[key] !== undefined) {
+            merged[key] = responses[key]
+          }
         }
+        setFormData(merged as typeof initialFormData)
+      } catch (e) {
+        console.error('[Assessment] Error merging responses with defaults:', e)
+        // Fallback: use defaults with just basicInfo overlaid
+        setFormData({ ...initialFormData, basicInfo: { ...initialFormData.basicInfo, ...(responses.basicInfo as object) } })
       }
-      setFormData(merged as typeof initialFormData)
       return
     }
 

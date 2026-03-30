@@ -105,7 +105,7 @@ Generate JSON:
   ]
 }
 
-CRITICAL: Generate exactly 5 essay ideas. Each MUST be deeply personal and connect 3+ profile elements.`, 16000, 120000)
+CRITICAL: Generate exactly 5 essay ideas. Each MUST be deeply personal and connect 3+ profile elements.`, 8000, 120000)
 
     if (!result.success) {
       console.error(`[Phase1] Failed for ${assessmentId}:`, result.error)

@@ -93,7 +93,7 @@ Generate DETAILED JSON:
   }
 }
 
-CRITICAL: Generate exactly 3 passion projects. Generate 5+ mentor recommendations.`, 10000, 90000)
+CRITICAL: Generate exactly 3 passion projects. Generate 5+ mentor recommendations.`, 7000, 90000)
 
     if (!result.success) {
       console.error(`[Phase3] Failed for ${assessmentId}:`, result.error)

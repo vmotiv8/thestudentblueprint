@@ -92,7 +92,7 @@ Generate DETAILED JSON:
   }
 }
 
-CRITICAL: Generate at least 12 schoolMatches with detailed why.`, 16000, 90000)
+CRITICAL: Generate at least 12 schoolMatches with detailed why.`, 10000, 90000)
 
     if (!result.success) {
       console.error(`[Phase2] Failed for ${assessmentId}:`, result.error)

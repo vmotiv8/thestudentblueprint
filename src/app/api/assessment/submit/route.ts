@@ -129,7 +129,7 @@ Generate JSON:
   "gradeByGradeRoadmap": { "currentGrade": { "grade": "${currentGrade}", "focus": "focus", "academics": [], "extracurriculars": [], "testing": [], "leadership": [], "summerPlan": "plan" }, "nextYears": [] },
   "essayBrainstorm": [{ "title": "title", "hook": "hook", "narrative": "narrative", "connectingThreads": [], "whyItWorks": "why" }]
 }
-Generate exactly 5 essay ideas.`, 16000, 120000)
+Generate exactly 5 essay ideas.`, 8000, 120000)
 
     if (!phase1.success) {
       console.error(`[Submit/Sync] Phase 1 failed:`, phase1.error)
@@ -152,7 +152,7 @@ Generate JSON:
   "collegeRecommendations": { "collegeBreakdown": { "reach": ["10 schools. ALL Ivy League MUST be reach. Format: 'Name: BRUTALLY HONEST why reach — cite student's SPECIFIC weaknesses like low GPA vs median, missing test scores, weak extracurriculars, no research, acceptance rate'"], "target": ["10 schools. Format: 'Name: honest fit assessment — cite student's specific stats vs school's median admits, what's competitive and what's weak'"], "safety": ["10 schools. Format: 'Name: why likely admitted — cite how student's stats exceed school averages, acceptance rate, program fit'"] }, "schoolMatches": [{"schoolName":"","matchScore":0,"why":""}] },
   "careerRecommendations": { "jobTitles": [], "blueOceanIndustries": [{"industry":"","why":""}], "salaryPotential": "", "linkedInBioHeadline": "" }
 }
-Generate 12+ schoolMatches. For EVERY school in reach/target/safety, the reason MUST reference the student's actual stats, gaps, and weaknesses — not generic praise about the school's programs.`, 16000, 60000)
+Generate 12+ schoolMatches. For EVERY school in reach/target/safety, the reason MUST reference the student's actual stats, gaps, and weaknesses — not generic praise about the school's programs.`, 10000, 60000)
     if (phase2.success) { Object.assign(allResults, phase2.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Submit/Sync] Phase 2 failed (non-fatal):`, phase2.error)
 
@@ -169,7 +169,7 @@ Generate JSON:
   "mentorRecommendations": { "mentors": [{"name":"","university":"","department":"","why":""}] },
   "wasteOfTimeActivities": { "activities": [{"activity":"","whyQuit":""}] }
 }
-Generate exactly 3 passion projects. Generate 5+ mentors. RESEARCH TOPICS: Generate EXACTLY 5 PhD-level, unexplored research topics that correlate with the student's interests. Format each as "Concise Title: Detailed description with methodology, target variable/outcome, and real-world application."`, 10000, 60000)
+Generate exactly 3 passion projects. Generate 5+ mentors. RESEARCH TOPICS: Generate EXACTLY 5 PhD-level, unexplored research topics that correlate with the student's interests. Format each as "Concise Title: Detailed description with methodology, target variable/outcome, and real-world application."`, 7000, 60000)
     if (phase3.success) { Object.assign(allResults, phase3.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Submit/Sync] Phase 3 failed (non-fatal):`, phase3.error)
 

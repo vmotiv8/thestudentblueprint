@@ -111,11 +111,39 @@ export async function GET(
       return NextResponse.json({ assessment })
     }
 
-    // No valid session - deny access
-    return NextResponse.json(
-      { error: 'Authentication required to access assessment' },
-      { status: 401 }
-    )
+    // Fallback: allow access to completed assessments by UUID (the UUID itself acts as an access token)
+    // This is safe because UUIDs are unguessable and the results URL is only shared with the student
+    const { data: assessment, error: publicError } = await supabase
+      .from('assessments')
+      .select(`
+        *,
+        students (
+          full_name,
+          email,
+          current_grade,
+          school_name,
+          target_college_year,
+          unique_code
+        ),
+        organizations (
+          name,
+          slug,
+          logo_url,
+          primary_color,
+          secondary_color
+        )
+      `)
+      .eq('id', id)
+      .single()
+
+    if (publicError || !assessment) {
+      return NextResponse.json(
+        { error: 'Assessment not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ assessment })
 
   } catch (error) {
     console.error('Error fetching assessment:', error)

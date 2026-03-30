@@ -68,7 +68,8 @@
       "Read(//Users/vish/**)",
       "Bash(git -C \"/Users/vish/Documents/Platforms/VMotiv8 Roadmap/vmotiv8roadmap-master\" log --oneline -10)",
       "Bash(git commit:*)",
-      "Bash(scope, and application\":*)"
+      "Bash(scope, and application\":*)",
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint -name *referral* -o -name *supabase_setup*)"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

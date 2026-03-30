@@ -219,12 +219,19 @@ export async function POST(request: Request) {
           console.error('[StudentRegister] Failed to send resume code email:', err)
         })
 
-        return NextResponse.json({
+        const earlyResponse = NextResponse.json({
           success: true,
           studentId,
           assessmentId,
           uniqueCode,
         })
+        earlyResponse.cookies.set('verified_email', email.trim().toLowerCase(), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 30,
+        })
+        return earlyResponse
       }
     }
 
@@ -299,12 +306,22 @@ export async function POST(request: Request) {
       console.error('[StudentRegister] Failed to send resume code email:', err)
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       studentId,
       assessmentId,
       uniqueCode,
     })
+
+    // Set verified_email cookie so the results page can access the assessment
+    response.cookies.set('verified_email', email.trim().toLowerCase(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    })
+
+    return response
   } catch (error) {
     // Issue #5: Structured error logging
     const err = error as { message?: string; code?: string; details?: string; hint?: string; stack?: string }

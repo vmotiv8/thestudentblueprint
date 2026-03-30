@@ -27,10 +27,19 @@ export async function GET(request: Request) {
         .single()
 
       if (payment && payment.status === 'completed') {
-        return NextResponse.json({ 
-          paid: true, 
-          email: payment.email 
+        const response = NextResponse.json({
+          paid: true,
+          email: payment.email
         })
+        if (payment.email) {
+          response.cookies.set('verified_email', payment.email.toLowerCase(), {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 30,
+          })
+        }
+        return response
       }
 
       // If not marked as completed in DB, check with Stripe directly
@@ -67,10 +76,19 @@ export async function GET(request: Request) {
             }
           }
 
-          return NextResponse.json({
+          const stripeResponse = NextResponse.json({
             paid: true,
             email: paidEmail
           })
+          if (paidEmail) {
+            stripeResponse.cookies.set('verified_email', paidEmail.toLowerCase(), {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              maxAge: 60 * 60 * 24 * 30,
+            })
+          }
+          return stripeResponse
         }
       } catch (stripeError) {
         console.error('Error fetching Stripe session:', stripeError)

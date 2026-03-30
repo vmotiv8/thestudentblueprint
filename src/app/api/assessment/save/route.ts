@@ -183,11 +183,11 @@ export async function POST(request: Request) {
     const firstName = formData.basicInfo?.firstName || nameParts[0] || null
     const lastName = formData.basicInfo?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : null)
 
-    // Generate a unique 6-character resume code
+    // Generate a unique 8-character resume code
     const generateCode = () => {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
       let code = ''
-      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
+      for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)]
       return code
     }
     const newUniqueCode = generateCode()

@@ -400,6 +400,8 @@ export default function SuperAdminDashboard() {
   const [assessmentInviteName, setAssessmentInviteName] = useState("")
   const [isSendingAssessment, setIsSendingAssessment] = useState(false)
 
+  const [isRunningDemo, setIsRunningDemo] = useState(false)
+
   // Student Details modal state
   const [showStudentDialog, setShowStudentDialog] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
@@ -490,6 +492,167 @@ export default function SuperAdminDashboard() {
     }
     // Also fetch super admins in parallel
     fetchSuperAdmins()
+  }
+
+  const handleRunDemoAssessment = async () => {
+    if (!confirm("This will create a demo student (9th grader, Business/Finance, Cupertino CA) and run the full AI analysis. This may take 2-3 minutes. Continue?")) return
+
+    setIsRunningDemo(true)
+    toast.loading("Creating demo student and saving assessment...", { id: "demo" })
+
+    try {
+      // Step 1: Register a demo student
+      const demoEmail = `demo-${Date.now()}@thestudentblueprint.com`
+      const registerRes = await fetch("/api/student/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: "Demo Student",
+          email: demoEmail,
+          phone: "4085551234",
+          organizationSlug: undefined,
+        }),
+      })
+      const registerData = await registerRes.json()
+      if (!registerRes.ok) throw new Error(registerData.error || "Failed to register demo student")
+
+      const { assessmentId } = registerData
+
+      // Step 2: Save full demo form data
+      const demoFormData = {
+        basicInfo: {
+          fullName: "Demo Student", email: demoEmail, phone: "4085551234",
+          parentName: "Demo Parent", parentEmail: "parent-demo@thestudentblueprint.com",
+          parentPhone: "4085559876", dateOfBirth: "2011-06-15",
+          currentGrade: "9th Grade (Freshman)", schoolName: "Monta Vista High School",
+          address: "10600 S De Anza Blvd", city: "Cupertino", state: "California",
+          country: "United States", targetCollegeYear: 2030, gender: "Male",
+          ethnicity: "Asian - Indian", dreamSchools: ["Stanford University", "University of Pennsylvania", "New York University"],
+          studyAbroad: false, targetCountries: [], curriculum: "AP"
+        },
+        academicProfile: {
+          curriculum: "AP", gpaScale: "4.0 Unweighted", gpaUnweighted: "3.85", gpaWeighted: "4.2",
+          coursesTaken: ["AP Computer Science Principles"], coursesPlanned: ["AP Macroeconomics", "AP Statistics", "AP Computer Science A"],
+          regularCoursesTaken: ["Honors Algebra 2", "Honors English 9", "Honors Biology"],
+          regularCoursesPlanned: ["Honors Chemistry", "Honors World History"],
+          classRank: "Top 10%", favoriteSubjects: ["Mathematics", "Economics", "Computer Science"],
+          leastFavoriteSubjects: ["Art", "Physical Education"], academicAwards: "Honor Roll (all semesters), Math Department Award"
+        },
+        testingInfo: {
+          psatScore: "", psatMath: "", psatReading: "", satScore: "", actScore: "",
+          testingTimeline: "Planning to take PSAT in Fall 2026, SAT in Spring 2028",
+          apScores: "AP CS Principles: 4 (expected)", preferredTestFormat: "SAT",
+          satMath: "", satReading: "", actEnglish: "", actMath: "", actReading: "", actScience: "", notTakenYet: true
+        },
+        extracurriculars: {
+          activities: [
+            { name: "FBLA (Future Business Leaders of America)", role: "Member & Competitor", yearsInvolved: "1", hoursPerWeek: "4", achievements: "3rd place Regional Business Plan competition" },
+            { name: "Stock Market Club", role: "Co-Founder & President", yearsInvolved: "1", hoursPerWeek: "3", achievements: "Grew club from 5 to 30 members, organized mock trading competitions" },
+            { name: "Math Team", role: "Varsity Member", yearsInvolved: "1", hoursPerWeek: "3", achievements: "Qualified for AMC 10, scored in top 15% school-wide" },
+            { name: "Volunteer Income Tax Assistance (VITA)", role: "Student Volunteer", yearsInvolved: "1", hoursPerWeek: "2", achievements: "Helped 15 low-income families file taxes" },
+            { name: "Tennis", role: "JV Player", yearsInvolved: "1", hoursPerWeek: "6", achievements: "Starting doubles player" }
+          ],
+          noExtracurriculars: false
+        },
+        leadership: {
+          positions: "Co-Founder & President of Stock Market Club, FBLA Chapter Treasurer",
+          organizations: "Stock Market Club, FBLA", awards: "FBLA Regional 3rd Place",
+          scale: "School", noLeadershipExperience: false,
+          entries: [
+            { position: "Co-Founder & President", organization: "Stock Market Club", awards: "Built to 30 members", scale: "School" },
+            { position: "Treasurer", organization: "FBLA Chapter", awards: "3rd Place Regional", scale: "Regional" }
+          ]
+        },
+        competitions: {
+          competitions: "FBLA Business Plan (Regional), AMC 10, Diamond Bar Invitational Math",
+          recognitions: "FBLA Regional 3rd Place, AMC 10 Qualifier",
+          noCompetitions: false,
+          entries: [
+            { competition: "FBLA Business Plan", recognition: "3rd Place Regional" },
+            { competition: "AMC 10", recognition: "Top 15% school" }
+          ]
+        },
+        passions: {
+          topicsYouLove: ["Entrepreneurship", "Stock Market Investing", "Fintech", "Artificial Intelligence", "Behavioral Economics"],
+          industriesCurious: ["Venture Capital", "Investment Banking", "Fintech Startups"],
+          topic1: "Entrepreneurship", topic2: "Stock Market", topic3: "Fintech", topic4: "AI", topic5: "Behavioral Economics",
+          industry1: "Venture Capital", industry2: "Investment Banking", industry3: "Fintech",
+          hobbiesSkills: "Building financial models in Excel, coding Python scripts for stock analysis, reading business biographies, playing chess",
+          worldProblem: "Financial literacy gap among teenagers — most high schoolers graduate without understanding compound interest, budgeting, or investing"
+        },
+        careerAspirations: {
+          career1: "Venture Capitalist / VC Analyst", career2: "Fintech Startup Founder", career3: "Investment Banker",
+          dreamJobTitle: "Managing Partner at a VC firm focused on fintech and AI startups",
+          bestFitStatement: "I want to be at the intersection of technology and finance, funding the next generation of companies that make financial services accessible to everyone."
+        },
+        researchExperience: {
+          researchExperience: "", shadowingExperience: "Shadowed a financial advisor at Morgan Stanley for 2 days",
+          internships: "", noResearchExperience: false,
+          entries: [{ type: "Shadowing", organization: "Morgan Stanley", role: "Student Observer", description: "Observed client meetings and portfolio management", duration: "2 days" }]
+        },
+        summerPrograms: {
+          programs: "Planning to apply to Wharton LBW and Stanford Pre-Collegiate Studies",
+          entries: [], noSummerPrograms: true
+        },
+        specialTalents: { musicInstruments: "", visualArts: "", performanceArts: "", athletics: "Tennis (JV)" },
+        familyContext: {
+          familyProfessions: "", fatherProfession: "Software Engineer at Apple",
+          motherProfession: "Product Manager at Google", siblingProfessions: "Older sister at UC Berkeley (Economics)",
+          legacyConnections: "", legacyEntries: [{ college: "UC Berkeley", relation: "Sister" }],
+          financialAidNeeded: false, meritScholarshipInterest: true
+        },
+        personality: {
+          topStrengths: ["Analytical Thinking", "Leadership", "Public Speaking"],
+          topWeaknesses: ["Perfectionism", "Delegation", "Time Management"],
+          strength1: "Analytical Thinking", strength2: "Leadership", strength3: "Public Speaking",
+          weakness1: "Perfectionism", weakness2: "Delegation", weakness3: "Time Management",
+          archetypes: ["The Entrepreneur", "The Analyst"], introvertExtrovert: "Ambivert"
+        },
+        personalStories: {
+          lifeChallenge: "Moving from India to the US in 6th grade and having to rebuild my social circle while adapting to a completely different education system. I went from being top of my class to struggling with cultural differences and a new curriculum.",
+          leadershipMoment: "Starting the Stock Market Club when I realized no one at school was teaching financial literacy. I pitched it to the principal, recruited members, and organized our first mock trading competition.",
+          failureLesson: "Lost $200 in a stock trade when I was 13 because I didn't do proper research and followed a trending tip. It taught me the importance of due diligence and emotional discipline in investing.",
+          proudMoment: "Helping a low-income family save $1,200 on their taxes through the VITA program. The mother cried and said it was enough to cover her daughter's school supplies for the year."
+        },
+        timeCommitment: {
+          hoursSchoolYear: "15-20 hours/week", hoursSummer: "30-40 hours/week", preferredPace: "Intensive"
+        }
+      }
+
+      toast.loading("Saving assessment data...", { id: "demo" })
+      const saveRes = await fetch("/api/assessment/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assessmentId,
+          formData: demoFormData,
+          currentSection: 15,
+          organization_slug: undefined,
+        }),
+      })
+      if (!saveRes.ok) throw new Error("Failed to save assessment data")
+
+      // Step 3: Submit for AI analysis
+      toast.loading("Submitting for AI analysis (2-3 min)...", { id: "demo" })
+      const submitRes = await fetch("/api/assessment/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assessmentId,
+          formData: demoFormData,
+          organization_slug: undefined,
+        }),
+      })
+      if (!submitRes.ok) throw new Error("Failed to submit for AI analysis")
+
+      toast.success("Demo assessment created and submitted for AI analysis! Check All Students tab.", { id: "demo", duration: 8000 })
+      fetchAllStudents()
+    } catch (err) {
+      console.error("Demo assessment error:", err)
+      toast.error(`Demo failed: ${err instanceof Error ? err.message : "Unknown error"}`, { id: "demo" })
+    } finally {
+      setIsRunningDemo(false)
+    }
   }
 
   const handleRegenerateReport = async (assessmentId: string) => {
@@ -1283,6 +1446,12 @@ export default function SuperAdminDashboard() {
                 <Send className="w-4 h-4 mr-2" />
                 Send Assessment
               </Button>
+              {isSuperAdmin && (
+                <Button variant="outline" className="border-[#06b6d4] text-[#06b6d4] hover:bg-[#06b6d4] hover:text-white" onClick={handleRunDemoAssessment} disabled={isRunningDemo}>
+                  {isRunningDemo ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                  {isRunningDemo ? "Running Demo..." : "Demo Assessment"}
+                </Button>
+              )}
               <Dialog open={showCreateOrgDialog} onOpenChange={setShowCreateOrgDialog}>
                 <DialogTrigger asChild>
                   <Button className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f]">

@@ -1,7 +1,7 @@
 // src/components/Navbar.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
@@ -15,8 +15,14 @@ interface NavbarProps {
 
 export default function Navbar({ isScrolled }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [checkoutUrl, setCheckoutUrl] = useState("/checkout")
   const pathname = usePathname()
   const isB2B = pathname === "/b2b"
+
+  useEffect(() => {
+    const ref = localStorage.getItem("tsb_ref")
+    if (ref) setCheckoutUrl(`/checkout?ref=${encodeURIComponent(ref)}`)
+  }, [])
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled ? "bg-[#FFFAF0]/90 backdrop-blur-2xl py-4 border-b border-[#1E2849]/5" : "bg-transparent py-6"}`}>
@@ -44,7 +50,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
             Resume
           </Link>
           <Button asChild className="hidden sm:inline-flex bg-[#1E2849] hover:bg-[#1E2849]/90 text-white font-semibold text-xs px-6 py-3 h-auto rounded-full transition-all duration-500 tracking-wide">
-            <Link href="/checkout">
+            <Link href={checkoutUrl}>
               Start Assessment
             </Link>
           </Button>

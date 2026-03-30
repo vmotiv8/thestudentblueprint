@@ -375,9 +375,17 @@ function AssessmentContent() {
     const responses = (assessment.responses || {}) as Record<string, unknown>
     const hasResponses = responses && Object.keys(responses).length > 0
 
-    // If responses has the full form data (in-progress), use it directly
+    // If responses has the full form data (in-progress), merge with defaults to fill missing sections
     if (hasResponses && responses.basicInfo) {
-      setFormData(responses as unknown as typeof initialFormData)
+      // Deep merge each section with defaults so partially-saved assessments don't crash
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const merged: any = { ...initialFormData }
+      for (const key of Object.keys(initialFormData)) {
+        if (responses[key] && typeof responses[key] === 'object') {
+          merged[key] = { ...(initialFormData as any)[key], ...(responses[key] as object) }
+        }
+      }
+      setFormData(merged as typeof initialFormData)
       return
     }
 

@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     }
 
     let hasPaid = false
-    if (assessment.payment_status === 'paid' || assessment.coupon_code_used) {
+    if (assessment.payment_status === 'paid' || assessment.payment_status === 'free' || assessment.coupon_code_used) {
       hasPaid = true
     } else {
       const { data: payment } = await supabase

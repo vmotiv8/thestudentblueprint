@@ -2727,6 +2727,7 @@ export default function SuperAdminDashboard() {
                       <TableHeader>
                         <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
                           <TableHead className="font-bold text-[#0a192f] px-6">Student</TableHead>
+                          <TableHead className="font-bold text-[#0a192f]">Agency</TableHead>
                           <TableHead className="font-bold text-[#0a192f]">Grade</TableHead>
                           <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
                           <TableHead className="font-bold text-[#0a192f]">Score</TableHead>
@@ -2766,6 +2767,11 @@ export default function SuperAdminDashboard() {
                                 </p>
                                 <p className="text-xs text-[#5a7a9a]">{assessment.student?.email}</p>
                               </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-xs text-[#5a7a9a]">
+                                {assessment.organization?.name || '\u2014'}
+                              </span>
                             </TableCell>
                             <TableCell>
                               <span className="text-sm text-[#5a7a9a]">

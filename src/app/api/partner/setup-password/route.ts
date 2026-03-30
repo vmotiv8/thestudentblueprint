@@ -72,7 +72,6 @@ export async function POST(req: Request) {
         password_hash: passwordHash,
         password_setup_token: null,
         password_setup_expires: null,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", partner.id)
 

@@ -22,34 +22,37 @@ export async function GET() {
       return NextResponse.json({ error: 'Partner not found' }, { status: 404 })
     }
 
-    // Get referred students with their assessment status
+    // Get referred students
     const { data: rawStudents } = await supabase
       .from('referral_students')
       .select('*')
       .eq('partner_id', auth.partnerId)
       .order('created_at', { ascending: false })
 
-    // Enrich with actual assessment data (completion status, assessment ID for results link)
-    const students = await Promise.all((rawStudents || []).map(async (rs) => {
-      if (!rs.student_email) return rs
+    // Batch-fetch assessment data for all referred students (avoids N+1 queries)
+    const emails = (rawStudents || []).map(rs => rs.student_email).filter(Boolean)
+    const studentMap = new Map<string, { assessments: { id: string; status: string; student_archetype: string | null; competitiveness_score: number | null; completed_at: string | null }[] }>()
 
-      // Find the student and their latest assessment
-      const { data: studentRecord } = await supabase
+    if (emails.length > 0) {
+      const { data: studentRecords } = await supabase
         .from('students')
         .select(`
-          id,
+          email,
           assessments (
-            id,
-            status,
-            student_archetype,
-            competitiveness_score,
-            completed_at
+            id, status, student_archetype,
+            competitiveness_score, completed_at
           )
         `)
-        .eq('email', rs.student_email)
-        .maybeSingle()
+        .in('email', emails)
 
-      const assessments = (studentRecord?.assessments || []) as { id: string; status: string; student_archetype: string | null; competitiveness_score: number | null; completed_at: string | null }[]
+      for (const s of studentRecords || []) {
+        studentMap.set(s.email, s as typeof studentMap extends Map<string, infer V> ? V : never)
+      }
+    }
+
+    const students = (rawStudents || []).map(rs => {
+      const record = rs.student_email ? studentMap.get(rs.student_email) : null
+      const assessments = (record?.assessments || []) as { id: string; status: string; student_archetype: string | null; competitiveness_score: number | null; completed_at: string | null }[]
       const latestAssessment = assessments.sort((a, b) =>
         new Date(b.completed_at || 0).getTime() - new Date(a.completed_at || 0).getTime()
       )[0]
@@ -62,7 +65,7 @@ export async function GET() {
         competitiveness_score: latestAssessment?.competitiveness_score || null,
         completed_at: latestAssessment?.completed_at || null,
       }
-    }))
+    })
 
     // Get commissions
     const { data: commissions } = await supabase
@@ -94,7 +97,7 @@ export async function GET() {
       },
       stats: {
         totalStudents: (students || []).length,
-        completedStudents: (students || []).filter(s => s.completed).length,
+        completedStudents: (students || []).filter(s => s.assessment_status === 'completed').length,
         totalEarned: Math.round(totalEarned * 100) / 100,
         unpaidBalance: Math.round(unpaidBalance * 100) / 100,
         totalPaidOut: Math.round(totalPaidOut * 100) / 100,

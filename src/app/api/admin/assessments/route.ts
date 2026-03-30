@@ -27,7 +27,6 @@ export async function GET(request: Request) {
         completed_at,
         expires_at,
         scores,
-        report_data,
         responses,
         student_archetype,
         competitiveness_score,

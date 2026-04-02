@@ -2859,6 +2859,34 @@ export default function SuperAdminDashboard() {
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
+                                {assessment.status !== 'completed' && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0 text-amber-500 hover:text-amber-700"
+                                    title="Send Reminder Email"
+                                    onClick={async () => {
+                                      try {
+                                        toast.loading("Sending reminder...", { id: `remind-${assessment.id}` })
+                                        const res = await fetch("/api/admin/send-resume-reminder", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ assessmentId: assessment.id }),
+                                        })
+                                        const data = await res.json()
+                                        if (data.success) {
+                                          toast.success(`Reminder sent to ${data.sentTo}`, { id: `remind-${assessment.id}` })
+                                        } else {
+                                          toast.error(data.error || "Failed to send reminder", { id: `remind-${assessment.id}` })
+                                        }
+                                      } catch {
+                                        toast.error("Failed to send reminder", { id: `remind-${assessment.id}` })
+                                      }
+                                    }}
+                                  >
+                                    <Mail className="w-4 h-4" />
+                                  </Button>
+                                )}
                                 {(assessment.status === 'completed' || assessment.status === 'partial') && (
                                   <>
                                     <Button
@@ -2908,7 +2936,7 @@ export default function SuperAdminDashboard() {
                         ))}
                         {allStudents.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={7} className="h-40 text-center text-[#5a7a9a]">
+                            <TableCell colSpan={8} className="h-40 text-center text-[#5a7a9a]">
                               No student assessments found.
                             </TableCell>
                           </TableRow>

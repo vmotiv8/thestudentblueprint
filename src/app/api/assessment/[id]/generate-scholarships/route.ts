@@ -67,7 +67,6 @@ export async function POST(
     // Extract key student details for targeted scholarship matching
     const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
     const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
-    const testingInfo = (formData.testingInfo || {}) as Record<string, unknown>
     const familyContext = (formData.familyContext || {}) as Record<string, unknown>
     const passions = (formData.passions || {}) as Record<string, unknown>
     const careerAspirations = (formData.careerAspirations || {}) as Record<string, unknown>
@@ -82,6 +81,7 @@ export async function POST(
     const grade = basicInfo.currentGrade || ''
     const gpa = academicProfile.gpaUnweighted || academicProfile.gpaWeighted || ''
     const financialAid = familyContext.financialAidNeeded ? 'Yes' : 'No'
+    const annualFamilyIncome = (familyContext.annualFamilyIncome as string) || ''
     const careers = [careerAspirations.career1, careerAspirations.career2, careerAspirations.dreamJobTitle].filter(Boolean).join(', ')
     const interests = Array.isArray(passions.topicsYouLove) ? passions.topicsYouLove.join(', ') : ''
     const industries = Array.isArray(passions.industriesCurious) ? passions.industriesCurious.join(', ') : ''
@@ -96,6 +96,7 @@ STUDENT PROFILE:
 - GPA: ${gpa}
 - Ethnicity/Background: ${ethnicity || 'Not specified'}
 - Gender: ${gender || 'Not specified'}
+- Annual Family Income: ${annualFamilyIncome || 'Not specified'}
 - Financial Aid Needed: ${financialAid}
 - Career Interests: ${careers || 'Not specified'}
 - Topics They Love: ${interests || 'Not specified'}

@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -38,7 +37,6 @@ import {
   UserPlus,
   RefreshCw,
   Copy,
-  Zap,
   Crown,
   Star,
   Infinity,
@@ -60,10 +58,9 @@ import {
   SectionPresetKey,
   validateSectionConfig
 } from "@/lib/organization/assessment-config"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import Link from "next/link"
-import { Suspense } from "react"
 
 interface Organization {
   id: string
@@ -595,8 +592,9 @@ function AssessmentCustomizationCard({
 }
 
 export function AgencySettingsContent({ embedded = false }: { embedded?: boolean } = {}) {
-  const router = useRouter()
   const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+  const statusParam = searchParams.get("status")
   const [org, setOrg] = useState<Organization | null>(null)
   const [admins, setAdmins] = useState<Admin[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
@@ -605,19 +603,22 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
   const [billingLoading, setBillingLoading] = useState<string | null>(null)
   const [connectStatus, setConnectStatus] = useState<{ connected: boolean; charges_enabled?: boolean; details_submitted?: boolean } | null>(null)
   const [connectLoading, setConnectLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "branding")
+  const [activeTab, setActiveTab] = useState(tabParam || "branding")
   const [showAdminInviteDialog, setShowAdminInviteDialog] = useState(false)
   const [adminInvite, setAdminInvite] = useState({ email: "", fullName: "", role: "admin" as string })
   const [isInvitingAdmin, setIsInvitingAdmin] = useState(false)
 
-  useEffect(() => {
-    fetchData()
-    if (searchParams.get("status") === "success") {
-      toast.success("Subscription updated successfully!")
+  const fetchConnectStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/agency/stripe-connect")
+      const data = await res.json()
+      setConnectStatus(data)
+    } catch {
+      console.error("Failed to fetch Stripe Connect status")
     }
   }, [])
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const [settingsRes, adminsRes, plansRes] = await Promise.all([
@@ -642,17 +643,18 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
     } finally {
       setLoading(false)
     }
-  }
+  }, [fetchConnectStatus])
 
-  const fetchConnectStatus = async () => {
-    try {
-      const res = await fetch("/api/agency/stripe-connect")
-      const data = await res.json()
-      setConnectStatus(data)
-    } catch {
-      console.error("Failed to fetch Stripe Connect status")
+  useEffect(() => {
+    fetchData()
+    if (statusParam === "success") {
+      toast.success("Subscription updated successfully!")
     }
-  }
+  }, [fetchData, statusParam])
+
+  useEffect(() => {
+    if (tabParam) setActiveTab(tabParam)
+  }, [tabParam])
 
   const handleConnectStripe = async () => {
     setConnectLoading(true)
@@ -974,7 +976,7 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
                     <div className="space-y-4">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded bg-[#faf8f3] flex items-center justify-center border border-[#e5e0d5]">
-                          {org.logo_url ? <img src={org.logo_url} className="w-5 h-5 object-contain" /> : <Settings className="w-4 h-4 text-[#5a7a9a]" />}
+                          {org.logo_url ? <img src={org.logo_url} alt={`${org.name} logo preview`} className="w-5 h-5 object-contain" /> : <Settings className="w-4 h-4 text-[#5a7a9a]" />}
                         </div>
                         <span className="font-bold text-sm" style={{ color: org.primary_color }}>{org.name}</span>
                       </div>
@@ -1629,4 +1631,3 @@ export function AgencySettingsContent({ embedded = false }: { embedded?: boolean
     </div>
   )
 }
-

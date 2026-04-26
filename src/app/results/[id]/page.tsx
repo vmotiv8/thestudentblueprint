@@ -66,7 +66,7 @@ import {
   ResponsiveContainer
 } from "recharts"
 
-const PHASE_1_TABS = new Set(['roadmap', 'gaps', 'essays'])
+const PHASE_1_TABS = new Set(['gaps', 'essays'])
 const PHASE_2_TABS = new Set(['projects', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match'])
 
 interface ActivityItem {
@@ -300,15 +300,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const logoUrl = tenant?.logo_url
 
   const updateAssessmentState = useCallback((data: Assessment) => {
-    console.log('[Results] Assessment loaded:', {
-      status: data.status,
-      archetype: data.student_archetype,
-      hasAcademics: !!data.academic_courses_recommendations,
-      academicsType: data.academic_courses_recommendations ? typeof data.academic_courses_recommendations.apCourses : 'none',
-      hasCollege: !!data.college_recommendations,
-      hasResearch: !!data.research_publications_recommendations,
-      hasMentors: !!data.mentor_recommendations,
-    })
     setAssessment(data)
     const scores = data.archetype_scores
     if (scores) {
@@ -814,7 +805,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   <span className="font-bold text-base sm:text-xl leading-none tracking-tight truncate" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>{orgName}</span>
                 ) : (
                   <span className="text-base sm:text-xl leading-none tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    <span className="font-bold text-[#1E2849]">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
+                    <span className="font-bold text-white">TheStudent</span><span className="font-semibold text-[#af8f5b]">Blueprint</span>
                   </span>
                 )}
                 <span className="text-[7px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold truncate" style={{ color: secondaryColor }}>Results Portal</span>
@@ -873,7 +864,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     <TabsList className="bg-white border border-[#e5e0d5] p-1 inline-flex h-auto gap-0.5 shadow-sm rounded-2xl min-w-max">
                       {[
                         { value: "archetype", icon: Sparkles, label: "Archetype" },
-                        { value: "roadmap", icon: Calendar, label: "Roadmap" },
                         { value: "gaps", icon: AlertCircle, label: "Gaps" },
                         { value: "projects", icon: Lightbulb, label: "Projects" },
                         { value: "career-future", icon: Compass, label: "Career" },
@@ -1338,6 +1328,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               </TabsContent>
 
                 <TabsContent value="gaps" className="mt-6">
+              <div className="space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
                 {[
                   { title: "Missing Elements", desc: "Areas to develop for target schools", icon: AlertCircle, items: assessment.gap_analysis?.missingElements, color: "#ef4444", accent: "bg-red-50" },
@@ -1386,6 +1377,32 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+              {assessment.waste_of_time_activities?.activities && assessment.waste_of_time_activities.activities.length > 0 && (
+                <Card className="border-red-200/60">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                      <XCircle className="w-5 h-5 text-red-400" />
+                      Consider Dropping
+                    </CardTitle>
+                    <CardDescription className="text-xs">Activities that may not add value to your application</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Accordion type="multiple" className="space-y-1">
+                      {assessment.waste_of_time_activities.activities.map((item, i) => (
+                        <AccordionItem key={i} value={`drop-${i}`} className="bg-red-50/60 rounded-lg border-none px-3">
+                          <AccordionTrigger className="py-2 hover:no-underline">
+                            <span className="text-sm font-medium text-red-700 text-left">{item.activity}</span>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-2">
+                            <p className="text-[13px] text-[#5a7a9a] leading-relaxed">{item.whyQuit}</p>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              )}
               </div>
             </TabsContent>
 
@@ -1693,40 +1710,49 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
             <TabsContent value="academics" className="mt-6">
               {!assessment.academic_courses_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="academics" /> : <div className="grid md:grid-cols-2 gap-5">
-                {[
-                  { title: "AP Courses", icon: BookOpen, items: toArray(assessment.academic_courses_recommendations?.apCourses), color: "#6366f1", accent: "bg-indigo-50" },
-                  { title: "IB Courses", icon: GraduationCap, items: toArray(assessment.academic_courses_recommendations?.ibCourses), color: "#8b5cf6", accent: "bg-violet-50" },
-                  ...(assessment.academic_courses_recommendations?.curriculumSpecificCourses?.courses?.length
-                    ? [{ title: assessment.academic_courses_recommendations.curriculumSpecificCourses.label + " Courses", icon: BookOpen, items: toArray(assessment.academic_courses_recommendations.curriculumSpecificCourses.courses), color: "#6366f1", accent: "bg-indigo-50" }]
-                    : []),
-                  { title: "Honors Courses", icon: Award, items: toArray(assessment.academic_courses_recommendations?.honorsCourses), color: "#ec4899", accent: "bg-pink-50" },
-                  { title: "Strategic Electives", icon: Lightbulb, items: toArray(assessment.academic_courses_recommendations?.electivesRecommended), color: "#f59e0b", accent: "bg-amber-50" },
-                ].map(({ title, icon: SectionIcon, items, color, accent }) => {
-                  if (!items || items.length === 0) return null
-                  return (
-                    <Card key={title} className="border-[#e5e0d5]">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg text-[#1e3a5f] flex items-center gap-2">
-                          <SectionIcon className="w-5 h-5" style={{ color }} />
-                          {title}
-                          <Badge className="ml-auto text-xs font-medium" style={{ backgroundColor: `${color}15`, color }}>{items.length} courses</Badge>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <Accordion type="multiple" className="space-y-2">
-                          {items.map((item, i) => {
-                            const colonIdx = item.indexOf(':')
-                            const parenIdx = item.indexOf('(')
-                            let courseName = item
-                            let detail = ''
-                            if (colonIdx > 0 && colonIdx < 80) {
-                              courseName = item.slice(0, colonIdx).trim()
-                              detail = item.slice(colonIdx + 1).trim()
-                            } else if (parenIdx > 0 && parenIdx < 80) {
-                              courseName = item.slice(0, parenIdx).trim()
-                              detail = item.slice(parenIdx).trim()
-                            }
-                            return (
+                {(() => {
+                  const parseCourseItems = (raw: unknown): { name: string; detail: string }[] => {
+                    if (!raw) return []
+                    const arr = Array.isArray(raw) ? raw : (typeof raw === 'string' ? raw.split('\n').filter(Boolean) : [])
+                    return arr.map((item: unknown) => {
+                      if (item && typeof item === 'object') {
+                        const obj = item as Record<string, unknown>
+                        const name = String(obj.courseName || obj.name || obj.title || Object.values(obj).find(v => typeof v === 'string') || '')
+                        const detail = String(obj.reason || obj.description || obj.detail || '')
+                        return { name, detail }
+                      }
+                      const s = String(item)
+                      const colonIdx = s.indexOf(':')
+                      const parenIdx = s.indexOf('(')
+                      if (colonIdx > 0 && colonIdx < 80) return { name: s.slice(0, colonIdx).trim(), detail: s.slice(colonIdx + 1).trim() }
+                      if (parenIdx > 0 && parenIdx < 80) return { name: s.slice(0, parenIdx).trim(), detail: s.slice(parenIdx).trim() }
+                      return { name: s, detail: '' }
+                    }).filter(c => c.name)
+                  }
+                  const acr = assessment.academic_courses_recommendations
+                  const sections = [
+                    { title: "AP Courses", icon: BookOpen, items: parseCourseItems(acr?.apCourses), color: "#6366f1", accent: "bg-indigo-50" },
+                    { title: "IB Courses", icon: GraduationCap, items: parseCourseItems(acr?.ibCourses), color: "#8b5cf6", accent: "bg-violet-50" },
+                    ...(acr?.curriculumSpecificCourses?.courses?.length
+                      ? [{ title: (acr.curriculumSpecificCourses.label || "curriculum") + " Courses", icon: BookOpen, items: parseCourseItems(acr.curriculumSpecificCourses.courses), color: "#6366f1", accent: "bg-indigo-50" }]
+                      : []),
+                    { title: "Honors Courses", icon: Award, items: parseCourseItems(acr?.honorsCourses), color: "#ec4899", accent: "bg-pink-50" },
+                    { title: "Strategic Electives", icon: Lightbulb, items: parseCourseItems(acr?.electivesRecommended), color: "#f59e0b", accent: "bg-amber-50" },
+                  ]
+                  return sections.map(({ title, icon: SectionIcon, items, color, accent }) => {
+                    if (!items || items.length === 0) return null
+                    return (
+                      <Card key={title} className="border-[#e5e0d5]">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg text-[#1e3a5f] flex items-center gap-2">
+                            <SectionIcon className="w-5 h-5" style={{ color }} />
+                            {title}
+                            <Badge className="ml-auto text-xs font-medium" style={{ backgroundColor: `${color}15`, color }}>{items.length} courses</Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <Accordion type="multiple" className="space-y-2">
+                            {items.map(({ name: courseName, detail }, i) => (
                               <AccordionItem key={i} value={`${title}-${i}`} className={`${accent} rounded-lg border-none px-4`}>
                                 <AccordionTrigger className="py-3 hover:no-underline">
                                   <div className="flex items-center gap-3 text-left">
@@ -1740,13 +1766,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                                   </AccordionContent>
                                 )}
                               </AccordionItem>
-                            )
-                          })}
-                        </Accordion>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
+                            ))}
+                          </Accordion>
+                        </CardContent>
+                      </Card>
+                    )
+                  })
+                })()}
               </div>}
             </TabsContent>
 
@@ -2438,204 +2464,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       </div>
                     </div>}
                   </TabsContent>
-
-                <TabsContent value="roadmap" className="mt-6">
-                  <div className="space-y-6">
-                    {/* Immediate Actions Banner */}
-                    {assessment.roadmap_data?.immediate?.length > 0 && (
-                      <Card className="border-red-200 bg-red-50/30">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                            Immediate Actions <span className="text-[10px] text-[#5a7a9a] bg-white px-2 py-0.5 rounded-full">Next 3 months</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <Accordion type="multiple" className="space-y-1">
-                            {toArray(assessment.roadmap_data.immediate).map((item, i) => {
-                              const colonIdx = item.indexOf(':')
-                              const heading = colonIdx > 0 && colonIdx < 80 ? item.slice(0, colonIdx).trim() : item
-                              const detail = colonIdx > 0 && colonIdx < 80 ? item.slice(colonIdx + 1).trim() : ''
-                              return (
-                                <AccordionItem key={i} value={`imm-${i}`} className="bg-red-50 rounded-lg border-none px-3">
-                                  <AccordionTrigger className="py-2 hover:no-underline"><div className="flex items-center gap-2 text-left"><span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-red-500 shrink-0">{i+1}</span><span className="text-[13px] font-medium text-[#1e3a5f]">{heading}</span></div></AccordionTrigger>
-                                  {detail && <AccordionContent className="pb-2 pl-7"><p className="text-[13px] text-[#5a7a9a]">{detail}</p></AccordionContent>}
-                                </AccordionItem>
-                              )
-                            })}
-                          </Accordion>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* Grade-by-Grade Timeline */}
-                    {assessment.grade_by_grade_roadmap && (
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-[#1e3a5f] flex items-center gap-2">
-                          <GraduationCap className="w-5 h-5" style={{ color: secondaryColor }} />
-                          Year-by-Year Roadmap
-                        </h3>
-                        {(() => {
-                          try {
-                            const roadmap = assessment.grade_by_grade_roadmap as Record<string, unknown> | undefined
-                            if (!roadmap) return null
-                            const currentGrade = (roadmap.currentGrade || roadmap.currentYear) as Record<string, unknown> | undefined
-                            const nextYears = Array.isArray(roadmap.nextYears) ? roadmap.nextYears as Record<string, unknown>[] : []
-                            const allYears = currentGrade ? [currentGrade, ...nextYears] : nextYears
-                            if (allYears.length === 0) return null
-                            return (
-                              <Accordion type="multiple" defaultValue={["grade-0"]} className="space-y-3">
-                                {allYears.map((year: Record<string, unknown>, idx: number) => {
-                                  if (!year || typeof year !== 'object') return null
-                                  const grade = String(year.grade || year.year || `Year ${idx + 1}`)
-                                  const focus = year.focus ? String(year.focus) : null
-                                  const academics = Array.isArray(year.academics) ? year.academics : []
-                                  const extracurriculars = Array.isArray(year.extracurriculars) ? year.extracurriculars : []
-                                  const testing = Array.isArray(year.testing) ? year.testing : []
-                                  const leadership = Array.isArray(year.leadership) ? year.leadership : []
-                                  const research = Array.isArray(year.research) ? year.research : []
-                                  const passionProjects = Array.isArray(year.passionProjects) ? year.passionProjects : []
-                                  const summerPlan = year.summerPlan ? String(year.summerPlan) : null
-                                  const sections = [
-                                    { label: 'Academics', items: academics, color: '#6366f1' },
-                                    { label: 'Extracurriculars', items: extracurriculars, color: '#c9a227' },
-                                    { label: 'Testing', items: testing, color: '#3b82f6' },
-                                    { label: 'Leadership', items: leadership, color: '#ef4444' },
-                                    { label: 'Research', items: research, color: '#06b6d4' },
-                                    { label: 'Passion Projects', items: passionProjects, color: '#f59e0b' },
-                                  ].filter(s => s.items.length > 0)
-                                  return (
-                                    <AccordionItem key={idx} value={`grade-${idx}`} className="border border-[#e5e0d5] rounded-lg overflow-hidden">
-                                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-[#faf8f3]/50">
-                                        <div className="flex items-center gap-2 text-left">
-                                          <GraduationCap className="w-4 h-4 text-[#c9a227]" />
-                                          <span className="text-base font-semibold text-[#1e3a5f]">{grade}</span>
-                                          {idx === 0 && <Badge className="bg-[#c9a227]/10 text-[#c9a227] text-[10px]">Current</Badge>}
-                                        </div>
-                                      </AccordionTrigger>
-                                      <AccordionContent className="px-4 pb-4">
-                                        {focus && <p className="text-sm text-[#5a7a9a] mb-3">{focus}</p>}
-                                        <Accordion type="multiple" defaultValue={sections.map((_, si) => `${idx}-section-${si}`)} className="space-y-2">
-                                          {sections.map((section, si) => (
-                                            <AccordionItem key={si} value={`${idx}-section-${si}`} className="border-none">
-                                              <AccordionTrigger className="py-1.5 hover:no-underline">
-                                                <span className="font-semibold text-[#1e3a5f] text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: section.color }} />
-                                                  {section.label}
-                                                  <span className="text-[10px] font-bold text-[#5a7a9a]/40 ml-1">{section.items.length}</span>
-                                                </span>
-                                              </AccordionTrigger>
-                                              <AccordionContent className="pb-1 pl-3">
-                                                {section.items.map((a, i) => <p key={i} className="text-[#5a7a9a] text-[13px] py-0.5">• {String(a)}</p>)}
-                                              </AccordionContent>
-                                            </AccordionItem>
-                                          ))}
-                                          {summerPlan && (
-                                            <AccordionItem value={`${idx}-section-summer`} className="border-none">
-                                              <AccordionTrigger className="py-1.5 hover:no-underline">
-                                                <span className="font-semibold text-[#1e3a5f] text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                                  <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
-                                                  Summer Plan
-                                                </span>
-                                              </AccordionTrigger>
-                                              <AccordionContent className="pb-1 pl-3">
-                                                <p className="text-[#5a7a9a] text-[13px]">{summerPlan}</p>
-                                              </AccordionContent>
-                                            </AccordionItem>
-                                          )}
-                                        </Accordion>
-                                      </AccordionContent>
-                                    </AccordionItem>
-                                  )
-                                })}
-                              </Accordion>
-                            )
-                          } catch (e) {
-                            console.error('Timeline render error:', e)
-                            return null
-                          }
-                        })()}
-                      </div>
-                    )}
-
-                    {/* Short/Medium/Long-term goals */}
-                    {assessment.roadmap_data && (
-                      <div className="grid md:grid-cols-3 gap-4">
-                        {[
-                          { title: "Short-term", subtitle: "3-6 months", items: toArray(assessment.roadmap_data.shortTerm), color: "#f59e0b" },
-                          { title: "Medium-term", subtitle: "6-12 months", items: toArray(assessment.roadmap_data.mediumTerm), color: "#3b82f6" },
-                          { title: "Long-term", subtitle: "1+ years", items: toArray(assessment.roadmap_data.longTerm), color: "#10b981" },
-                        ].filter(p => p.items.length > 0).map((phase) => (
-                          <Card key={phase.title} className="border-[#e5e0d5]">
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm text-[#1e3a5f] flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: phase.color }} />
-                                {phase.title}
-                                <span className="text-[10px] text-[#5a7a9a] ml-auto">{phase.subtitle}</span>
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <Accordion type="multiple" className="space-y-0.5">
-                                {phase.items.map((item, i) => {
-                                  const colonIdx = item.indexOf(':')
-                                  const heading = colonIdx > 0 && colonIdx < 80 ? item.slice(0, colonIdx).trim() : item
-                                  const detail = colonIdx > 0 && colonIdx < 80 ? item.slice(colonIdx + 1).trim() : ''
-                                  return (
-                                    <AccordionItem key={i} value={`${phase.title}-${i}`} className="border-none">
-                                      {detail ? (
-                                        <>
-                                          <AccordionTrigger className="py-1.5 hover:no-underline">
-                                            <div className="flex items-start gap-2 text-left">
-                                              <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: phase.color }} />
-                                              <span className="text-[13px] font-medium text-[#1e3a5f] leading-snug">{heading}</span>
-                                            </div>
-                                          </AccordionTrigger>
-                                          <AccordionContent className="pb-1.5 pl-3.5">
-                                            <p className="text-xs text-[#5a7a9a] leading-relaxed">{detail}</p>
-                                          </AccordionContent>
-                                        </>
-                                      ) : (
-                                        <div className="flex items-start gap-2 py-1.5">
-                                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: phase.color }} />
-                                          <span className="text-[13px] text-[#5a7a9a] leading-snug">{heading}</span>
-                                        </div>
-                                      )}
-                                    </AccordionItem>
-                                  )
-                                })}
-                              </Accordion>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-
-                    {assessment.waste_of_time_activities?.activities && assessment.waste_of_time_activities.activities.length > 0 && (
-                      <Card className="border-red-200/60">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
-                            <XCircle className="w-5 h-5 text-red-400" />
-                            Consider Dropping
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <Accordion type="multiple" className="space-y-1">
-                            {assessment.waste_of_time_activities.activities.map((item, i) => (
-                              <AccordionItem key={i} value={`drop-${i}`} className="bg-red-50/60 rounded-lg border-none px-3">
-                                <AccordionTrigger className="py-2 hover:no-underline">
-                                  <span className="text-sm font-medium text-red-700 text-left">{item.activity}</span>
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-2">
-                                  <p className="text-[13px] text-[#5a7a9a] leading-relaxed">{item.whyQuit}</p>
-                                </AccordionContent>
-                              </AccordionItem>
-                            ))}
-                          </Accordion>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                </TabsContent>
 
             <TabsContent value="leadership" className="mt-6">
               {!assessment.leadership_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="leadership" /> : <div className="grid md:grid-cols-2 gap-6">

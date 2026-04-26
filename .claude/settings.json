@@ -69,7 +69,11 @@
       "Bash(git -C \"/Users/vish/Documents/Platforms/VMotiv8 Roadmap/vmotiv8roadmap-master\" log --oneline -10)",
       "Bash(git commit:*)",
       "Bash(scope, and application\":*)",
-      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint -name *referral* -o -name *supabase_setup*)"
+      "Bash(find /Users/vish/Documents/Platforms/thestudentblueprint -name *referral* -o -name *supabase_setup*)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@thestudentblueprint.com\",\"password\":\"Success0318!\"}' -w '\\\\nHTTP Status: %{http_code}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@thestudentblueprint.com\",\"password\":\"Success0318!\"}' --max-time 15 -w '\\\\nHTTP Status: %{http_code}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@thestudentblueprint.com\",\"password\":\"Success0318!\"}' --max-time 20 -w '\\\\nHTTP Status: %{http_code}')"
     ],
     "additionalDirectories": [
       "/Users/vish/Documents/Platforms/thestudentblueprint/src/app/api/assessment/[id]"

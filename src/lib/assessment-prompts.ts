@@ -125,6 +125,7 @@ Family Context:
 - Mother's Profession: ${sanitizeForPrompt(familyContext.motherProfession) || 'Not provided'}
 - Sibling Professions: ${sanitizeForPrompt(familyContext.siblingProfessions) || 'Not provided'}
 - Legacy Connections: ${sanitizeForPrompt(JSON.stringify(familyContext.legacyEntries || []), 1000)}
+- Annual Family Income: ${sanitizeForPrompt(familyContext.annualFamilyIncome) || 'Not provided'}
 - Financial Aid Needed: ${familyContext.financialAidNeeded ? 'Yes' : 'No'}
 - Merit Scholarship Interest: ${familyContext.meritScholarshipInterest ? 'Yes' : 'No'}
 

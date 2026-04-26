@@ -26,54 +26,32 @@ export async function GET() {
 
     const isSuperAdmin = admin.role === "super_admin" || admin.role === "god"
 
-    // Build queries with org filtering for non-super admins
-    let studentsQuery = supabase
-      .from("students")
-      .select("full_name, email, city, state, country, gender")
-
     let assessmentsQuery = supabase
       .from("assessments")
       .select("basic_info, personality, family_context")
       .or('is_demo.is.null,is_demo.eq.false')
 
     if (!isSuperAdmin) {
-      studentsQuery = studentsQuery.eq("organization_id", admin.organization_id)
       assessmentsQuery = assessmentsQuery.eq("organization_id", admin.organization_id)
     }
 
-    const { data: students, error: studentsError } = await studentsQuery
     const { data: assessments, error: assessmentsError } = await assessmentsQuery
-
-    if (studentsError) {
-      console.error("Students demographics fetch error:", studentsError)
-      return NextResponse.json({ error: "Failed to fetch student demographics" }, { status: 500 })
-    }
 
     if (assessmentsError) {
       console.error("Assessments demographics fetch error:", assessmentsError)
       return NextResponse.json({ error: "Failed to fetch assessment demographics" }, { status: 500 })
     }
 
-    // Combine data from students table and assessments basic_info
-    const allData = [
-      ...(students || []).map(s => ({
-        fullName: s.full_name,
-        email: s.email,
-        state: s.state,
-        country: s.country,
-        gender: s.gender
-      })),
-      ...(assessments || []).map(a => {
-        const bi = (a.basic_info as Record<string, unknown>) || {}
-        return {
-          fullName: bi.fullName as string | null || null,
-          email: bi.email as string | null || null,
-          state: bi.state as string | null || null,
-          country: bi.country as string | null || null,
-          gender: bi.gender as string | null || (a.personality as Record<string, unknown>)?.gender as string | null || (a.family_context as Record<string, unknown>)?.gender as string | null || null
-        }
-      })
-    ]
+    const allData = (assessments || []).map(a => {
+      const bi = (a.basic_info as Record<string, unknown>) || {}
+      return {
+        fullName: bi.fullName as string | null || null,
+        email: bi.email as string | null || null,
+        state: bi.state as string | null || null,
+        country: bi.country as string | null || null,
+        gender: bi.gender as string | null || (a.personality as Record<string, unknown>)?.gender as string | null || (a.family_context as Record<string, unknown>)?.gender as string | null || null
+      }
+    })
 
     const normalizeCountry = (c: string) => {
       const clean = c.trim().toLowerCase()

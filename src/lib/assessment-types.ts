@@ -166,6 +166,7 @@ export interface FamilyContext {
   siblingProfessions?: string
   legacyConnections: string
   legacyEntries?: LegacyEntry[]
+  annualFamilyIncome?: string
   financialAidNeeded: boolean
   meritScholarshipInterest: boolean
 }
@@ -332,6 +333,7 @@ export const initialFormData: AssessmentData = {
     siblingProfessions: "",
     legacyConnections: "",
     legacyEntries: [{ college: "", relation: "" }],
+    annualFamilyIncome: "",
     financialAidNeeded: false,
     meritScholarshipInterest: false
   },

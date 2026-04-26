@@ -8,6 +8,7 @@ import { Redis } from '@upstash/redis'
 
 // Lazy-init Redis client (only when env vars are present)
 let _redis: Redis | null = null
+let warnedMissingRedis = false
 function getRedis(): Redis | null {
   if (_redis) return _redis
   const url = process.env.UPSTASH_REDIS_REST_URL
@@ -67,7 +68,7 @@ export function getClientIp(request: Request): string {
  * Rate limit response helper
  */
 export function rateLimitResponse(resetAt: number): NextResponse {
-  const retryAfter = Math.ceil((resetAt - Date.now()) / 1000)
+  const retryAfter = Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
   return NextResponse.json(
     { error: 'Too many requests. Please try again later.', retryAfter },
     {
@@ -93,7 +94,8 @@ export async function applyRateLimit(
   const limiter = getLimiter(configType)
   if (!limiter) {
     // Redis not configured — allow all (log warning in production)
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !warnedMissingRedis) {
+      warnedMissingRedis = true
       console.warn('[RateLimit] Upstash Redis not configured — rate limiting disabled')
     }
     return null
@@ -102,20 +104,23 @@ export async function applyRateLimit(
   const ip = getClientIp(request)
   const identifier = additionalIdentifier ? `${ip}:${additionalIdentifier}` : ip
 
-  const { success, reset } = await limiter.limit(identifier)
-
-  if (!success) {
-    return rateLimitResponse(reset)
+  try {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Rate limit timeout')), 3000)
+    )
+    const { success, reset } = await Promise.race([limiter.limit(identifier), timeout])
+    if (!success) {
+      return rateLimitResponse(reset)
+    }
+  } catch (err) {
+    console.warn('[RateLimit] Redis error, failing open:', err)
   }
 
   return null
 }
 
 // Legacy sync wrapper for backward compatibility — checks nothing if Redis not configured
-export function checkRateLimit(
-  _identifier: string,
-  _config: { windowMs: number; maxRequests: number }
-): { limited: boolean; remaining: number; resetAt: number } {
+export function checkRateLimit(): { limited: boolean; remaining: number; resetAt: number } {
   // Distributed rate limiting is now async via applyRateLimit()
   // This sync function exists only for backward compatibility and does nothing
   return { limited: false, remaining: 999, resetAt: Date.now() + 60000 }

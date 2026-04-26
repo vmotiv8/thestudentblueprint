@@ -1350,27 +1350,27 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-[#faf8f3]">
       <nav className="bg-[#0a192f] text-white sticky top-0 z-50 shadow-xl border-b border-white/5">
-        <div className="max-w-[1600px] mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Image src="/logo.png" alt="The Student Blueprint Logo" width={42} height={42} className="w-9 h-9 object-contain" />
-              <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+              <Image src="/logo.png" alt="The Student Blueprint Logo" width={42} height={42} className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0" />
+              <span className="font-bold text-base sm:text-xl tracking-tight leading-tight max-w-[8rem] sm:max-w-none" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
                 The Student Blueprint
               </span>
             </Link>
-            <Badge className="bg-[#c9a227] text-[#0a192f] border-0 rounded-full px-4 py-1 font-black text-[10px] uppercase tracking-widest shadow-lg">
+            <Badge className="hidden sm:inline-flex bg-[#c9a227] text-[#0a192f] border-0 rounded-full px-4 py-1 font-black text-[10px] uppercase tracking-widest shadow-lg">
               <Crown className="w-3 h-3 mr-1" />
               Platform Owner
             </Badge>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4 border-r border-white/10 pr-6">
+          <div className="flex items-center gap-2 sm:gap-6 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-4 sm:border-r border-white/10 sm:pr-6">
               <div className="flex flex-col items-end">
                 <span className="text-sm hidden lg:block font-bold text-white tracking-wide">
                   {admin.fullName || admin.email}
                 </span>
-                <Badge className="bg-[#c9a227] text-[#0a192f] hover:bg-[#b8921f] border-0 rounded-full px-3 py-0 h-5 text-[10px] font-black uppercase tracking-wider">
+                <Badge className="bg-[#c9a227] text-[#0a192f] hover:bg-[#b8921f] border-0 rounded-full px-2 sm:px-3 py-0 h-5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                   Super Admin
                 </Badge>
               </div>
@@ -1378,8 +1378,8 @@ export default function SuperAdminDashboard() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="relative group outline-none">
-                    <div className="w-10 h-10 rounded-full border-2 border-[#c9a227]/50 flex items-center justify-center bg-[#faf8f3] transition-all duration-300 group-hover:border-[#c9a227] group-hover:scale-105 shadow-lg">
-                      <span className="text-[#0a192f] font-bold text-lg uppercase">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-[#c9a227]/50 flex items-center justify-center bg-[#faf8f3] transition-all duration-300 group-hover:border-[#c9a227] group-hover:scale-105 shadow-lg">
+                      <span className="text-[#0a192f] font-bold text-base sm:text-lg uppercase">
                         {(admin.fullName || admin.email || "A")[0]}
                       </span>
                     </div>
@@ -1427,34 +1427,34 @@ export default function SuperAdminDashboard() {
         </div>
       </nav>
 
-      <main className="max-w-[1600px] mx-auto px-6 py-8">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 sm:py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-[#0a192f] flex items-center gap-3" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-                <LayoutDashboard className="w-8 h-8 text-[#c9a227]" />
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 sm:mb-8">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#0a192f] flex items-start sm:items-center gap-3 leading-tight" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                <LayoutDashboard className="w-7 h-7 sm:w-8 sm:h-8 text-[#c9a227] shrink-0 mt-0.5 sm:mt-0" />
                 Platform Command Center
               </h1>
-              <p className="text-[#5a7a9a]">Manage agencies, licenses, and platform operations</p>
+              <p className="text-sm sm:text-base text-[#5a7a9a] mt-1">Manage agencies, licenses, and platform operations</p>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="border-[#e5e0d5]" onClick={fetchData} disabled={loading}>
+            <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex gap-2 sm:gap-3 overflow-x-auto pb-2 lg:pb-0">
+              <Button variant="outline" className="border-[#e5e0d5] shrink-0" onClick={fetchData} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button variant="outline" className="border-[#0a192f] text-[#0a192f] hover:bg-[#0a192f] hover:text-white" onClick={() => setShowSendAssessmentDialog(true)}>
+              <Button variant="outline" className="border-[#0a192f] text-[#0a192f] hover:bg-[#0a192f] hover:text-white shrink-0" onClick={() => setShowSendAssessmentDialog(true)}>
                 <Send className="w-4 h-4 mr-2" />
                 Send Assessment
               </Button>
               {isSuperAdmin && (
-                <Button variant="outline" className="border-[#06b6d4] text-[#06b6d4] hover:bg-[#06b6d4] hover:text-white" onClick={handleRunDemoAssessment} disabled={isRunningDemo}>
+                <Button variant="outline" className="border-[#06b6d4] text-[#06b6d4] hover:bg-[#06b6d4] hover:text-white shrink-0" onClick={handleRunDemoAssessment} disabled={isRunningDemo}>
                   {isRunningDemo ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
                   {isRunningDemo ? "Running Demo..." : "Demo Assessment"}
                 </Button>
               )}
               <Dialog open={showCreateOrgDialog} onOpenChange={setShowCreateOrgDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f]">
+                  <Button className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f] shrink-0">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Agency
                   </Button>
@@ -1573,38 +1573,38 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="!flex !flex-row gap-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="!flex !flex-col lg:!flex-row gap-4">
             {/* Sidebar */}
-            <TabsList className="!flex !flex-col !w-48 !h-auto items-stretch gap-1 bg-white border border-[#e5e0d5] p-2 rounded-2xl shadow-sm shrink-0 sticky top-24 self-start">
-              <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+            <TabsList className="-mx-1 sm:mx-0 !flex !flex-row lg:!flex-col !w-[calc(100vw-2rem)] sm:!w-full lg:!w-48 !max-w-full lg:!max-w-none !h-auto items-stretch !justify-start gap-1 bg-white border border-[#e5e0d5] p-2 rounded-2xl shadow-sm shrink-0 sticky top-[4.25rem] lg:top-24 self-start z-40 overflow-x-auto overscroll-x-contain scroll-smooth">
+              <TabsTrigger value="overview" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="agencies" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="agencies" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Building2 className="w-4 h-4 mr-2" />
                 Agencies
               </TabsTrigger>
-              <TabsTrigger value="all-students" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="all-students" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Users className="w-4 h-4 mr-2" />
                 All Students
               </TabsTrigger>
-              <TabsTrigger value="coupons" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="coupons" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Ticket className="w-4 h-4 mr-2" />
                 Coupons
               </TabsTrigger>
-              <TabsTrigger value="referrals" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="referrals" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <UserPlus className="w-4 h-4 mr-2" />
                 Referrals
               </TabsTrigger>
-              <TabsTrigger value="questions" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="questions" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <ClipboardList className="w-4 h-4 mr-2" />
                 Form Questions
               </TabsTrigger>
-              <TabsTrigger value="team" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="team" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <Shield className="w-4 h-4 mr-2" />
                 Team
               </TabsTrigger>
-              <TabsTrigger value="changelog" className="rounded-xl px-4 py-2.5 font-bold text-sm !flex-none justify-start data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
+              <TabsTrigger value="changelog" className="rounded-xl px-3 sm:px-4 py-2.5 font-bold text-sm !flex-none justify-start whitespace-nowrap data-[state=active]:bg-[#0a192f] data-[state=active]:text-white">
                 <History className="w-4 h-4 mr-2" />
                 Changelog
               </TabsTrigger>
@@ -1615,7 +1615,7 @@ export default function SuperAdminDashboard() {
 
             <TabsContent value="overview">
               {/* Quick Actions Bar */}
-              <div className="flex items-center justify-between mb-6 p-4 bg-gradient-to-r from-[#0a192f] to-[#1e3a5f] rounded-xl shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 p-4 bg-gradient-to-r from-[#0a192f] to-[#1e3a5f] rounded-xl shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#c9a227] rounded-lg flex items-center justify-center">
                     <Zap className="w-5 h-5 text-[#0a192f]" />
@@ -1625,17 +1625,17 @@ export default function SuperAdminDashboard() {
                     <p className="text-white/60 text-xs">Platform management shortcuts</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1 sm:pb-0">
                   <Button
                     onClick={() => setShowDemoDialog(true)}
-                    className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f] font-bold text-xs uppercase tracking-wider gap-2 h-9"
+                    className="bg-[#c9a227] hover:bg-[#b8921f] text-[#0a192f] font-bold text-xs uppercase tracking-wider gap-2 h-9 shrink-0"
                   >
                     <Play className="w-4 h-4" />
                     Start Demo
                   </Button>
                   <Dialog open={showCreateOrgDialog} onOpenChange={setShowCreateOrgDialog}>
                     <DialogTrigger asChild>
-                      <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider gap-2 h-9 border border-white/20">
+                      <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider gap-2 h-9 border border-white/20 shrink-0">
                         <Plus className="w-4 h-4" />
                         New Agency
                       </Button>
@@ -1644,7 +1644,7 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
                 <Card className="border-[#e5e0d5] hover:shadow-lg transition-shadow bg-gradient-to-br from-white to-blue-50/30">
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
@@ -1766,17 +1766,17 @@ export default function SuperAdminDashboard() {
                         .filter(o => !o.settings?.platformOwner)
                         .slice(0, 5)
                         .map((org) => (
-                          <div key={org.id} className="flex items-center justify-between p-3 bg-[#faf8f3] rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-[#0a192f] flex items-center justify-center text-white font-bold">
+                          <div key={org.id} className="flex items-center justify-between gap-3 p-3 bg-[#faf8f3] rounded-lg">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-10 h-10 rounded-lg bg-[#0a192f] flex items-center justify-center text-white font-bold shrink-0">
                                 {org.name[0]}
                               </div>
-                              <div>
-                                <p className="font-medium text-[#0a192f]">{org.name}</p>
-                                <p className="text-xs text-[#5a7a9a]">{org.slug}</p>
+                              <div className="min-w-0">
+                                <p className="font-medium text-[#0a192f] truncate">{org.name}</p>
+                                <p className="text-xs text-[#5a7a9a] truncate">{org.slug}</p>
                               </div>
                             </div>
-                            <Badge variant="outline" className="border-[#c9a227] text-[#c9a227]">
+                            <Badge variant="outline" className="border-[#c9a227] text-[#c9a227] shrink-0">
                               {org.plan_type}
                             </Badge>
                           </div>
@@ -1791,15 +1791,15 @@ export default function SuperAdminDashboard() {
 
               <Card className="border-[#e5e0d5]">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-[#0a192f] text-lg flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-[#c9a227]" />
-                      Platform Status
-                    </CardTitle>
-                    <div className="flex items-center gap-3">
-                      {platformStatus.timestamp && (
-                        <span className="text-xs text-[#5a7a9a]">
-                          Last checked: {new Date(platformStatus.timestamp).toLocaleTimeString()}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <CardTitle className="text-[#0a192f] text-lg flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-[#c9a227]" />
+                        Platform Status
+                      </CardTitle>
+                      <div className="flex items-center gap-3 justify-between sm:justify-end">
+                        {platformStatus.timestamp && (
+                          <span className="text-xs text-[#5a7a9a]">
+                            Last checked: {new Date(platformStatus.timestamp).toLocaleTimeString()}
                         </span>
                       )}
                       <Button
@@ -1853,7 +1853,7 @@ export default function SuperAdminDashboard() {
                     {platformStatus.services && (
                       <div>
                         <p className="text-xs font-bold uppercase tracking-widest text-[#5a7a9a] mb-3">Service Health</p>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {[
                             { name: "Database (Supabase)", key: "database" as const, icon: <Package className="w-4 h-4" /> },
                             { name: "Email (Resend)", key: "email" as const, icon: <Mail className="w-4 h-4" /> },
@@ -2651,20 +2651,20 @@ export default function SuperAdminDashboard() {
               </div>
             </TabsContent>
 
-            <TabsContent value="all-students" className="space-y-6">
-              <div className="flex items-center justify-between">
+            <TabsContent value="all-students" className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#0a192f]">Student Assessments</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#0a192f]">Student Assessments</h2>
                   <p className="text-sm text-[#5a7a9a]">View and manage all student assessments</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="relative">
+                  <div className="relative flex-1 sm:flex-none">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a7a9a]" />
                     <Input
                       placeholder="Search students..."
                       value={studentSearch}
                       onChange={(e) => setStudentSearch(e.target.value)}
-                      className="pl-10 h-9 w-64 border-[#e5e0d5] text-sm"
+                      className="pl-10 h-9 w-full sm:w-64 border-[#e5e0d5] text-sm"
                     />
                   </div>
                   <Button variant="outline" size="sm" onClick={fetchAllStudents} disabled={studentsLoading}>
@@ -2674,9 +2674,9 @@ export default function SuperAdminDashboard() {
               </div>
 
               {/* Filters Row */}
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="grid grid-cols-3 sm:flex sm:items-center gap-2 sm:gap-3">
                 <Select value={gradeFilter} onValueChange={setGradeFilter}>
-                  <SelectTrigger className="w-[180px] h-9 border-[#e5e0d5] text-sm">
+                  <SelectTrigger className="h-9 border-[#e5e0d5] text-sm sm:w-[180px]">
                     <SelectValue placeholder="All Grades" />
                   </SelectTrigger>
                   <SelectContent>
@@ -2688,7 +2688,7 @@ export default function SuperAdminDashboard() {
                 </Select>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[160px] h-9 border-[#e5e0d5] text-sm">
+                  <SelectTrigger className="h-9 border-[#e5e0d5] text-sm sm:w-[160px]">
                     <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -2701,7 +2701,7 @@ export default function SuperAdminDashboard() {
                 </Select>
 
                 <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                  <SelectTrigger className="w-[180px] h-9 border-[#e5e0d5] text-sm">
+                  <SelectTrigger className="h-9 border-[#e5e0d5] text-sm sm:w-[180px]">
                     <SelectValue placeholder="All Payment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -2721,141 +2721,44 @@ export default function SuperAdminDashboard() {
                   <Loader2 className="w-8 h-8 animate-spin text-[#0a192f]" />
                 </div>
               ) : (
-                <Card className="border-[#e5e0d5]">
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
-                          <TableHead className="font-bold text-[#0a192f] px-6">Student</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Agency</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Grade</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Score</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Payment</TableHead>
-                          <TableHead className="font-bold text-[#0a192f]">Date</TableHead>
-                          <TableHead className="font-bold text-[#0a192f] text-right px-6">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {allStudents
-                          .filter(a => {
-                            // Search filter
-                            if (studentSearch) {
-                              const search = studentSearch.toLowerCase()
-                              const name = `${a.student?.first_name || ''} ${a.student?.last_name || ''} ${a.student?.full_name || ''}`.toLowerCase()
-                              const email = (a.student?.email || '').toLowerCase()
-                              const school = (a.student?.school_name || '').toLowerCase()
-                              if (!name.includes(search) && !email.includes(search) && !school.includes(search)) return false
-                            }
-                            // Grade filter
-                            if (gradeFilter !== 'all' && a.student?.grade_level !== gradeFilter) return false
-                            // Status filter
-                            if (statusFilter !== 'all' && a.status !== statusFilter) return false
-                            // Payment filter
-                            if (paymentFilter !== 'all') {
-                              const paymentVal = a.coupon_code || a.payment_status || 'unknown'
-                              if (paymentVal !== paymentFilter) return false
-                            }
-                            return true
-                          })
-                          .map((assessment) => (
-                          <TableRow key={assessment.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
-                            <TableCell className="px-6 py-4">
-                              <div>
-                                <p className="font-bold text-[#0a192f]">
+                <>
+                  {/* Mobile card list */}
+                  <div className="md:hidden space-y-3">
+                    {allStudents
+                      .filter(a => {
+                        if (studentSearch) {
+                          const search = studentSearch.toLowerCase()
+                          const name = `${a.student?.first_name || ''} ${a.student?.last_name || ''} ${a.student?.full_name || ''}`.toLowerCase()
+                          const email = (a.student?.email || '').toLowerCase()
+                          const school = (a.student?.school_name || '').toLowerCase()
+                          if (!name.includes(search) && !email.includes(search) && !school.includes(search)) return false
+                        }
+                        if (gradeFilter !== 'all' && a.student?.grade_level !== gradeFilter) return false
+                        if (statusFilter !== 'all' && a.status !== statusFilter) return false
+                        if (paymentFilter !== 'all') {
+                          const paymentVal = a.coupon_code || a.payment_status || 'unknown'
+                          if (paymentVal !== paymentFilter) return false
+                        }
+                        return true
+                      })
+                      .map((assessment) => (
+                        <Card key={assessment.id} className="border-[#e5e0d5]">
+                          <CardContent className="p-4 space-y-3">
+                            {/* Name + actions row */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="font-bold text-[#0a192f] truncate">
                                   {assessment.student?.full_name || `${assessment.student?.first_name || ''} ${assessment.student?.last_name || ''}`.trim() || 'Unknown'}
                                 </p>
-                                <p className="text-xs text-[#5a7a9a]">{assessment.student?.email}</p>
+                                <p className="text-xs text-[#5a7a9a] truncate">{assessment.student?.email}</p>
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-xs text-[#5a7a9a]">
-                                {assessment.organization?.name || '\u2014'}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-[#5a7a9a]">
-                                {assessment.student?.grade_level || '\u2014'}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {assessment.status === 'completed' ? (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-600">
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  Completed
-                                </span>
-                              ) : assessment.status === 'partial' ? (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  Generating...
-                                </span>
-                              ) : assessment.status === 'in_progress' ? (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  Section {assessment.current_section || '?'}/15
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  Started
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {assessment.competitiveness_score ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold text-[#0a192f] text-sm w-6">{assessment.competitiveness_score}</span>
-                                  <div className="w-16 h-2 bg-[#e5e0d5] rounded-full overflow-hidden">
-                                    <div
-                                      className={`h-full rounded-full ${
-                                        assessment.competitiveness_score >= 80 ? 'bg-green-500' :
-                                        assessment.competitiveness_score >= 60 ? 'bg-amber-500' :
-                                        'bg-red-400'
-                                      }`}
-                                      style={{ width: `${assessment.competitiveness_score}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="text-[#5a7a9a]">&mdash;</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {assessment.coupon_code ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700">
-                                  <Ticket className="w-3 h-3 mr-1" />
-                                  {assessment.coupon_code}
-                                </span>
-                              ) : assessment.payment_status === 'paid' ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">
-                                  PAID
-                                </span>
-                              ) : assessment.payment_status === 'free' ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">
-                                  FREE
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-500">
-                                  {(assessment.payment_status || 'unpaid').toUpperCase()}
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-[#5a7a9a]">
-                                {new Date(assessment.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
-                              </span>
-                            </TableCell>
-                            <TableCell className="px-6">
-                              <div className="flex items-center justify-end gap-1">
+                              <div className="flex items-center gap-0.5 shrink-0">
                                 <Button
                                   size="sm"
                                   variant="ghost"
                                   className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
                                   title="Student Details"
-                                  onClick={() => {
-                                    setSelectedStudent(assessment)
-                                    setShowStudentDialog(true)
-                                  }}
+                                  onClick={() => { setSelectedStudent(assessment); setShowStudentDialog(true) }}
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
@@ -2931,20 +2834,298 @@ export default function SuperAdminDashboard() {
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
-                            </TableCell>
+                            </div>
+
+                            {/* Meta row */}
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                              {assessment.status === 'completed' ? (
+                                <span className="inline-flex items-center gap-1 font-bold text-green-600">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />Completed
+                                </span>
+                              ) : assessment.status === 'partial' ? (
+                                <span className="inline-flex items-center gap-1 font-bold text-blue-600">
+                                  <Clock className="w-3.5 h-3.5" />Generating...
+                                </span>
+                              ) : assessment.status === 'in_progress' ? (
+                                <span className="inline-flex items-center gap-1 font-bold text-amber-600">
+                                  <Clock className="w-3.5 h-3.5" />Section {assessment.current_section || '?'}/15
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 font-bold text-gray-500">
+                                  <Clock className="w-3.5 h-3.5" />Started
+                                </span>
+                              )}
+                              <span className="text-[#5a7a9a]">\u00b7</span>
+                              <span className="text-[#5a7a9a]">{assessment.student?.grade_level || '\u2014'}</span>
+                              <span className="text-[#5a7a9a]">\u00b7</span>
+                              <span className="text-[#5a7a9a]">{assessment.organization?.name || '\u2014'}</span>
+                              <span className="text-[#5a7a9a]">\u00b7</span>
+                              <span className="text-[#5a7a9a]">{new Date(assessment.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+
+                            {/* Score + payment row */}
+                            <div className="flex items-center justify-between">
+                              {assessment.competitiveness_score ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-[#0a192f] text-sm">{assessment.competitiveness_score}</span>
+                                  <div className="w-20 h-2 bg-[#e5e0d5] rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${
+                                        assessment.competitiveness_score >= 80 ? 'bg-green-500' :
+                                        assessment.competitiveness_score >= 60 ? 'bg-amber-500' :
+                                        'bg-red-400'
+                                      }`}
+                                      style={{ width: `${assessment.competitiveness_score}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-[#5a7a9a] text-sm">\u2014</span>
+                              )}
+                              {assessment.coupon_code ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700">
+                                  <Ticket className="w-3 h-3 mr-1" />{assessment.coupon_code}
+                                </span>
+                              ) : assessment.payment_status === 'paid' ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">PAID</span>
+                              ) : assessment.payment_status === 'free' ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">FREE</span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-500">
+                                  {(assessment.payment_status || 'unpaid').toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    {allStudents.length === 0 && (
+                      <p className="text-center text-[#5a7a9a] py-16">No student assessments found.</p>
+                    )}
+                  </div>
+
+                  {/* Desktop table */}
+                  <Card className="hidden md:block border-[#e5e0d5]">
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-[#e5e0d5] bg-[#faf8f3]">
+                            <TableHead className="font-bold text-[#0a192f] px-6">Student</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Agency</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Grade</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Status</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Score</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Payment</TableHead>
+                            <TableHead className="font-bold text-[#0a192f]">Date</TableHead>
+                            <TableHead className="font-bold text-[#0a192f] text-right px-6">Actions</TableHead>
                           </TableRow>
-                        ))}
-                        {allStudents.length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={8} className="h-40 text-center text-[#5a7a9a]">
-                              No student assessments found.
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+                        </TableHeader>
+                        <TableBody>
+                          {allStudents
+                            .filter(a => {
+                              if (studentSearch) {
+                                const search = studentSearch.toLowerCase()
+                                const name = `${a.student?.first_name || ''} ${a.student?.last_name || ''} ${a.student?.full_name || ''}`.toLowerCase()
+                                const email = (a.student?.email || '').toLowerCase()
+                                const school = (a.student?.school_name || '').toLowerCase()
+                                if (!name.includes(search) && !email.includes(search) && !school.includes(search)) return false
+                              }
+                              if (gradeFilter !== 'all' && a.student?.grade_level !== gradeFilter) return false
+                              if (statusFilter !== 'all' && a.status !== statusFilter) return false
+                              if (paymentFilter !== 'all') {
+                                const paymentVal = a.coupon_code || a.payment_status || 'unknown'
+                                if (paymentVal !== paymentFilter) return false
+                              }
+                              return true
+                            })
+                            .map((assessment) => (
+                            <TableRow key={assessment.id} className="border-[#e5e0d5] hover:bg-[#faf8f3]/50">
+                              <TableCell className="px-6 py-4">
+                                <div>
+                                  <p className="font-bold text-[#0a192f]">
+                                    {assessment.student?.full_name || `${assessment.student?.first_name || ''} ${assessment.student?.last_name || ''}`.trim() || 'Unknown'}
+                                  </p>
+                                  <p className="text-xs text-[#5a7a9a]">{assessment.student?.email}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-xs text-[#5a7a9a]">
+                                  {assessment.organization?.name || '\u2014'}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm text-[#5a7a9a]">
+                                  {assessment.student?.grade_level || '\u2014'}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                {assessment.status === 'completed' ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-600">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    Completed
+                                  </span>
+                                ) : assessment.status === 'partial' ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Generating...
+                                  </span>
+                                ) : assessment.status === 'in_progress' ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Section {assessment.current_section || '?'}/15
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Started
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {assessment.competitiveness_score ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-[#0a192f] text-sm w-6">{assessment.competitiveness_score}</span>
+                                    <div className="w-16 h-2 bg-[#e5e0d5] rounded-full overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full ${
+                                          assessment.competitiveness_score >= 80 ? 'bg-green-500' :
+                                          assessment.competitiveness_score >= 60 ? 'bg-amber-500' :
+                                          'bg-red-400'
+                                        }`}
+                                        style={{ width: `${assessment.competitiveness_score}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-[#5a7a9a]">&mdash;</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {assessment.coupon_code ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700">
+                                    <Ticket className="w-3 h-3 mr-1" />
+                                    {assessment.coupon_code}
+                                  </span>
+                                ) : assessment.payment_status === 'paid' ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">
+                                    PAID
+                                  </span>
+                                ) : assessment.payment_status === 'free' ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">
+                                    FREE
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-500">
+                                    {(assessment.payment_status || 'unpaid').toUpperCase()}
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm text-[#5a7a9a]">
+                                  {new Date(assessment.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                                </span>
+                              </TableCell>
+                              <TableCell className="px-6">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                    title="Student Details"
+                                    onClick={() => {
+                                      setSelectedStudent(assessment)
+                                      setShowStudentDialog(true)
+                                    }}
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  {assessment.status !== 'completed' && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-amber-500 hover:text-amber-700"
+                                      title="Send Reminder Email"
+                                      onClick={async () => {
+                                        try {
+                                          toast.loading("Sending reminder...", { id: `remind-${assessment.id}` })
+                                          const res = await fetch("/api/admin/send-resume-reminder", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ assessmentId: assessment.id }),
+                                          })
+                                          const data = await res.json()
+                                          if (data.success) {
+                                            toast.success(`Reminder sent to ${data.sentTo}`, { id: `remind-${assessment.id}` })
+                                          } else {
+                                            toast.error(data.error || "Failed to send reminder", { id: `remind-${assessment.id}` })
+                                          }
+                                        } catch {
+                                          toast.error("Failed to send reminder", { id: `remind-${assessment.id}` })
+                                        }
+                                      }}
+                                    >
+                                      <Mail className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {(assessment.status === 'completed' || assessment.status === 'partial') && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                        title="View Report"
+                                        onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                                      >
+                                        <FileText className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                        title="Download PDF"
+                                        onClick={() => window.open(`/api/pdf/${assessment.id}`, '_blank')}
+                                      >
+                                        <Download className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0 text-[#5a7a9a] hover:text-[#0a192f]"
+                                    title="Copy Link"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(`${window.location.origin}/results/${assessment.id}`)
+                                      toast.success("Link copied to clipboard")
+                                    }}
+                                  >
+                                    <Link2 className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0 text-red-400 hover:text-red-600"
+                                    title="Delete"
+                                    onClick={() => setDeletingAssessmentId(assessment.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {allStudents.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={8} className="h-40 text-center text-[#5a7a9a]">
+                                No student assessments found.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </>
               )}
 
               {/* Delete Confirmation Dialog */}
@@ -4325,7 +4506,7 @@ export default function SuperAdminDashboard() {
                     { title: "Section 9: Research Experience", data: selectedStudent.responses?.researchExperience },
                     { title: "Section 10: Summer Programs", data: selectedStudent.responses?.summerPrograms, fieldOrder: ["noSummerPrograms", "programs"] },
                     { title: "Section 11: Special Talents", data: selectedStudent.responses?.specialTalents },
-                    { title: "Section 12: Family Context", data: selectedStudent.responses?.familyContext, fieldOrder: ["fatherProfession", "motherProfession", "siblingProfessions", "legacyEntries", "financialAidNeeded", "financialAidDetails"] },
+                    { title: "Section 12: Family Context", data: selectedStudent.responses?.familyContext, fieldOrder: ["fatherProfession", "motherProfession", "siblingProfessions", "legacyEntries", "annualFamilyIncome", "financialAidNeeded", "financialAidDetails"] },
                     { title: "Section 13: Personality", data: selectedStudent.responses?.personality, fieldOrder: ["archetype", "introvertExtrovert", "learningStyle", "strengthsWeaknesses", "workStyle"] },
                     { title: "Section 14: Personal Stories", data: selectedStudent.responses?.personalStories, fieldOrder: ["definingMoment", "biggestChallenge", "proudestAchievement", "communityImpact", "uniqueBackground"] },
                     { title: "Section 15: Time Commitment", data: selectedStudent.responses?.timeCommitment },
@@ -4365,7 +4546,8 @@ export default function SuperAdminDashboard() {
                               dreamJobTitle: "Dream Job Title", dreamJobDescription: "Dream Job Description",
                               careerStatement: "Career Statement", fatherProfession: "Father's Profession",
                               motherProfession: "Mother's Profession", siblingProfessions: "Sibling Professions",
-                              legacyEntries: "Legacy Entries", financialAidNeeded: "Financial Aid Needed",
+                              legacyEntries: "Legacy Entries", annualFamilyIncome: "Annual Family Income",
+                              financialAidNeeded: "Financial Aid Needed",
                               financialAidDetails: "Financial Aid Details", introvertExtrovert: "Introvert / Extrovert",
                               learningStyle: "Learning Style", strengthsWeaknesses: "Strengths & Weaknesses",
                               definingMoment: "Defining Moment", biggestChallenge: "Biggest Challenge",

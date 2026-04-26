@@ -6,7 +6,6 @@ import { provisionOrganization } from "@/lib/organization/provisioning"
 import { sendAgencyWelcomeEmail } from "@/lib/resend"
 import { buildAgencyUrl, getOriginFromRequest } from "@/lib/url"
 import { applyRateLimit } from "@/lib/rate-limit"
-import bcrypt from "bcryptjs"
 
 // Volume pricing tiers
 function getPricePerStudent(qty: number): number {
@@ -41,8 +40,6 @@ export async function POST(request: NextRequest) {
 
     // Calculate pricing
     const pricePerStudent = getPricePerStudent(quantity)
-    const totalCents = quantity * pricePerStudent * 100
-
     // Normalize slug
     const normalizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { createServerSupabaseClient } from "@/lib/supabase"
 import { randomBytes } from "crypto"
@@ -31,12 +31,10 @@ export async function POST() {
     // Generate a secure API key
     const apiKey = `sb_live_${randomBytes(24).toString('hex')}`
 
-    const { data: updatedOrg, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from("organizations")
       .update({ api_key: apiKey })
       .eq("id", admin.organization_id)
-      .select()
-      .single()
 
     if (updateError) {
       throw updateError

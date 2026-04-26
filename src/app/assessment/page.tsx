@@ -727,7 +727,6 @@ function AssessmentContent() {
         } else {
           // Auto-retry once on server errors before showing the error
           if (retryCount < 1 && response.status >= 500) {
-            console.log("Submission failed, retrying once...")
             setIsSubmitting(false)
             await new Promise(resolve => setTimeout(resolve, 3000))
             return handleSubmit(retryCount + 1)
@@ -739,7 +738,6 @@ function AssessmentContent() {
         }
       } catch (error) {
         if (retryCount < 1) {
-          console.log("Submission network error, retrying...")
           setIsSubmitting(false)
           await new Promise(resolve => setTimeout(resolve, 3000))
           return handleSubmit(retryCount + 1)
@@ -2928,6 +2926,28 @@ function AssessmentContent() {
                   Add Another Legacy Connection
                 </Button>
               )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="annualFamilyIncome">Annual Family Income</Label>
+              <p className="text-[#5a7a9a] text-xs">Used to surface need-based aid and scholarship opportunities tailored to your financial situation.</p>
+              <Select
+                value={formData.familyContext.annualFamilyIncome || ""}
+                onValueChange={(value) => updateFormData("familyContext", "annualFamilyIncome", value)}
+              >
+                <SelectTrigger id="annualFamilyIncome">
+                  <SelectValue placeholder="Select income range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Under $30,000">Under $30,000</SelectItem>
+                  <SelectItem value="$30,000 – $60,000">$30,000 – $60,000</SelectItem>
+                  <SelectItem value="$60,000 – $100,000">$60,000 – $100,000</SelectItem>
+                  <SelectItem value="$100,000 – $150,000">$100,000 – $150,000</SelectItem>
+                  <SelectItem value="$150,000 – $250,000">$150,000 – $250,000</SelectItem>
+                  <SelectItem value="$250,000 – $500,000">$250,000 – $500,000</SelectItem>
+                  <SelectItem value="Over $500,000">Over $500,000</SelectItem>
+                  <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="financialAidNeeded">Financial Aid or Merit Scholarship Interest</Label>

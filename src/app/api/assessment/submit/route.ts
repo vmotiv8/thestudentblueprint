@@ -49,8 +49,12 @@ export async function POST(request: Request) {
     }
 
     // Save responses and set status to in_progress
+    const studentTypeValue = (formData as Record<string, unknown>)?.basicInfo
+      ? ((formData as Record<string, Record<string, unknown>>).basicInfo?.studentType as string) || 'high_school'
+      : 'high_school'
     const submitUpdate: Record<string, unknown> = {
       responses: formData,
+      student_type: studentTypeValue,
       status: 'in_progress',
       updated_at: new Date().toISOString(),
     }

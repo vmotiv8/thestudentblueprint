@@ -4495,7 +4495,7 @@ export default function SuperAdminDashboard() {
               <TabsContent value="answers">
                 <div className="space-y-8">
                   {[
-                    { title: "Section 1: Basic Information", data: selectedStudent.responses?.basicInfo, fieldOrder: ["fullName", "email", "parentName", "parentEmail", "parentPhone", "dateOfBirth", "gender", "ethnicity", "currentGrade", "schoolName", "address", "city", "state", "country", "targetCollegeYear", "dreamSchools"] },
+                    { title: "Section 1: Basic Information", data: selectedStudent.responses?.basicInfo, fieldOrder: ["studentType", "fullName", "email", "parentName", "parentEmail", "parentPhone", "dateOfBirth", "gender", "ethnicity", "currentGrade", "schoolName", "address", "city", "state", "country", "targetCollegeYear", "dreamSchools", "major", "universityName", "targetProgramType", "undergradInstitution", "workExperienceYears", "researchField"] },
                     { title: "Section 2: Academic Profile", data: selectedStudent.responses?.academicProfile, fieldOrder: ["curriculum", "gpaScale", "gpaUnweighted", "gpaWeighted", "coursesTaken", "coursesPlanned", "regularCoursesTaken", "regularCoursesPlanned", "favoriteSubjects", "academicAwards", "apScores"] },
                     { title: "Section 3: Standardized Testing", data: selectedStudent.responses?.testingInfo, fieldOrder: ["satScore", "actScore", "apScores", "ibScores", "satSubjectTests"] },
                     { title: "Section 4: Extracurricular Activities", data: selectedStudent.responses?.extracurriculars, fieldOrder: ["noExtracurriculars", "activities"] },
@@ -4546,6 +4546,10 @@ export default function SuperAdminDashboard() {
                               dreamJobTitle: "Dream Job Title", dreamJobDescription: "Dream Job Description",
                               careerStatement: "Career Statement", fatherProfession: "Father's Profession",
                               motherProfession: "Mother's Profession", siblingProfessions: "Sibling Professions",
+                              studentType: "Student Type", major: "Major / Field of Study",
+                              universityName: "University Name", targetProgramType: "Target Program Type",
+                              undergradInstitution: "Undergrad Institution", workExperienceYears: "Years of Work Experience",
+                              researchField: "Research Field",
                               legacyEntries: "Legacy Entries", annualFamilyIncome: "Annual Family Income",
                               financialAidNeeded: "Financial Aid Needed",
                               financialAidDetails: "Financial Aid Details", introvertExtrovert: "Introvert / Extrovert",

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use, useRef, useCallback } from "react"
+import React, { useEffect, useState, use, useRef, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -69,6 +69,20 @@ import {
 const PHASE_1_TABS = new Set(['gaps', 'essays'])
 const PHASE_2_TABS = new Set(['projects', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match'])
 
+// Tabs shown for each student type. Undefined / high_school = all tabs.
+const RESULT_TABS_BY_TYPE: Record<string, string[]> = {
+  high_school: ['archetype', 'gaps', 'projects', 'career-future', 'academics', 'testing', 'scholarships', 'activities', 'college-match', 'essays'],
+  undergrad:   ['archetype', 'gaps', 'projects', 'career-future', 'academics', 'scholarships', 'activities', 'essays'],
+  grad:        ['archetype', 'gaps', 'career-future', 'scholarships', 'essays'],
+  phd:         ['archetype', 'gaps', 'career-future', 'scholarships', 'essays'],
+  middle:      ['archetype', 'gaps', 'activities', 'career-future', 'essays'],
+  elementary:  ['archetype', 'activities'],
+}
+
+function getResultTabs(studentType?: string): string[] {
+  return RESULT_TABS_BY_TYPE[studentType ?? 'high_school'] ?? RESULT_TABS_BY_TYPE.high_school
+}
+
 interface ActivityItem {
   name: string
   description: string
@@ -81,6 +95,7 @@ type ActivityEntry = string | ActivityItem
 interface Assessment {
   id: string
   status: string
+  student_type?: string
   generation_phase: number | null
   phase2_started_at: string | null
   student_archetype: string
@@ -862,7 +877,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 <Tabs defaultValue="archetype" className="w-full">
                   <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
                     <TabsList className="bg-white border border-[#e5e0d5] p-1 inline-flex h-auto gap-0.5 shadow-sm rounded-2xl min-w-max">
-                      {[
+                      {([
                         { value: "archetype", icon: Sparkles, label: "Archetype" },
                         { value: "gaps", icon: AlertCircle, label: "Gaps" },
                         { value: "projects", icon: Lightbulb, label: "Projects" },
@@ -872,8 +887,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                         { value: "scholarships", icon: DollarSign, label: "Scholarships" },
                         { value: "activities", icon: Trophy, label: "Activities" },
                         { value: "college-match", icon: Building, label: "Colleges" },
-                        { value: "essays", icon: PenLine, label: "Essays" },
-                      ].map(({ value, icon: Icon, label }) => (
+                        { value: "essays", icon: PenLine, label: assessment?.student_type === 'grad' || assessment?.student_type === 'phd' ? "Personal Statement" : "Essays" },
+                      ] as { value: string; icon: React.ComponentType<{ className?: string }>; label: string }[])
+                        .filter(({ value }) => getResultTabs(assessment?.student_type).includes(value))
+                        .map(({ value, icon: Icon, label }) => (
                         <TabsTrigger key={value} value={value} className="brand-tab px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-200 font-semibold flex items-center gap-1.5 h-auto whitespace-nowrap text-xs sm:text-sm relative">
                           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           {label}

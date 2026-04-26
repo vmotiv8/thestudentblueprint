@@ -60,10 +60,10 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import { 
-    SECTION_TITLES, 
-    GRADE_OPTIONS, 
-    SUBJECT_OPTIONS, 
+import {
+    SECTION_TITLES,
+    GRADE_OPTIONS,
+    SUBJECT_OPTIONS,
       ARCHETYPE_OPTIONS,
       CAREER_STATEMENT_OPTIONS,
       PACE_OPTIONS,
@@ -76,6 +76,17 @@ import {
       GPA_SCALE_OPTIONS,
       PHONE_COUNTRY_CODES,
       initialFormData,
+      getActiveSections,
+      getSectionTitle,
+      GRADE_OPTIONS_ELEMENTARY,
+      GRADE_OPTIONS_MIDDLE,
+      GRADE_OPTIONS_HIGH_SCHOOL,
+      GRADE_OPTIONS_UNDERGRAD,
+      GRADE_OPTIONS_GRAD,
+      GRADE_OPTIONS_PHD,
+      GRAD_PROGRAM_TYPES,
+      COLLEGE_YEAR_OPTIONS,
+      type StudentType,
       type Activity,
       type LeadershipEntry,
       type CompetitionEntry,
@@ -140,7 +151,12 @@ function AssessmentContent() {
     fetchTenant()
   }, [])
 
-  const progress = (currentSection / 15) * 100
+  const studentType = formData.basicInfo.studentType
+  const activeSections = useMemo(() => getActiveSections(studentType), [studentType])
+  const currentSectionIndex = activeSections.indexOf(currentSection)
+  const progress = activeSections.length > 0
+    ? ((currentSectionIndex + 1) / activeSections.length) * 100
+    : (currentSection / 15) * 100
 
   const countWords = (text: string) => {
     return text.trim().split(/\s+/).filter(word => word.length > 0).length
@@ -553,6 +569,8 @@ function AssessmentContent() {
     const errors: Record<string, string> = {}
     
     if (section === 1) {
+      const sType = formData.basicInfo.studentType
+      const isAdult = sType === 'undergrad' || sType === 'grad' || sType === 'phd'
       if (!formData.basicInfo.fullName?.trim()) {
         errors.fullName = "Name is required"
       }
@@ -561,20 +579,22 @@ function AssessmentContent() {
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.basicInfo.email)) {
         errors.email = "Please enter a valid email address"
       }
-      if (!formData.basicInfo.parentName?.trim()) {
-        errors.parentName = "Parent name is required"
-      }
-      if (!formData.basicInfo.parentEmail?.trim()) {
-        errors.parentEmail = "Parent email is required"
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.basicInfo.parentEmail)) {
-        errors.parentEmail = "Please enter a valid email address"
-      }
-      if (!formData.basicInfo.parentPhone?.trim()) {
-        errors.parentPhone = "Parent phone number is required"
-      } else {
-        const phoneDigits = formData.basicInfo.parentPhone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "").replace(/[\s\-().]/g, "")
-        if (!phoneDigits || phoneDigits.length < 5 || phoneDigits.length > 15 || !/^\d+$/.test(phoneDigits)) {
-          errors.parentPhone = "Please enter a valid phone number"
+      if (!isAdult) {
+        if (!formData.basicInfo.parentName?.trim()) {
+          errors.parentName = "Parent name is required"
+        }
+        if (!formData.basicInfo.parentEmail?.trim()) {
+          errors.parentEmail = "Parent email is required"
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.basicInfo.parentEmail)) {
+          errors.parentEmail = "Please enter a valid email address"
+        }
+        if (!formData.basicInfo.parentPhone?.trim()) {
+          errors.parentPhone = "Parent phone number is required"
+        } else {
+          const phoneDigits = formData.basicInfo.parentPhone.replace(/^\[[A-Z]{2}\]\+\d+\s*/, "").replace(/^\+\d+\s*/, "").replace(/[\s\-().]/g, "")
+          if (!phoneDigits || phoneDigits.length < 5 || phoneDigits.length > 15 || !/^\d+$/.test(phoneDigits)) {
+            errors.parentPhone = "Please enter a valid phone number"
+          }
         }
       }
       if (!formData.basicInfo.dateOfBirth) {
@@ -586,28 +606,22 @@ function AssessmentContent() {
       if (!formData.basicInfo.schoolName?.trim()) {
         errors.schoolName = "School name is required"
       }
-      if (!formData.basicInfo.address?.trim()) {
-        errors.address = "Address is required"
-      }
       if (!formData.basicInfo.city?.trim()) {
         errors.city = "City is required"
-      }
-      if (!formData.basicInfo.state?.trim()) {
-        errors.state = "State is required"
       }
       if (!formData.basicInfo.country) {
         errors.country = "Country is required"
       }
-        if (!formData.basicInfo.targetCollegeYear) {
-          errors.targetCollegeYear = "Target entry year is required"
-        }
-        if (!formData.basicInfo.gender) {
-          errors.gender = "Gender is required"
-        }
-        if (!formData.basicInfo.ethnicity) {
-          errors.ethnicity = "Ethnicity is required"
-        }
+      if (sType === 'high_school' && !formData.basicInfo.targetCollegeYear) {
+        errors.targetCollegeYear = "Target entry year is required"
       }
+      if (!formData.basicInfo.gender) {
+        errors.gender = "Gender is required"
+      }
+      if (!formData.basicInfo.ethnicity) {
+        errors.ethnicity = "Ethnicity is required"
+      }
+    }
       if (section === 2) {
         if (!formData.academicProfile.curriculum) {
           errors.curriculum = "Please select your curriculum"
@@ -680,25 +694,31 @@ function AssessmentContent() {
 
   const handleNext = async () => {
     if (currentSection === 1) {
+      if (!formData.basicInfo.studentType) {
+        toast.error("Please select your student type to continue")
+        return
+      }
       if (!validateSection(1)) {
         toast.error("Please fill in required fields")
         return
       }
     }
 
-    const nextSection = currentSection < 15 ? currentSection + 1 : currentSection
-    await autoSave(nextSection)
-
-    if (currentSection < 15) {
+    const idx = activeSections.indexOf(currentSection)
+    const isLast = idx === activeSections.length - 1
+    if (!isLast) {
+      const nextSection = activeSections[idx + 1]
+      await autoSave(nextSection)
       setCurrentSection(nextSection)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   const handlePrevious = async () => {
-    const prevSection = currentSection > 1 ? currentSection - 1 : currentSection
-    await autoSave(prevSection)
-    if (currentSection > 1) {
+    const idx = activeSections.indexOf(currentSection)
+    if (idx > 0) {
+      const prevSection = activeSections[idx - 1]
+      await autoSave(prevSection)
       setCurrentSection(prevSection)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
@@ -978,7 +998,47 @@ function AssessmentContent() {
       case 1:
         return (
           <div className="space-y-6">
-              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Student Type Selector */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-[#1e3a5f] flex items-center gap-1">
+                I am a… <span className="text-red-500">*</span>
+              </Label>
+              <p className="text-xs text-[#5a7a9a]">Select your student type — the rest of the form will adapt to your situation.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  { value: 'elementary', label: 'Elementary School', sub: 'Grades K–5', icon: '🌱' },
+                  { value: 'middle', label: 'Middle School', sub: 'Grades 6–8', icon: '📚' },
+                  { value: 'high_school', label: 'High School', sub: 'Grades 9–12', icon: '🎓' },
+                  { value: 'undergrad', label: 'Undergraduate', sub: 'College student', icon: '🏛️' },
+                  { value: 'grad', label: 'Graduate School', sub: 'MS / MBA / MD / JD', icon: '🔬' },
+                  { value: 'phd', label: 'PhD / Research', sub: 'Doctoral program', icon: '🧪' },
+                ] as { value: StudentType; label: string; sub: string; icon: string }[]).map(({ value, label, sub, icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => updateFormData("basicInfo", "studentType", value)}
+                    className={`flex flex-col items-start gap-1 p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
+                      formData.basicInfo.studentType === value
+                        ? "border-[#1e3a5f] bg-[#1e3a5f]/5"
+                        : "border-[#e5e0d5] hover:border-[#1e3a5f]/40 bg-white"
+                    }`}
+                  >
+                    <span className="text-xl">{icon}</span>
+                    <span className={`text-sm font-semibold leading-tight ${formData.basicInfo.studentType === value ? "text-[#1e3a5f]" : "text-[#2d2d2d]"}`}>{label}</span>
+                    <span className="text-xs text-[#5a7a9a] leading-tight">{sub}</span>
+                  </button>
+                ))}
+              </div>
+              {!formData.basicInfo.studentType && (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  Select your student type to continue
+                </p>
+              )}
+            </div>
+
+            <div className={!formData.basicInfo.studentType ? "hidden" : "space-y-6"}>
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="flex items-center gap-1">
                   Student Full Name <span className="text-red-500">*</span>
@@ -1027,6 +1087,7 @@ function AssessmentContent() {
                 )}
               </div>
             </div>
+              {!(formData.basicInfo.studentType === 'undergrad' || formData.basicInfo.studentType === 'grad' || formData.basicInfo.studentType === 'phd') && (
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="parentName" className="flex items-center gap-1">
@@ -1194,6 +1255,7 @@ function AssessmentContent() {
                 </div>
               </div>
             </div>
+              )}
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth" className="flex items-center gap-1">
@@ -1220,7 +1282,10 @@ function AssessmentContent() {
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
-                  Current Grade Level <span className="text-red-500">*</span>
+                  {formData.basicInfo.studentType === 'undergrad' ? 'College Year' :
+                   formData.basicInfo.studentType === 'grad' ? 'Program Stage' :
+                   formData.basicInfo.studentType === 'phd' ? 'PhD Stage' :
+                   'Current Grade Level'} <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.basicInfo.currentGrade}
@@ -1232,10 +1297,17 @@ function AssessmentContent() {
                   }}
                 >
                   <SelectTrigger className={validationErrors.currentGrade ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Select grade" />
+                    <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {GRADE_OPTIONS.map((grade) => (
+                    {(formData.basicInfo.studentType === 'elementary' ? GRADE_OPTIONS_ELEMENTARY :
+                      formData.basicInfo.studentType === 'middle' ? GRADE_OPTIONS_MIDDLE :
+                      formData.basicInfo.studentType === 'high_school' ? GRADE_OPTIONS_HIGH_SCHOOL :
+                      formData.basicInfo.studentType === 'undergrad' ? GRADE_OPTIONS_UNDERGRAD :
+                      formData.basicInfo.studentType === 'grad' ? GRADE_OPTIONS_GRAD :
+                      formData.basicInfo.studentType === 'phd' ? GRADE_OPTIONS_PHD :
+                      GRADE_OPTIONS
+                    ).map((grade) => (
                       <SelectItem key={grade} value={grade}>{grade}</SelectItem>
                     ))}
                   </SelectContent>
@@ -1272,6 +1344,7 @@ function AssessmentContent() {
                   </p>
                 )}
               </div>
+              {formData.basicInfo.studentType === 'high_school' && (
               <div className="space-y-2">
                 <Label htmlFor="targetYear" className="flex items-center gap-1">
                   Target College Entry Year <span className="text-red-500">*</span>
@@ -1302,6 +1375,7 @@ function AssessmentContent() {
                   </p>
                 )}
               </div>
+              )}
             </div>
                   <div className="space-y-4">
                     <Label htmlFor="address" className="flex items-center gap-1">
@@ -1534,6 +1608,7 @@ function AssessmentContent() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add School
               </Button>
+            </div>
             </div>
           </div>
         )
@@ -1815,6 +1890,69 @@ function AssessmentContent() {
         )
 
       case 3:
+        if (studentType === 'grad' || studentType === 'phd') {
+          const isGrad = studentType === 'grad'
+          const programType = formData.basicInfo.targetProgramType || ''
+          return (
+            <div className="space-y-6">
+              <p className="text-[#5a7a9a] text-sm">Enter any standardized test scores relevant to your program applications.</p>
+              <div className="flex items-center space-x-2 bg-[#faf8f3] p-3 rounded-lg border border-[#e5e0d5]">
+                <Checkbox
+                  id="greNotTaken"
+                  checked={formData.testingInfo.greNotTaken}
+                  onCheckedChange={(checked) => updateFormData("testingInfo", "greNotTaken", checked)}
+                />
+                <Label htmlFor="greNotTaken" className="cursor-pointer font-medium">
+                  I have not taken any graduate standardized tests yet
+                </Label>
+              </div>
+              {!formData.testingInfo.greNotTaken && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#1e3a5f] mb-3">GRE Scores</h3>
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Verbal Reasoning</Label>
+                        <Input value={formData.testingInfo.greVerbal || ''} onChange={(e) => updateFormData("testingInfo", "greVerbal", e.target.value)} placeholder="e.g., 162 (out of 170)" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Quantitative Reasoning</Label>
+                        <Input value={formData.testingInfo.greQuantitative || ''} onChange={(e) => updateFormData("testingInfo", "greQuantitative", e.target.value)} placeholder="e.g., 168 (out of 170)" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Analytical Writing</Label>
+                        <Input value={formData.testingInfo.greAnalytical || ''} onChange={(e) => updateFormData("testingInfo", "greAnalytical", e.target.value)} placeholder="e.g., 4.5 (out of 6)" />
+                      </div>
+                    </div>
+                  </div>
+                  {isGrad && (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#1e3a5f] mb-3">GMAT Score <span className="text-xs text-[#5a7a9a] font-normal">(for MBA programs)</span></h3>
+                        <div className="max-w-xs">
+                          <Input value={formData.testingInfo.gmatScore || ''} onChange={(e) => updateFormData("testingInfo", "gmatScore", e.target.value)} placeholder="e.g., 720 (out of 800)" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#1e3a5f] mb-3">MCAT Score <span className="text-xs text-[#5a7a9a] font-normal">(for MD programs)</span></h3>
+                        <div className="max-w-xs">
+                          <Input value={formData.testingInfo.mcatScore || ''} onChange={(e) => updateFormData("testingInfo", "mcatScore", e.target.value)} placeholder="e.g., 515 (out of 528)" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#1e3a5f] mb-3">LSAT Score <span className="text-xs text-[#5a7a9a] font-normal">(for JD / Law programs)</span></h3>
+                        <div className="max-w-xs">
+                          <Input value={formData.testingInfo.lsatScore || ''} onChange={(e) => updateFormData("testingInfo", "lsatScore", e.target.value)} placeholder="e.g., 172 (out of 180)" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        }
+
         return (
           <div className="space-y-6">
             <div className="flex items-center space-x-2 bg-[#faf8f3] p-3 rounded-lg border border-[#e5e0d5]">
@@ -2526,9 +2664,105 @@ function AssessmentContent() {
         )
 
       case 8:
+        if (studentType === 'elementary') {
+          return (
+            <div className="space-y-6">
+              <p className="text-[#5a7a9a] text-sm">Help us understand what you dream about for your future!</p>
+              <div className="space-y-2">
+                <Label htmlFor="dreamJobTitle">What do you want to be when you grow up?</Label>
+                <Input
+                  id="dreamJobTitle"
+                  value={formData.careerAspirations.dreamJobTitle}
+                  onChange={(e) => updateFormData("careerAspirations", "dreamJobTitle", e.target.value)}
+                  placeholder="e.g., Astronaut, Doctor, Artist, Inventor..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="career1">What is your favorite thing to do?</Label>
+                <Input
+                  id="career1"
+                  value={formData.careerAspirations.career1}
+                  onChange={(e) => updateFormData("careerAspirations", "career1", e.target.value)}
+                  placeholder="e.g., Build things, Draw, Help people, Play sports..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="career2">What subject in school do you love the most?</Label>
+                <Input
+                  id="career2"
+                  value={formData.careerAspirations.career2}
+                  onChange={(e) => updateFormData("careerAspirations", "career2", e.target.value)}
+                  placeholder="e.g., Math, Science, Art, Reading..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="career3">If you could solve one problem in the world, what would it be?</Label>
+                <Input
+                  id="career3"
+                  value={formData.careerAspirations.career3}
+                  onChange={(e) => updateFormData("careerAspirations", "career3", e.target.value)}
+                  placeholder="e.g., Help animals, Stop pollution, Feed hungry people..."
+                />
+              </div>
+            </div>
+          )
+        }
+
+        if (studentType === 'phd') {
+          return (
+            <div className="space-y-6">
+              <p className="text-[#5a7a9a] text-sm">Tell us about your research goals and career path after your PhD.</p>
+              <div className="space-y-2">
+                <Label htmlFor="dissertationTopicArea">Dissertation / Research Topic Area</Label>
+                <Input
+                  id="dissertationTopicArea"
+                  value={formData.careerAspirations.dissertationTopicArea || ''}
+                  onChange={(e) => updateFormData("careerAspirations", "dissertationTopicArea", e.target.value)}
+                  placeholder="e.g., Machine learning for protein folding, Behavioral economics..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="researchQuestionsToAnswer">Research Questions You Want to Answer</Label>
+                <Textarea
+                  id="researchQuestionsToAnswer"
+                  value={formData.careerAspirations.researchQuestionsToAnswer || ''}
+                  onChange={(e) => updateFormData("careerAspirations", "researchQuestionsToAnswer", e.target.value)}
+                  placeholder="Describe the key questions your research aims to address..."
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-3">
+                <Label>After your PhD, what career path interests you most?</Label>
+                <RadioGroup
+                  value={formData.careerAspirations.academiaVsIndustry || ''}
+                  onValueChange={(value) => updateFormData("careerAspirations", "academiaVsIndustry", value)}
+                >
+                  {["Academia (professor / postdoc)", "Industry / Corporate R&D", "Government / National Lab", "Entrepreneurship / Startup", "Undecided / Exploring"].map((opt) => (
+                    <div key={opt} className="flex items-center space-x-2">
+                      <RadioGroupItem value={opt} id={opt} />
+                      <Label htmlFor={opt} className="font-normal cursor-pointer">{opt}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dreamJobTitle">Dream Role / Position</Label>
+                <Input
+                  id="dreamJobTitle"
+                  value={formData.careerAspirations.dreamJobTitle}
+                  onChange={(e) => updateFormData("careerAspirations", "dreamJobTitle", e.target.value)}
+                  placeholder="e.g., Tenured professor at R1 university, Principal Scientist at DeepMind..."
+                />
+              </div>
+            </div>
+          )
+        }
+
         return (
           <div className="space-y-6">
-            <p className="text-[#5a7a9a] text-sm">Tell us about your top 3 career interests</p>
+            <p className="text-[#5a7a9a] text-sm">
+              {studentType === 'grad' ? 'Tell us about your program goals and career aspirations.' : 'Tell us about your top 3 career interests'}
+            </p>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="career1">Career #1</Label>
@@ -2567,6 +2801,31 @@ function AssessmentContent() {
                 placeholder="e.g., CEO of a Tech Startup, Neurosurgeon, Film Director"
               />
             </div>
+            {(studentType === 'grad') && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="whyProgramNow">Why this program, and why now?</Label>
+                  <Textarea
+                    id="whyProgramNow"
+                    value={formData.careerAspirations.whyProgramNow || ''}
+                    onChange={(e) => updateFormData("careerAspirations", "whyProgramNow", e.target.value)}
+                    placeholder="What motivates you to pursue this program at this stage of your career or life?"
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fiveYearGoal">Where do you see yourself 5 years after graduation?</Label>
+                  <Textarea
+                    id="fiveYearGoal"
+                    value={formData.careerAspirations.fiveYearGoal || ''}
+                    onChange={(e) => updateFormData("careerAspirations", "fiveYearGoal", e.target.value)}
+                    placeholder="Describe your target role, industry, or impact 5 years post-graduation..."
+                    rows={3}
+                  />
+                </div>
+              </>
+            )}
+            {!(studentType === 'grad') && (
             <div className="space-y-3">
               <Label>Which statement fits you best?</Label>
               <RadioGroup
@@ -2590,6 +2849,7 @@ function AssessmentContent() {
                 })}
               </RadioGroup>
             </div>
+            )}
           </div>
         )
 
@@ -2649,6 +2909,13 @@ function AssessmentContent() {
                               <SelectItem value="Shadowing">Job Shadowing</SelectItem>
                               <SelectItem value="Internship">Internship</SelectItem>
                               <SelectItem value="Job">Part-time Job</SelectItem>
+                              {(studentType === 'undergrad' || studentType === 'grad' || studentType === 'phd') && (
+                                <>
+                                  <SelectItem value="Freelance">Freelance / Contract</SelectItem>
+                                  <SelectItem value="Startup">Startup / Entrepreneurship</SelectItem>
+                                  <SelectItem value="Full-time">Full-time Job</SelectItem>
+                                </>
+                              )}
                               <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>
@@ -2704,6 +2971,50 @@ function AssessmentContent() {
                   </Button>
                 )}
               </>
+            )}
+            {(studentType === 'grad' || studentType === 'phd') && (
+              <div className="space-y-4 pt-4 border-t border-[#e5e0d5]">
+                <h3 className="text-sm font-semibold text-[#1e3a5f]">Publications & Academic Output</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="publicationCount">Number of Publications</Label>
+                    <Input
+                      id="publicationCount"
+                      value={formData.researchExperience.publicationCount || ''}
+                      onChange={(e) => updateFormData("researchExperience", "publicationCount", e.target.value)}
+                      placeholder="e.g., 2"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="conferencePresentation">Conference Presentations</Label>
+                    <Input
+                      id="conferencePresentation"
+                      value={formData.researchExperience.conferencePresentation || ''}
+                      onChange={(e) => updateFormData("researchExperience", "conferencePresentation", e.target.value)}
+                      placeholder="e.g., NeurIPS 2024, AAAI 2023"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="publications">Publication Titles / Links <span className="text-[#5a7a9a] text-xs font-normal">(Optional)</span></Label>
+                  <Textarea
+                    id="publications"
+                    value={formData.researchExperience.publications || ''}
+                    onChange={(e) => updateFormData("researchExperience", "publications", e.target.value)}
+                    placeholder="List paper titles or paste URLs (one per line)..."
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="patents">Patents <span className="text-[#5a7a9a] text-xs font-normal">(Optional)</span></Label>
+                  <Input
+                    id="patents"
+                    value={formData.researchExperience.patents || ''}
+                    onChange={(e) => updateFormData("researchExperience", "patents", e.target.value)}
+                    placeholder="e.g., US Patent #12345678 — Quantum Error Correction Method"
+                  />
+                </div>
+              </div>
             )}
           </div>
         )
@@ -3329,7 +3640,7 @@ function AssessmentContent() {
             <div className="mb-6 sm:mb-8">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs sm:text-sm font-medium text-[#5a7a9a]">
-                  Section {currentSection} of 15
+                  Section {currentSectionIndex + 1} of {activeSections.length}
                 </span>
                 <span className="text-xs sm:text-sm font-medium text-[#5a7a9a]">
                   {Math.round(progress)}% Complete
@@ -3339,22 +3650,22 @@ function AssessmentContent() {
             </div>
 
             <div className="flex gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-              {SECTION_TITLES.map((title, index) => (
+              {activeSections.map((sectionNum) => (
                 <button
-                  key={index}
-                  onClick={() => { autoSave(index + 1); setCurrentSection(index + 1) }}
+                  key={sectionNum}
+                  onClick={() => { autoSave(sectionNum); setCurrentSection(sectionNum) }}
                   className={`px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1 ${
-                    currentSection === index + 1
+                    currentSection === sectionNum
                       ? "bg-[#1e3a5f] text-white"
-                      : completedSections.has(index + 1)
+                      : completedSections.has(sectionNum)
                       ? "bg-green-100 text-green-700 border border-green-300"
                       : "bg-[#e5e0d5] text-[#5a7a9a] hover:bg-[#d5d0c5]"
                   }`}
                 >
-                  {completedSections.has(index + 1) && currentSection !== index + 1 && (
+                  {completedSections.has(sectionNum) && currentSection !== sectionNum && (
                     <CheckCircle2 className="w-3 h-3" />
                   )}
-                  {title}
+                  {getSectionTitle(sectionNum, studentType)}
                 </button>
               ))}
             </div>
@@ -3377,7 +3688,7 @@ function AssessmentContent() {
                 <Card className="border-[#e5e0d5] bg-white shadow-sm">
                   <CardHeader className="border-b border-[#e5e0d5] bg-[#faf8f3]/50 p-4 sm:p-6">
                     <CardTitle className="text-xl sm:text-2xl text-[#1e3a5f]" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-                      {SECTION_TITLES[currentSection - 1]}
+                      {getSectionTitle(currentSection, studentType)}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 md:p-8">
@@ -3394,7 +3705,7 @@ function AssessmentContent() {
             <Button
               variant="outline"
               onClick={handlePrevious}
-              disabled={currentSection === 1}
+              disabled={currentSectionIndex === 0}
               className="border-[#e5e0d5] text-[#5a7a9a] px-3 sm:px-4 text-sm"
               size="sm"
             >
@@ -3413,7 +3724,7 @@ function AssessmentContent() {
               <span className="hidden sm:inline">Save</span>
             </Button>
 
-            {currentSection < 15 ? (
+            {currentSectionIndex < activeSections.length - 1 ? (
               <Button
                 onClick={handleNext}
                 className="bg-[#1e3a5f] hover:bg-[#152a45] text-white px-3 sm:px-4 text-sm"

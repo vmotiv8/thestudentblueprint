@@ -1,4 +1,7 @@
+export type StudentType = 'elementary' | 'middle' | 'high_school' | 'undergrad' | 'grad' | 'phd'
+
 export interface BasicInfo {
+  studentType?: StudentType
   fullName: string
   email: string
   phone?: string
@@ -19,6 +22,22 @@ export interface BasicInfo {
   studyAbroad?: boolean
   targetCountries?: string[]
   curriculum?: string
+  // Undergrad fields
+  collegeYear?: string
+  major?: string
+  universityName?: string
+  postGradGoal?: string
+  // Grad fields
+  targetProgramType?: string
+  undergradInstitution?: string
+  undergradMajor?: string
+  workExperienceYears?: string
+  // PhD fields
+  currentInstitution?: string
+  researchField?: string
+  department?: string
+  targetAdvisor?: string
+  dissertationStage?: string
 }
 
 export interface AcademicProfile {
@@ -37,6 +56,7 @@ export interface AcademicProfile {
 }
 
 export interface TestingInfo {
+  // High school
   psatScore?: string
   psatMath?: string
   psatReading?: string
@@ -52,6 +72,14 @@ export interface TestingInfo {
   actReading?: string
   actScience?: string
   notTakenYet?: boolean
+  // Graduate / PhD
+  greVerbal?: string
+  greQuantitative?: string
+  greAnalytical?: string
+  gmatScore?: string
+  mcatScore?: string
+  lsatScore?: string
+  greNotTaken?: boolean
 }
 
 export interface Activity {
@@ -116,10 +144,16 @@ export interface CareerAspirations {
   career3: string
   dreamJobTitle: string
   bestFitStatement: string
+  // Grad/PhD specific
+  whyProgramNow?: string
+  fiveYearGoal?: string
+  academiaVsIndustry?: string
+  dissertationTopicArea?: string
+  researchQuestionsToAnswer?: string
 }
 
 export interface ResearchEntry {
-  type: "Research" | "Shadowing" | "Internship" | "Job" | "Other"
+  type: "Research" | "Shadowing" | "Internship" | "Job" | "Freelance" | "Startup" | "Other"
   organization: string
   role: string
   description: string
@@ -132,6 +166,11 @@ export interface ResearchExperience {
   internships: string
   noResearchExperience?: boolean
   entries?: ResearchEntry[]
+  // Graduate / PhD extras
+  publicationCount?: string
+  publications?: string
+  conferencePresentation?: string
+  patents?: string
 }
 
 export interface SummerProgramEntry {
@@ -217,6 +256,7 @@ export interface AssessmentData {
 
 export const initialFormData: AssessmentData = {
   basicInfo: {
+    studentType: undefined,
     fullName: "",
     email: "",
     phone: "",
@@ -236,7 +276,20 @@ export const initialFormData: AssessmentData = {
     dreamSchools: ["", "", ""],
     studyAbroad: false,
     targetCountries: [],
-    curriculum: ""
+    curriculum: "",
+    collegeYear: "",
+    major: "",
+    universityName: "",
+    postGradGoal: "",
+    targetProgramType: "",
+    undergradInstitution: "",
+    undergradMajor: "",
+    workExperienceYears: "",
+    currentInstitution: "",
+    researchField: "",
+    department: "",
+    targetAdvisor: "",
+    dissertationStage: ""
   },
   academicProfile: {
     curriculum: "",
@@ -267,7 +320,14 @@ export const initialFormData: AssessmentData = {
     actMath: "",
     actReading: "",
     actScience: "",
-    notTakenYet: false
+    notTakenYet: false,
+    greVerbal: "",
+    greQuantitative: "",
+    greAnalytical: "",
+    gmatScore: "",
+    mcatScore: "",
+    lsatScore: "",
+    greNotTaken: false
   },
   extracurriculars: {
     activities: [{ name: "", role: "", yearsInvolved: "", hoursPerWeek: "", achievements: "" }],
@@ -313,7 +373,11 @@ export const initialFormData: AssessmentData = {
     shadowingExperience: "",
     internships: "",
     noResearchExperience: false,
-    entries: [{ type: "Research", organization: "", role: "", description: "", duration: "" }]
+    entries: [{ type: "Research", organization: "", role: "", description: "", duration: "" }],
+    publicationCount: "",
+    publications: "",
+    conferencePresentation: "",
+    patents: ""
   },
   summerPrograms: {
     programs: "",
@@ -379,6 +443,89 @@ export const SECTION_TITLES = [
   "Personal Storytelling",
   "Time Commitment"
 ]
+
+// Active section numbers for each student type (sections are 1-indexed matching the switch cases)
+const ACTIVE_SECTIONS: Record<StudentType, number[]> = {
+  elementary: [1, 2, 4, 7, 8, 11, 12, 13],
+  middle:     [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
+  high_school:[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+  undergrad:  [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+  grad:       [1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13, 14, 15],
+  phd:        [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15],
+}
+
+const SECTION_TITLES_BY_TYPE: Record<StudentType, Record<number, string>> = {
+  elementary: {
+    1: "Basic Information", 2: "Favorite Subjects & Learning Style",
+    4: "Activities & Interests", 7: "Passions & Curiosities",
+    8: "What I Want to Be", 11: "Special Talents",
+    12: "Family Background", 13: "Personality",
+  },
+  middle: {
+    1: "Basic Information", 2: "Academic Profile",
+    4: "Extracurricular Activities", 5: "Leadership Experience",
+    6: "Competitions & Recognitions", 7: "Passions & Interests",
+    8: "Career Exploration", 9: "Research & Club Experience",
+    10: "Summer Programs", 11: "Special Talents",
+    12: "Family Context", 13: "Personality Insights",
+    14: "Personal Storytelling", 15: "Time Commitment",
+  },
+  high_school: {
+    1: "Basic Information", 2: "Academic Profile", 3: "Standardized Testing",
+    4: "Extracurricular Activities", 5: "Leadership Experience",
+    6: "Competitions & Recognitions", 7: "Passions & Interests",
+    8: "Career Aspirations", 9: "Research & Internship Exposure",
+    10: "Summer Programs", 11: "Special Talents", 12: "Family Context",
+    13: "Personality Insights", 14: "Personal Storytelling", 15: "Time Commitment",
+  },
+  undergrad: {
+    1: "Basic Information", 2: "Academic Profile",
+    4: "Campus Involvement", 5: "Leadership Experience",
+    6: "Competitions & Projects", 7: "Passions & Interests",
+    8: "Career Aspirations", 9: "Work & Research Experience",
+    10: "Summer & Study Abroad", 11: "Special Talents",
+    12: "Family Context", 13: "Personality Insights",
+    14: "Personal Storytelling", 15: "Time Commitment",
+  },
+  grad: {
+    1: "Basic Information", 2: "Academic Background",
+    3: "Standardized Tests (GRE / GMAT / MCAT / LSAT)",
+    4: "Extracurricular Activities", 5: "Leadership Experience",
+    7: "Passions & Interests", 8: "Program Goals",
+    9: "Work & Research Experience", 11: "Special Talents",
+    12: "Family Context", 13: "Personality Insights",
+    14: "Personal Statement Ideas", 15: "Time Commitment",
+  },
+  phd: {
+    1: "Basic Information", 2: "Academic Background",
+    3: "Standardized Tests (GRE)",
+    5: "Leadership & Teaching Experience", 6: "Research Competitions & Awards",
+    7: "Research Interests", 8: "Research Goals & Career Path",
+    9: "Research & Publication Experience", 11: "Special Talents",
+    12: "Family Context", 13: "Personality Insights",
+    14: "Personal Statement Ideas", 15: "Time Commitment",
+  },
+}
+
+export function getActiveSections(studentType?: StudentType): number[] {
+  return ACTIVE_SECTIONS[studentType ?? 'high_school']
+}
+
+export function getSectionTitle(sectionNumber: number, studentType?: StudentType): string {
+  const type = studentType ?? 'high_school'
+  return SECTION_TITLES_BY_TYPE[type][sectionNumber] ?? SECTION_TITLES[sectionNumber - 1] ?? `Section ${sectionNumber}`
+}
+
+export const GRADE_OPTIONS_ELEMENTARY = ["Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade"]
+export const GRADE_OPTIONS_MIDDLE = ["6th Grade", "7th Grade", "8th Grade"]
+export const GRADE_OPTIONS_HIGH_SCHOOL = ["9th Grade (Freshman)", "10th Grade (Sophomore)", "11th Grade (Junior)", "12th Grade (Senior)"]
+export const GRADE_OPTIONS_UNDERGRAD = ["Freshman (1st Year)", "Sophomore (2nd Year)", "Junior (3rd Year)", "Senior (4th Year)", "5th Year / Super Senior"]
+export const GRADE_OPTIONS_GRAD = ["Just Applying", "1st Year", "2nd Year", "3rd Year+", "Recent Graduate"]
+export const GRADE_OPTIONS_PHD = ["Just Applying", "1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year+", "ABD (All But Dissertation)"]
+
+export const GRAD_PROGRAM_TYPES = ["MS (Master of Science)", "MA (Master of Arts)", "MBA", "MD (Medicine)", "JD (Law)", "MPH (Public Health)", "MEng (Engineering)", "MFA (Fine Arts)", "MSW (Social Work)", "MPA (Public Administration)", "LLM (Law)", "Other"]
+
+export const COLLEGE_YEAR_OPTIONS = ["Freshman (1st Year)", "Sophomore (2nd Year)", "Junior (3rd Year)", "Senior (4th Year)", "5th Year / Super Senior"]
 
 export const GRADE_OPTIONS = [
   "6th Grade",

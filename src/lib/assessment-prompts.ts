@@ -31,6 +31,30 @@ export function toStringList(value: unknown): string {
 export type KnowledgeHubResource = { type: string; title: string; description: string | null; fileContent?: string | null }
 
 /**
+ * Returns the AI expert persona string appropriate for the student type.
+ */
+export function getSystemPrompt(studentType?: string): string {
+  switch (studentType) {
+    case 'elementary':
+      return `You are an expert early childhood enrichment specialist and talent development advisor with 15+ years of experience identifying learning styles, natural talents, and age-appropriate development pathways for K-5 students. You understand how to nurture curiosity, build foundational skills, and create action plans that parents can implement immediately. Focus on encouragement, discovery, and developmentally appropriate opportunities.`
+    case 'middle':
+      return `You are an expert middle school academic advisor and early talent development specialist with 15+ years of experience helping 6-8th grade students discover their strengths, build competitive foundations, and prepare strategically for high school success. You know which competitions, programs, and activities give students a head start, and how to position students for strong high school trajectories.`
+    case 'undergrad':
+      return `You are an expert career advisor and graduate school strategist for undergraduate students with 15+ years of experience helping college students navigate career clarity, internship pipelines, research opportunities, and graduate school decisions. You understand what employers and grad school admissions committees look for, and you deliver honest, actionable roadmaps that close skills gaps fast.`
+    case 'grad':
+      return `You are an expert graduate school admissions strategist specializing in Masters, MBA, MD, JD, and MPH program placement with 15+ years of experience. You understand program ranking criteria, application timelines, personal statement angles, and how to position candidates with various professional backgrounds for competitive programs. Be brutally honest about program fit and competitiveness.`
+    case 'phd':
+      return `You are an expert PhD admissions and research career advisor with 15+ years of experience helping applicants secure positions at top research universities, match with the right advisors, secure NSF/NIH/NDSEG fellowships, and navigate the academia-vs-industry career decision. You understand what makes a compelling research statement and how to evaluate lab fit.`
+    default:
+      return `You are an expert college admissions counselor and academic success strategist specializing in Ivy League and Top 20 college admissions with 15+ years of experience. Your students have been accepted to Harvard, Stanford, MIT, Yale, Princeton, and other elite institutions. You understand what sets apart successful applicants: intellectual vitality, demonstrated impact, authentic passion, and a compelling narrative.
+
+CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation.
+
+For gap analysis and missing elements: Be BRUTALLY HONEST. Do not soften the message. Students are paying for the truth, not flattery. If their profile has serious holes, say so directly. Use language like "dealbreaker", "critical gap", "will be rejected if not addressed". The goal is to give them a reality check so they can fix it in time.`
+  }
+}
+
+/**
  * Build the student profile context string used in all AI prompts.
  */
 export function buildStudentProfileContext(
@@ -53,6 +77,7 @@ export function buildStudentProfileContext(
   const personalStories = (formData.personalStories || {}) as Record<string, unknown>
   const timeCommitment = (formData.timeCommitment || {}) as Record<string, unknown>
 
+  const studentType = (basicInfo.studentType as string) || 'high_school'
   const currentGrade = sanitizeForPrompt(basicInfo.currentGrade) || 'Not provided'
 
   const khSection = (() => {
@@ -77,66 +102,133 @@ export function buildStudentProfileContext(
     return section
   })()
 
+  // Build type-specific identity section
+  const identitySection = (() => {
+    if (studentType === 'undergrad') {
+      return `- College Year: ${sanitizeForPrompt(basicInfo.collegeYear) || currentGrade}
+- Major: ${sanitizeForPrompt(basicInfo.major) || 'Not provided'}
+- University: ${sanitizeForPrompt(basicInfo.universityName) || 'Not provided'}
+- Post-Grad Goal: ${sanitizeForPrompt(basicInfo.postGradGoal) || 'Not provided'}`
+    }
+    if (studentType === 'grad') {
+      return `- Target Program Type: ${sanitizeForPrompt(basicInfo.targetProgramType) || 'Not provided'}
+- Undergrad Institution: ${sanitizeForPrompt(basicInfo.undergradInstitution) || 'Not provided'}
+- Undergrad Major: ${sanitizeForPrompt(basicInfo.undergradMajor) || 'Not provided'}
+- Years of Work Experience: ${sanitizeForPrompt(basicInfo.workExperienceYears) || 'Not provided'}`
+    }
+    if (studentType === 'phd') {
+      return `- Current Institution: ${sanitizeForPrompt(basicInfo.currentInstitution) || 'Not provided'}
+- Research Field: ${sanitizeForPrompt(basicInfo.researchField) || 'Not provided'}
+- Department: ${sanitizeForPrompt(basicInfo.department) || 'Not provided'}
+- Target Advisor: ${sanitizeForPrompt(basicInfo.targetAdvisor) || 'Not provided'}
+- Dissertation Stage: ${sanitizeForPrompt(basicInfo.dissertationStage) || 'Not provided'}`
+    }
+    return `- Current Grade: ${currentGrade}`
+  })()
+
+  // Build type-specific testing section
+  const testingSection = (() => {
+    if (studentType === 'grad' || studentType === 'phd') {
+      if (testingInfo.greNotTaken) return '- Standardized Tests: Not yet taken'
+      const lines = []
+      if (testingInfo.greVerbal || testingInfo.greQuantitative || testingInfo.greAnalytical) {
+        lines.push(`- GRE: Verbal ${sanitizeForPrompt(testingInfo.greVerbal) || 'N/A'}, Quant ${sanitizeForPrompt(testingInfo.greQuantitative) || 'N/A'}, AWA ${sanitizeForPrompt(testingInfo.greAnalytical) || 'N/A'}`)
+      }
+      if (testingInfo.gmatScore) lines.push(`- GMAT: ${sanitizeForPrompt(testingInfo.gmatScore)}`)
+      if (testingInfo.mcatScore) lines.push(`- MCAT: ${sanitizeForPrompt(testingInfo.mcatScore)}`)
+      if (testingInfo.lsatScore) lines.push(`- LSAT: ${sanitizeForPrompt(testingInfo.lsatScore)}`)
+      return lines.length > 0 ? lines.join('\n') : '- Standardized Tests: Not yet taken'
+    }
+    if (testingInfo.notTakenYet) return '- Standardized Tests: Not yet taken'
+    return `- PSAT: ${sanitizeForPrompt(testingInfo.psatScore) || 'Not taken'}${testingInfo.psatMath ? ` (Math: ${sanitizeForPrompt(testingInfo.psatMath)}, Reading: ${sanitizeForPrompt(testingInfo.psatReading)})` : ''}
+- SAT: ${sanitizeForPrompt(testingInfo.satScore) || 'Not taken'}${testingInfo.satMath ? ` (Math: ${sanitizeForPrompt(testingInfo.satMath)}, Reading: ${sanitizeForPrompt(testingInfo.satReading)})` : ''}
+- ACT: ${sanitizeForPrompt(testingInfo.actScore) || 'Not taken'}${testingInfo.actEnglish ? ` (English: ${sanitizeForPrompt(testingInfo.actEnglish)}, Math: ${sanitizeForPrompt(testingInfo.actMath)}, Reading: ${sanitizeForPrompt(testingInfo.actReading)}, Science: ${sanitizeForPrompt(testingInfo.actScience)})` : ''}
+- AP/IB Exam Scores: ${sanitizeForPrompt(testingInfo.apScores) || 'Not provided'}
+- Testing Timeline: ${sanitizeForPrompt(testingInfo.testingTimeline) || 'Not provided'}`
+  })()
+
+  // Build type-specific career section
+  const careerSection = (() => {
+    if (studentType === 'phd') {
+      return `Research Goals:
+- Dissertation Topic Area: ${sanitizeForPrompt(careerAspirations.dissertationTopicArea) || 'Not provided'}
+- Research Questions: ${sanitizeForPrompt(careerAspirations.researchQuestionsToAnswer) || 'Not provided'}
+- Academia vs Industry: ${sanitizeForPrompt(careerAspirations.academiaVsIndustry) || 'Not provided'}
+- Dream Role: ${sanitizeForPrompt(careerAspirations.dreamJobTitle) || 'Not provided'}`
+    }
+    if (studentType === 'grad') {
+      return `Program Goals:
+- Target Careers: ${sanitizeForPrompt(careerAspirations.career1 || '')}, ${sanitizeForPrompt(careerAspirations.career2 || '')}
+- Dream Job: ${sanitizeForPrompt(careerAspirations.dreamJobTitle) || 'Not provided'}
+- Why This Program Now: ${sanitizeForPrompt(careerAspirations.whyProgramNow) || 'Not provided'}
+- 5-Year Goal Post-Graduation: ${sanitizeForPrompt(careerAspirations.fiveYearGoal) || 'Not provided'}`
+    }
+    return `Career Aspirations:
+- Top Careers: ${sanitizeForPrompt(careerAspirations.career1 || '')}, ${sanitizeForPrompt(careerAspirations.career2 || '')}
+- Dream Job: ${sanitizeForPrompt(careerAspirations.dreamJobTitle) || 'Not provided'}`
+  })()
+
+  // Build type-specific research section
+  const researchSection = (() => {
+    const entries = sanitizeForPrompt(JSON.stringify(researchExperience.entries || []), 2000)
+    if (studentType === 'grad' || studentType === 'phd') {
+      return `Research & Professional Experience:
+${entries}
+- Publications: ${sanitizeForPrompt(researchExperience.publicationCount) || '0'} publication(s)
+- Publication Titles: ${sanitizeForPrompt(researchExperience.publications) || 'Not provided'}
+- Conference Presentations: ${sanitizeForPrompt(researchExperience.conferencePresentation) || 'Not provided'}
+- Patents: ${sanitizeForPrompt(researchExperience.patents) || 'Not provided'}`
+    }
+    return `Experience:
+${entries}`
+  })()
+
   const context = `Student Information:
+- Student Type: ${studentType.replace('_', ' ')}
 - Name: ${sanitizeForPrompt(basicInfo.fullName)}
-- Current Grade: ${currentGrade}
-- Location: ${sanitizeForPrompt(basicInfo.address)}, ${sanitizeForPrompt(basicInfo.city)}, ${sanitizeForPrompt(basicInfo.state)}, ${sanitizeForPrompt(basicInfo.country)}
-- Curriculum: ${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum) || 'Not provided'}
-- Planning to Study Abroad: ${basicInfo.studyAbroad ? 'Yes' : 'No'}
-- Target Countries: ${sanitizeForPrompt(toStringList(basicInfo.targetCountries || []))}
-- GPA Scale: ${sanitizeForPrompt(academicProfile.gpaScale) || 'Not provided'}
-- GPA: ${sanitizeForPrompt(academicProfile.gpaUnweighted) || 'Not provided'} (unweighted), ${sanitizeForPrompt(academicProfile.gpaWeighted) || 'Not provided'} (weighted)
+${identitySection}
+- Location: ${sanitizeForPrompt(basicInfo.city)}, ${sanitizeForPrompt(basicInfo.state)}, ${sanitizeForPrompt(basicInfo.country)}
+- Gender: ${sanitizeForPrompt(basicInfo.gender) || 'Not provided'}
+- Ethnicity/Background: ${sanitizeForPrompt(basicInfo.ethnicity) || 'Not provided'}
 
 Academic Profile:
-- Advanced/Curriculum Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.coursesTaken))}
-- Regular Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesTaken))}
-- Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.coursesPlanned))}
-- Regular Courses Planned: ${sanitizeForPrompt(toStringList(academicProfile.regularCoursesPlanned))}
-- Class Rank: ${sanitizeForPrompt(academicProfile.classRank) || 'Not provided'}
+- Curriculum: ${sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum) || 'Not provided'}
+- GPA: ${sanitizeForPrompt(academicProfile.gpaUnweighted) || 'Not provided'} (unweighted), ${sanitizeForPrompt(academicProfile.gpaWeighted) || 'Not provided'} (weighted)
+- Courses Taken: ${sanitizeForPrompt(toStringList(academicProfile.coursesTaken))}
 - Academic Awards: ${sanitizeForPrompt(academicProfile.academicAwards) || 'Not provided'}
 - Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.favoriteSubjects))}
-- Least Favorite Subjects: ${sanitizeForPrompt(toStringList(academicProfile.leastFavoriteSubjects))}
-- PSAT Score: ${sanitizeForPrompt(testingInfo.psatScore) || 'Not taken'}${testingInfo.psatMath ? ` (Math: ${sanitizeForPrompt(testingInfo.psatMath)}, Reading: ${sanitizeForPrompt(testingInfo.psatReading)})` : ''}
-- SAT Score: ${sanitizeForPrompt(testingInfo.satScore) || 'Not taken'}${testingInfo.satMath ? ` (Math: ${sanitizeForPrompt(testingInfo.satMath)}, Reading: ${sanitizeForPrompt(testingInfo.satReading)})` : ''}
-- ACT Score: ${sanitizeForPrompt(testingInfo.actScore) || 'Not taken'}${testingInfo.actEnglish ? ` (English: ${sanitizeForPrompt(testingInfo.actEnglish)}, Math: ${sanitizeForPrompt(testingInfo.actMath)}, Reading: ${sanitizeForPrompt(testingInfo.actReading)}, Science: ${sanitizeForPrompt(testingInfo.actScience)})` : ''}
-- AP/IB Exam Scores: ${sanitizeForPrompt(testingInfo.apScores) || 'Not provided'}
-- Testing Timeline: ${sanitizeForPrompt(testingInfo.testingTimeline) || 'Not provided'}
+
+Standardized Testing:
+${testingSection}
 
 Extracurriculars & Leadership:
 ${sanitizeForPrompt(JSON.stringify(extracurriculars.activities || []), 2000)}
-- Leadership: ${sanitizeForPrompt(leadership.positions) || 'Not provided'}
-- Competitions: ${sanitizeForPrompt(competitions.competitions) || 'Not provided'}
+- Leadership Entries: ${sanitizeForPrompt(JSON.stringify(leadership.entries || []), 1000)}
+- Competitions: ${sanitizeForPrompt(JSON.stringify(competitions.entries || []), 1000)}
 
 Passions & Interests:
 - Topics They Love: ${sanitizeForPrompt(toStringList(passions.topicsYouLove))}
 - Industries Curious About: ${sanitizeForPrompt(toStringList(passions.industriesCurious))}
+- Hobbies & Skills: ${sanitizeForPrompt(passions.hobbiesSkills) || 'Not provided'}
 
-Career Aspirations:
-- Top Careers: ${sanitizeForPrompt(toStringList(careerAspirations.career1 || ''))}, ${sanitizeForPrompt(toStringList(careerAspirations.career2 || ''))}
-- Dream Job: ${sanitizeForPrompt(careerAspirations.dreamJobTitle) || 'Not provided'}
+${careerSection}
 
-Experience & Talents:
-- Research: ${sanitizeForPrompt(researchExperience.researchExperience) || 'Not provided'}
-- Summer Programs: ${sanitizeForPrompt(summerPrograms.programs) || 'Not provided'}
-- Special Talents: ${sanitizeForPrompt(JSON.stringify(specialTalents), 2000)}
+${researchSection}
+- Summer Programs: ${sanitizeForPrompt(JSON.stringify(summerPrograms.entries || []), 1000)}
+- Special Talents: ${sanitizeForPrompt(JSON.stringify(specialTalents), 1000)}
 
 Family Context:
-- Father's Profession: ${sanitizeForPrompt(familyContext.fatherProfession) || 'Not provided'}
-- Mother's Profession: ${sanitizeForPrompt(familyContext.motherProfession) || 'Not provided'}
-- Sibling Professions: ${sanitizeForPrompt(familyContext.siblingProfessions) || 'Not provided'}
-- Legacy Connections: ${sanitizeForPrompt(JSON.stringify(familyContext.legacyEntries || []), 1000)}
+- Family Professions: ${sanitizeForPrompt(familyContext.familyProfessions) || 'Not provided'}
+- Legacy Connections: ${sanitizeForPrompt(JSON.stringify(familyContext.legacyEntries || []), 500)}
 - Annual Family Income: ${sanitizeForPrompt(familyContext.annualFamilyIncome) || 'Not provided'}
 - Financial Aid Needed: ${familyContext.financialAidNeeded ? 'Yes' : 'No'}
 - Merit Scholarship Interest: ${familyContext.meritScholarshipInterest ? 'Yes' : 'No'}
 
 Personality & Story:
 - Strengths: ${sanitizeForPrompt(toStringList(personality.topStrengths))}
-- Weaknesses: ${sanitizeForPrompt(toStringList(personality.topWeaknesses))}
-- Personality Type: ${sanitizeForPrompt(personality.introvertExtrovert) || 'Not provided'}
 - Archetypes: ${sanitizeForPrompt(toStringList(personality.archetypes))}
+- Personality Type: ${sanitizeForPrompt(personality.introvertExtrovert) || 'Not provided'}
 - Life Challenge: ${sanitizeForPrompt(personalStories.lifeChallenge) || 'Not provided'}
-- Leadership Moment: ${sanitizeForPrompt(personalStories.leadershipMoment) || 'Not provided'}
-- Failure Lesson: ${sanitizeForPrompt(personalStories.failureLesson) || 'Not provided'}
 - Proud Moment: ${sanitizeForPrompt(personalStories.proudMoment) || 'Not provided'}
 
 Time Commitment:
@@ -146,12 +238,6 @@ ${khSection}`
 
   return { context, currentGrade }
 }
-
-const SYSTEM_PREAMBLE = `You are an expert college admissions counselor and academic success strategist specializing in Ivy League and Top 20 college admissions with 15+ years of experience. Your students have been accepted to Harvard, Stanford, MIT, Yale, Princeton, and other elite institutions. You understand what sets apart successful applicants: intellectual vitality, demonstrated impact, authentic passion, and a compelling narrative.
-
-CRITICAL: Your recommendations MUST be specific, actionable, and prestigious. Avoid generic advice. Focus on opportunities that demonstrate exceptional achievement and differentiation.
-
-For gap analysis and missing elements: Be BRUTALLY HONEST. Do not soften the message. Students are paying for the truth, not flattery. If their profile has serious holes, say so directly. Use language like "dealbreaker", "critical gap", "will be rejected if not addressed". The goal is to give them a reality check so they can fix it in time.`
 
 const GUIDELINES = (curriculum: string) => `
 IMPORTANT GUIDELINES:
@@ -174,8 +260,9 @@ export function buildPhase1Prompt(
   const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
   const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
   const curriculum = sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)
+  const studentType = (basicInfo.studentType as string) || 'high_school'
 
-  return `${SYSTEM_PREAMBLE}
+  return `${getSystemPrompt(studentType)}
 
 Analyze this student profile and create a core analysis.
 
@@ -264,8 +351,9 @@ export function buildPhase2Prompt(
   const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
   const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
   const curriculum = sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)
+  const studentType = (basicInfo.studentType as string) || 'high_school'
 
-  return `${SYSTEM_PREAMBLE}
+  return `${getSystemPrompt(studentType)}
 
 You have already analyzed this student and determined:
 - Student Archetype: ${phase1Summary.studentArchetype}
@@ -412,8 +500,9 @@ export function buildFullPrompt(
   const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
   const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
   const curriculum = sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)
+  const studentType = (basicInfo.studentType as string) || 'high_school'
 
-  return `${SYSTEM_PREAMBLE}
+  return `${getSystemPrompt(studentType)}
 
 Analyze this student profile and create a personalized roadmap.
 

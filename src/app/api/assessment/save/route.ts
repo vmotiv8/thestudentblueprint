@@ -64,11 +64,14 @@ export async function POST(request: Request) {
       validatedCoupon = coupon
     }
 
+    const studentTypeFromForm = (formData?.basicInfo?.studentType as string) || undefined
+
     if (assessmentId) {
       const updateData: Record<string, unknown> = {
         responses: formData,
         updated_at: new Date().toISOString(),
         ...(currentSection !== null && { current_section: currentSection }),
+        ...(studentTypeFromForm && { student_type: studentTypeFromForm }),
       }
 
       if (organization.free_assessments) {

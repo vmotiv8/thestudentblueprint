@@ -271,27 +271,33 @@ export async function GET(
       pdf.setTextColor(255, 255, 255)
       pdf.setFontSize(9.5)
       pdf.setFont('helvetica', 'normal')
-        const tocItems = [
-          '1. Executive Summary & Student Archetype',
-          '2. Strengths Analysis & Competitive Advantages',
-          '3. Gap Analysis & Areas for Development',
-          '4. Personalized Roadmap (Immediate to Long-term)',
-          '5. Career & Future Recommendations',
-          '6. College Match & Success Strategy',
-          '7. Academic Course Recommendations',
-          '8. SAT/ACT Goals & Test Prep Strategy',
-          '9. Research & Publications Recommendations',
-          '10. Leadership Development Plan',
-          '11. Network & Mentorship Targets',
-          '12. Summer Programs & Ivy League Opportunities',
-          '13. Competitions, Sports & Extracurricular Activities',
-          '14. Passion Project Ideas',
-          '15. Internship Opportunities'
+        // Build TOC per the student's stage. Sections that the AI was not
+        // prompted to fill for this type are omitted (matches what's actually
+        // rendered later via the existing `if (assessment.field)` guards).
+        const sType = (assessment.student_type as string) || 'high_school'
+        const isAcademic = sType === 'high_school' || sType === 'undergrad'
+        const isYouth = sType === 'high_school' || sType === 'middle'
+        const tocItems: string[] = [
+          'Executive Summary & Student Archetype',
+          'Strengths Analysis & Competitive Advantages',
+          'Gap Analysis & Areas for Development',
+          'Personalized Roadmap (Immediate to Long-term)',
+          'Career & Future Recommendations',
+          ...(isAcademic ? ['College Match & Success Strategy'] : []),
+          'Academic Course Recommendations',
+          ...(isYouth ? ['SAT/ACT Goals & Test Prep Strategy'] : []),
+          'Research & Publications Recommendations',
+          'Leadership Development Plan',
+          'Network & Mentorship Targets',
+          ...(isAcademic ? ['Summer Programs & Ivy League Opportunities'] : []),
+          'Competitions, Sports & Extracurricular Activities',
+          'Passion Project Ideas',
+          'Internship Opportunities',
         ]
         tocItems.forEach((item, i) => {
           const col = Math.floor(i / 8)
           const row = i % 8
-          pdf.text(item, margin + 12 + col * 88, yPos + 22 + row * 6)
+          pdf.text(`${i + 1}. ${item}`, margin + 12 + col * 88, yPos + 22 + row * 6)
         })
 
     addFooter()
@@ -509,9 +515,31 @@ export async function GET(
       if (assessment.grade_by_grade_roadmap) {
         addFooter()
         pdf.addPage()
-        addPageHeader('Multi-Year Roadmap Through 12th Grade')
+        const roadmapLabel = (() => {
+          const t = (assessment.student_type as string) || 'high_school'
+          switch (t) {
+            case 'elementary': return 'Multi-Year Roadmap Through 5th Grade'
+            case 'middle':     return 'Multi-Year Roadmap Through 8th Grade'
+            case 'high_school':return 'Multi-Year Roadmap Through 12th Grade'
+            case 'undergrad':  return 'Multi-Year Roadmap Through Graduation'
+            case 'grad':       return 'Multi-Year Roadmap Through Program Completion'
+            case 'phd':        return 'Multi-Year Roadmap Through PhD Defense'
+            default:           return 'Multi-Year Roadmap'
+          }
+        })()
+        const roadmapIntro = (() => {
+          const t = (assessment.student_type as string) || 'high_school'
+          if (t === 'grad' || t === 'phd') {
+            return 'This roadmap outlines your academic and research strategy year by year, ensuring you build a competitive profile for your program and beyond.'
+          }
+          if (t === 'undergrad') {
+            return 'This roadmap outlines your academic, extracurricular, and career strategy year by year through graduation.'
+          }
+          return 'This comprehensive roadmap outlines your academic and extracurricular strategy year by year, ensuring you build a competitive profile for college admissions.'
+        })()
+        addPageHeader(roadmapLabel)
 
-        addParagraph('This comprehensive roadmap outlines your academic and extracurricular strategy year by year, ensuring you build a competitive profile for college admissions.')
+        addParagraph(roadmapIntro)
 
         const gradeRoadmap = assessment.grade_by_grade_roadmap
 

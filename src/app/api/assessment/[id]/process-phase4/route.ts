@@ -1,6 +1,6 @@
 import { NextResponse, after } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
-import { buildStudentProfileContext, sanitizeForPrompt } from '@/lib/assessment-prompts'
+import { buildProcessPhase4Prompt } from '@/lib/assessment-prompts'
 import { fetchKnowledgeHubWithContent } from '@/lib/knowledge-hub-content'
 import { callAI } from '@/lib/ai-caller'
 import { savePhaseResults, updatePhaseStatus } from '@/lib/assessment-save'
@@ -26,7 +26,7 @@ export async function POST(
     const supabase = createServerSupabaseClient()
     const { data: assessment } = await supabase
       .from('assessments')
-      .select('responses, organization_id, student_archetype, competitiveness_score')
+      .select('responses, organization_id, student_archetype, competitiveness_score, student_type')
       .eq('id', assessmentId)
       .single()
 
@@ -39,82 +39,19 @@ export async function POST(
       ? await fetchKnowledgeHubWithContent(assessment.organization_id)
       : []
 
-    const { context: studentContext } = buildStudentProfileContext(formData, knowledgeHubResources)
-    const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
-    const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
-    const curriculum = sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)
+    console.log(`[Phase4] Starting for assessment ${assessmentId} (type: ${assessment.student_type || 'high_school'})`)
 
-    const GUIDELINES = `
-IMPORTANT GUIDELINES:
-1. If the student is from India, include local Indian competitions, hackathons, and opportunities.
-2. If planning to study abroad, tailor recommendations to target countries.
-3. Tailor to the student's location and curriculum (${curriculum}).
-4. If school-specific resources are listed, PRIORITIZE those in recommendations.`
-
-    const SYSTEM = `You are an elite college admissions strategist. Every recommendation must be SPECIFIC, ACTIONABLE, and AMBITIOUS. Respond ONLY with valid JSON, no additional text.`
-
-    console.log(`[Phase4] Starting for assessment ${assessmentId}`)
-
-    const result = await callAI(`${SYSTEM}
-
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${assessment.student_archetype || 'Unknown'} (Competitiveness: ${assessment.competitiveness_score || 0}/100)
-
-${studentContext}
-${GUIDELINES}
-
-Generate DETAILED JSON for each activity item as an object with {name, description, dates, relevance}:
-{
-  "summerIvyProgramsRecommendations": {
-    "preFreshmanPrograms": [{"name": "Program name", "description": "What it offers", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
-    "competitivePrograms": [{"name": "Program name", "description": "What it offers", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
-    "researchPrograms": [{"name": "Program name", "description": "What it involves", "dates": "Application deadline and program dates", "relevance": "Why this fits this student"}],
-    "enrichmentPrograms": [{"name": "Program name", "description": "What it offers", "dates": "Dates", "relevance": "Why this fits"}]
-  },
-  "sportsRecommendations": {
-    "varsitySports": [{"name": "Sport", "description": "Goals", "dates": "Season", "relevance": "Why this matters"}],
-    "clubSports": [{"name": "Club", "description": "What it involves", "dates": "Season", "relevance": "Why this matters"}],
-    "recruitingStrategy": [{"name": "Strategy", "description": "Steps", "dates": "Timeline", "relevance": "Why this matters"}],
-    "fitnessLeadership": [{"name": "Opportunity", "description": "What it involves", "dates": "Timeline", "relevance": "Why this matters"}]
-  },
-  "competitionsRecommendations": {
-    "academicCompetitions": [{"name": "Competition name", "description": "What it involves", "dates": "Registration and competition dates", "relevance": "Why this fits"}],
-    "businessCompetitions": [{"name": "Competition", "description": "What it involves", "dates": "Dates", "relevance": "Why this fits"}],
-    "artsCompetitions": [{"name": "Competition", "description": "What it involves", "dates": "Dates", "relevance": "Why this fits"}],
-    "debateSpeech": [{"name": "Competition", "description": "What it involves", "dates": "Dates", "relevance": "Why this fits"}]
-  },
-  "internshipsRecommendations": {
-    "industryInternships": [{"name": "Internship", "description": "Role details", "dates": "Application deadline", "relevance": "Why this fits"}],
-    "researchInternships": [{"name": "Program", "description": "Research details", "dates": "Dates", "relevance": "Why this fits"}],
-    "nonprofitInternships": [{"name": "Organization", "description": "Role", "dates": "Dates", "relevance": "Why this fits"}],
-    "virtualOpportunities": [{"name": "Opportunity", "description": "What it involves", "dates": "Availability", "relevance": "Why this fits"}]
-  },
-  "serviceCommunityRecommendations": {
-    "localOpportunities": [{"name": "Opportunity", "description": "What it involves", "dates": "Availability", "relevance": "Why this matters"}],
-    "nationalPrograms": [{"name": "Program", "description": "What it involves", "dates": "Dates", "relevance": "Why this matters"}],
-    "internationalService": [{"name": "Program", "description": "What it involves", "dates": "Dates", "relevance": "Why this matters"}],
-    "sustainedCommitment": [{"name": "Strategy", "description": "How to build impact", "dates": "Timeline", "relevance": "Why this matters"}]
-  },
-  "cultureArtsRecommendations": {
-    "performingArts": [{"name": "Opportunity", "description": "What it involves", "dates": "Dates", "relevance": "Why this fits"}],
-    "visualArts": [{"name": "Opportunity", "description": "What it involves", "dates": "Dates", "relevance": "Why this fits"}],
-    "creativeWriting": [{"name": "Publication", "description": "What it involves", "dates": "Deadline", "relevance": "Why this fits"}],
-    "culturalClubs": [{"name": "Organization", "description": "What it involves", "dates": "Schedule", "relevance": "Why this fits"}]
-  },
-  "studentGovernmentRecommendations": {
-    "schoolGovernment": [{"name": "Position", "description": "How to pursue it", "dates": "Election timeline", "relevance": "Why this matters"}],
-    "districtStateRoles": [{"name": "Role", "description": "What it involves", "dates": "Deadline", "relevance": "Why this matters"}],
-    "youthGovernment": [{"name": "Program", "description": "What it involves", "dates": "Dates", "relevance": "Why this matters"}],
-    "advocacyRoles": [{"name": "Role", "description": "What it involves", "dates": "Timeline", "relevance": "Why this matters"}]
-  },
-  "leadershipRecommendations": {
-    "clubLeadership": ["3-4 specific leadership positions"],
-    "schoolWideRoles": ["2-3 student body positions"],
-    "communityLeadership": ["3-4 external leadership opportunities"],
-    "leadershipDevelopment": ["4-5 specific skills and experiences"]
-  }
-}
-
-Be SPECIFIC — name real programs, competitions, and deadlines. Generate EXACTLY 5 items per array/category.`, 12000, 90000)
+    const result = await callAI(
+      buildProcessPhase4Prompt(
+        formData,
+        knowledgeHubResources,
+        assessment.student_type,
+        assessment.student_archetype || 'Unknown',
+        assessment.competitiveness_score || 0
+      ),
+      12000,
+      90000
+    )
 
     if (!result.success) {
       console.error(`[Phase4] Failed for ${assessmentId}:`, result.error)

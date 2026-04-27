@@ -361,7 +361,7 @@ export default function CheckoutPage() {
             Complete Your Purchase
           </h1>
           <p className="text-base sm:text-lg text-[#5a7a9a] max-w-2xl mx-auto">
-            Unlock your personalized college success roadmap with our comprehensive assessment
+            Unlock your personalized growth roadmap with our comprehensive assessment
           </p>
         </motion.div>
 

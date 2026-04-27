@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { GoogleGenAI } from '@google/genai'
 import Anthropic from '@anthropic-ai/sdk'
-import { buildStudentProfileContext } from '@/lib/assessment-prompts'
+import { buildStudentProfileContext, getScholarshipLabel } from '@/lib/assessment-prompts'
 import { fetchKnowledgeHubWithContent } from '@/lib/knowledge-hub-content'
 
 export const maxDuration = 120
@@ -73,6 +73,17 @@ export async function POST(
     const extracurriculars = (formData.extracurriculars || {}) as Record<string, unknown>
     const personality = (formData.personality || {}) as Record<string, unknown>
 
+    const studentType = (assessment.student_type as string) || (basicInfo.studentType as string) || 'high_school'
+    const fundingLabel = getScholarshipLabel(studentType)
+    const fundingScope = (() => {
+      if (studentType === 'grad' || studentType === 'phd') {
+        return 'graduate fellowships, research grants, NSF/NIH/NDSEG funding, departmental TA/RA positions, and industry-sponsored programs'
+      }
+      if (studentType === 'elementary' || studentType === 'middle') {
+        return 'age-appropriate enrichment grants, gifted-and-talented programs, summer scholarship programs, and competitions with cash prizes'
+      }
+      return 'undergraduate scholarships, merit awards, need-based aid, and program-specific funding'
+    })()
     const studentState = basicInfo.state || ''
     const studentCity = basicInfo.city || ''
     const studentCountry = basicInfo.country || ''
@@ -88,7 +99,7 @@ export async function POST(
     const activities = JSON.stringify(extracurriculars.activities || []).slice(0, 1500)
     const archetypes = Array.isArray(personality.archetypes) ? personality.archetypes.join(', ') : ''
 
-    const prompt = `You are a scholarship matching specialist. Your job is to find REALISTIC, ATTAINABLE scholarships that this specific student has a genuine chance of winning — NOT prestigious national scholarships that only 0.1% of students win.
+    const prompt = `You are a ${fundingLabel.toLowerCase()} matching specialist for ${studentType.replace('_', ' ')} students. Your job is to find REALISTIC, ATTAINABLE ${fundingLabel.toLowerCase()} that this specific student has a genuine chance of winning — NOT only prestigious national programs that less than 1% of applicants win. Focus on ${fundingScope}.
 
 STUDENT PROFILE:
 - Location: ${studentCity}, ${studentState}, ${studentCountry}

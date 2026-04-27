@@ -7,14 +7,16 @@ import { sendAgencyWelcomeEmail } from "@/lib/resend"
 import { buildAgencyUrl, getOriginFromRequest } from "@/lib/url"
 import { applyRateLimit } from "@/lib/rate-limit"
 
-// Volume pricing tiers
+// Minimum agency purchase is 10 licenses; tiers scale down by $50 from $400.
+const MIN_LICENSES = 10
+const MAX_LICENSES = 10000
+
 function getPricePerStudent(qty: number): number {
-  if (qty >= 1000) return 100
-  if (qty >= 100) return 150
-  if (qty >= 50) return 200
-  if (qty >= 25) return 250
-  if (qty >= 10) return 300
-  return 350
+  if (qty >= 1000) return 200
+  if (qty >= 100) return 250
+  if (qty >= 50) return 300
+  if (qty >= 25) return 350
+  return 400
 }
 
 export async function POST(request: NextRequest) {
@@ -34,8 +36,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 })
     }
 
-    if (quantity < 1 || quantity > 10000) {
-      return NextResponse.json({ error: "Quantity must be between 1 and 10,000" }, { status: 400 })
+    if (quantity < MIN_LICENSES || quantity > MAX_LICENSES) {
+      return NextResponse.json(
+        { error: `Quantity must be between ${MIN_LICENSES} and ${MAX_LICENSES.toLocaleString()}` },
+        { status: 400 }
+      )
     }
 
     // Calculate pricing

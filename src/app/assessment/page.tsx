@@ -153,10 +153,21 @@ function AssessmentContent() {
 
   const studentType = formData.basicInfo.studentType
   const activeSections = useMemo(() => getActiveSections(studentType), [studentType])
-  const currentSectionIndex = activeSections.indexOf(currentSection)
+  const rawSectionIndex = activeSections.indexOf(currentSection)
+  // Clamp to 0 if currentSection isn't in the active list (can happen after a
+  // type change). The useEffect below will reconcile currentSection itself.
+  const currentSectionIndex = rawSectionIndex < 0 ? 0 : rawSectionIndex
   const progress = activeSections.length > 0
     ? ((currentSectionIndex + 1) / activeSections.length) * 100
     : (currentSection / 15) * 100
+
+  // If the user changes student type and lands on a section that's no longer
+  // active for the new type, jump them to the first active section.
+  useEffect(() => {
+    if (activeSections.length > 0 && !activeSections.includes(currentSection)) {
+      setCurrentSection(activeSections[0])
+    }
+  }, [activeSections, currentSection])
 
   const countWords = (text: string) => {
     return text.trim().split(/\s+/).filter(word => word.length > 0).length
@@ -615,11 +626,15 @@ function AssessmentContent() {
       if (sType === 'high_school' && !formData.basicInfo.targetCollegeYear) {
         errors.targetCollegeYear = "Target entry year is required"
       }
-      if (!formData.basicInfo.gender) {
-        errors.gender = "Gender is required"
-      }
-      if (!formData.basicInfo.ethnicity) {
-        errors.ethnicity = "Ethnicity is required"
+      // Skip demographic required-ness for elementary (under-13 ethics): kids
+      // shouldn't be forced to declare gender/ethnicity to use the product.
+      if (sType !== 'elementary') {
+        if (!formData.basicInfo.gender) {
+          errors.gender = "Gender is required"
+        }
+        if (!formData.basicInfo.ethnicity) {
+          errors.ethnicity = "Ethnicity is required"
+        }
       }
     }
       if (section === 2) {
@@ -994,6 +1009,11 @@ function AssessmentContent() {
   }
 
   const renderSection = () => {
+    // Safety guard: never render a section that's not part of the active list
+    // for this student type. Defends against stale resume state or bugs.
+    if (activeSections.length > 0 && !activeSections.includes(currentSection)) {
+      return null
+    }
     switch (currentSection) {
       case 1:
         return (
@@ -1001,9 +1021,9 @@ function AssessmentContent() {
             {/* Student Type Selector */}
             <div className="space-y-3">
               <Label className="text-base font-semibold text-[#1e3a5f] flex items-center gap-1">
-                I am a… <span className="text-red-500">*</span>
+                Who is the assessment for? <span className="text-red-500">*</span>
               </Label>
-              <p className="text-xs text-[#5a7a9a]">Select your student type — the rest of the form will adapt to your situation.</p>
+              <p className="text-xs text-[#5a7a9a]">Pick the stage. The rest of the form adapts to your situation.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {([
                   { value: 'elementary', label: 'Elementary School', sub: 'Grades K–5', icon: '🌱' },
@@ -1038,6 +1058,16 @@ function AssessmentContent() {
             </div>
 
             <div className={!formData.basicInfo.studentType ? "hidden" : "space-y-6"}>
+            {(formData.basicInfo.studentType === 'elementary' || formData.basicInfo.studentType === 'middle') && (
+              <div className="rounded-xl border border-[#c9a227]/30 bg-[#faf8f3] p-4">
+                <p className="text-xs font-bold tracking-wider uppercase text-[#c9a227] mb-1">For Parents</p>
+                <p className="text-sm text-[#1e3a5f] leading-relaxed">
+                  {formData.basicInfo.studentType === 'elementary'
+                    ? "You'll fill out this assessment about your child. Your honest answers — including the things you're worried about — produce the most useful recommendations."
+                    : "Your child can fill out this assessment with you, or you can complete it for them. The Parent Tips section in the report will help you turn the recommendations into action."}
+                </p>
+              </div>
+            )}
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="flex items-center gap-1">
@@ -1614,6 +1644,106 @@ function AssessmentContent() {
         )
 
       case 2:
+        // K-5: replace HS-shaped GPA + course-list with reading/math levels and at-home learning.
+        if (studentType === 'elementary') {
+          const ap = formData.academicProfile as unknown as Record<string, unknown>
+          return (
+            <div className="space-y-6">
+              <p className="text-[#5a7a9a] text-sm italic">Tell us about your child&apos;s current learning. No GPA — that comes later.</p>
+
+              <div className="space-y-2">
+                <Label>Reading level</Label>
+                <Select
+                  value={(ap.readingLevel as string) || ""}
+                  onValueChange={(v) => updateFormData("academicProfile", "readingLevel", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Where is your child today?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pre-reader / learning letters">Pre-reader / learning letters</SelectItem>
+                    <SelectItem value="Early reader (picture books, simple words)">Early reader (picture books, simple words)</SelectItem>
+                    <SelectItem value="Independent reader (early chapter books)">Independent reader (early chapter books)</SelectItem>
+                    <SelectItem value="Fluent reader (chapter books at grade level)">Fluent reader (chapter books at grade level)</SelectItem>
+                    <SelectItem value="Above grade level (reads books for older kids)">Above grade level (reads books for older kids)</SelectItem>
+                    <SelectItem value="Well above grade level (middle-grade or YA novels)">Well above grade level (middle-grade or YA novels)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Math level</Label>
+                <Select
+                  value={(ap.mathLevel as string) || ""}
+                  onValueChange={(v) => updateFormData("academicProfile", "mathLevel", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Where is your child today?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Still learning numbers and counting">Still learning numbers and counting</SelectItem>
+                    <SelectItem value="Confident with addition and subtraction">Confident with addition and subtraction</SelectItem>
+                    <SelectItem value="Working on multiplication and division">Working on multiplication and division</SelectItem>
+                    <SelectItem value="Comfortable with multi-step word problems">Comfortable with multi-step word problems</SelectItem>
+                    <SelectItem value="Above grade level (works ahead in math)">Above grade level (works ahead in math)</SelectItem>
+                    <SelectItem value="Well above grade level (algebra concepts, math competitions)">Well above grade level (algebra concepts, math competitions)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Favorite subjects (pick all that apply)</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {["Reading", "Math", "Science", "Art", "Music", "PE / Sports", "Social Studies", "Library", "Computer / Tech"].map(subj => {
+                    const fav = ((ap.favoriteSubjects as string[]) || [])
+                    const selected = fav.includes(subj)
+                    return (
+                      <button
+                        key={subj}
+                        type="button"
+                        onClick={() => {
+                          const next = selected ? fav.filter(s => s !== subj) : [...fav, subj]
+                          updateFormData("academicProfile", "favoriteSubjects", next)
+                        }}
+                        className={`px-3 py-2 rounded-lg border text-sm transition ${
+                          selected
+                            ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold'
+                            : 'border-[#e5e0d5] bg-white text-[#5a7a9a] hover:border-[#1e3a5f]/30'
+                        }`}
+                      >
+                        {subj}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="curiousAbout">What does your child read or watch on their own?</Label>
+                <p className="text-[#5a7a9a] text-xs">Books, YouTube channels, podcasts, magazines they pick themselves.</p>
+                <Textarea
+                  id="curiousAbout"
+                  value={(ap.curiousAbout as string) || ""}
+                  onChange={(e) => updateFormData("academicProfile", "curiousAbout", e.target.value)}
+                  placeholder="e.g., Magic Tree House series, Wild Kratts videos, picture books about space"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="academicAwards">Recognition or milestones (optional)</Label>
+                <p className="text-[#5a7a9a] text-xs">Reading challenge prizes, classroom awards, spelling bee placements.</p>
+                <Textarea
+                  id="academicAwards"
+                  value={(ap.academicAwards as string) || ""}
+                  onChange={(e) => updateFormData("academicProfile", "academicAwards", e.target.value)}
+                  placeholder="e.g., Reading Star of the Month, won the school spelling bee for 2nd grade"
+                  rows={2}
+                />
+              </div>
+            </div>
+          )
+        }
         const currentCurriculum = formData.academicProfile.curriculum || ""
 
         // Map curriculum selection to tag(s) for filtering
@@ -1689,42 +1819,46 @@ function AssessmentContent() {
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label>Select GPA Scale</Label>
-                <Select
-                  value={formData.academicProfile.gpaScale}
-                  onValueChange={(value) => updateFormData("academicProfile", "gpaScale", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose your GPA scale" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GPA_SCALE_OPTIONS.map((scale) => (
-                      <SelectItem key={scale.value} value={scale.value}>{scale.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="gpaUnweighted">GPA (Unweighted)</Label>
-                <Input
-                  id="gpaUnweighted"
-                  value={formData.academicProfile.gpaUnweighted}
-                  onChange={(e) => updateFormData("academicProfile", "gpaUnweighted", e.target.value)}
-                  placeholder="e.g., 3.8"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gpaWeighted">GPA (Weighted)</Label>
-                <Input
-                  id="gpaWeighted"
-                  value={formData.academicProfile.gpaWeighted}
-                  onChange={(e) => updateFormData("academicProfile", "gpaWeighted", e.target.value)}
-                  placeholder="e.g., 4.2"
-                />
-              </div>
-            </div>
+              {studentType !== 'middle' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Select GPA Scale</Label>
+                    <Select
+                      value={formData.academicProfile.gpaScale}
+                      onValueChange={(value) => updateFormData("academicProfile", "gpaScale", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose your GPA scale" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GPA_SCALE_OPTIONS.map((scale) => (
+                          <SelectItem key={scale.value} value={scale.value}>{scale.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="gpaUnweighted">GPA (Unweighted)</Label>
+                      <Input
+                        id="gpaUnweighted"
+                        value={formData.academicProfile.gpaUnweighted}
+                        onChange={(e) => updateFormData("academicProfile", "gpaUnweighted", e.target.value)}
+                        placeholder="e.g., 3.8"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="gpaWeighted">GPA (Weighted)</Label>
+                      <Input
+                        id="gpaWeighted"
+                        value={formData.academicProfile.gpaWeighted}
+                        onChange={(e) => updateFormData("academicProfile", "gpaWeighted", e.target.value)}
+                        placeholder="e.g., 4.2"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             <div className="space-y-3">
               <Label>Courses Taken (Select all that apply)</Label>
               <div className="p-4 bg-[#faf8f3] border border-[#e5e0d5] rounded-lg max-h-[500px] overflow-y-auto space-y-6">
@@ -1890,12 +2024,16 @@ function AssessmentContent() {
         )
 
       case 3:
-        if (studentType === 'grad' || studentType === 'phd') {
-          const isGrad = studentType === 'grad'
-          const programType = formData.basicInfo.targetProgramType || ''
+        if (studentType === 'grad' || studentType === 'phd' || studentType === 'undergrad') {
+          // Undergrads applying to grad school need the same test inputs as
+          // grad applicants (GRE, optionally GMAT/MCAT/LSAT).
+          const showProfessionalTests = studentType === 'grad' || studentType === 'undergrad'
+          const headlineCopy = studentType === 'undergrad'
+            ? 'If you are planning to apply to grad school, enter any standardized test scores you have taken.'
+            : 'Enter any standardized test scores relevant to your program applications.'
           return (
             <div className="space-y-6">
-              <p className="text-[#5a7a9a] text-sm">Enter any standardized test scores relevant to your program applications.</p>
+              <p className="text-[#5a7a9a] text-sm">{headlineCopy}</p>
               <div className="flex items-center space-x-2 bg-[#faf8f3] p-3 rounded-lg border border-[#e5e0d5]">
                 <Checkbox
                   id="greNotTaken"
@@ -1925,7 +2063,7 @@ function AssessmentContent() {
                       </div>
                     </div>
                   </div>
-                  {isGrad && (
+                  {showProfessionalTests && (
                     <>
                       <div>
                         <h3 className="text-sm font-semibold text-[#1e3a5f] mb-3">GMAT Score <span className="text-xs text-[#5a7a9a] font-normal">(for MBA programs)</span></h3>
@@ -2279,6 +2417,117 @@ function AssessmentContent() {
         )
 
       case 4:
+        // K-5: simplified activity card (no role/hours/achievements, just love-rating + duration).
+        if (studentType === 'elementary') {
+          const ec = formData.extracurriculars as unknown as Record<string, unknown>
+          const acts = (ec.activities as Array<{ name?: string; loveLevel?: string; howLong?: string }>) || []
+          const updateAct = (i: number, field: string, value: string) => {
+            const next = acts.map((a, idx) => idx === i ? { ...a, [field]: value } : a)
+            updateFormData("extracurriculars", "activities", next)
+          }
+          const addAct = () => {
+            updateFormData("extracurriculars", "activities", [...acts, { name: "", loveLevel: "", howLong: "" }])
+          }
+          const removeAct = (i: number) => {
+            updateFormData("extracurriculars", "activities", acts.filter((_, idx) => idx !== i))
+          }
+          return (
+            <div className="space-y-6">
+              <p className="text-[#5a7a9a] text-sm">Tell us what your child does outside of school. Both formal activities and just-for-fun things count.</p>
+              <div className="flex items-center space-x-2 bg-[#faf8f3] p-3 rounded-lg border border-[#e5e0d5]">
+                <Checkbox
+                  id="noExtracurriculars"
+                  checked={Boolean(ec.noExtracurriculars)}
+                  onCheckedChange={(checked) => updateFormData("extracurriculars", "noExtracurriculars", checked)}
+                />
+                <Label htmlFor="noExtracurriculars" className="cursor-pointer font-medium">
+                  Not in any structured activities yet
+                </Label>
+              </div>
+              {!ec.noExtracurriculars && (
+                <>
+                  {(acts.length === 0 ? [{ name: "", loveLevel: "", howLong: "" }] : acts).map((activity, index) => (
+                    <Card key={index} className="border-[#e5e0d5]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base text-[#1e3a5f]">Activity {index + 1}</CardTitle>
+                          {acts.length > 1 && (
+                            <Button variant="ghost" size="sm" onClick={() => removeAct(index)} className="text-red-500 hover:text-red-700">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>What is the activity?</Label>
+                          <Input
+                            value={activity.name || ""}
+                            onChange={(e) => updateAct(index, "name", e.target.value)}
+                            placeholder="e.g., Soccer team, Piano lessons, Library Reading Club"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Does your child love it?</Label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { v: "Loves it", e: "❤️" },
+                              { v: "Sometimes", e: "🙂" },
+                              { v: "Not really", e: "😐" },
+                            ].map(opt => (
+                              <button
+                                key={opt.v}
+                                type="button"
+                                onClick={() => updateAct(index, "loveLevel", opt.v)}
+                                className={`p-3 rounded-xl border-2 text-center transition ${
+                                  activity.loveLevel === opt.v
+                                    ? 'border-[#1e3a5f] bg-[#1e3a5f]/5'
+                                    : 'border-[#e5e0d5] hover:border-[#1e3a5f]/30 bg-white'
+                                }`}
+                              >
+                                <div className="text-2xl mb-1">{opt.e}</div>
+                                <p className="text-xs font-semibold text-[#1e3a5f]">{opt.v}</p>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>How long?</Label>
+                          <Input
+                            value={activity.howLong || ""}
+                            onChange={(e) => updateAct(index, "howLong", e.target.value)}
+                            placeholder="e.g., 2 years, since last summer, just started"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {acts.length < 10 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addAct}
+                      className="w-full border-dashed border-[#c9a227] text-[#c9a227] hover:bg-[#c9a227]/5"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Another Activity
+                    </Button>
+                  )}
+                </>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="atHomeFavorites">Things your child does at home for fun (no need to be a formal activity)</Label>
+                <Textarea
+                  id="atHomeFavorites"
+                  value={(ec.atHomeFavorites as string) || ""}
+                  onChange={(e) => updateFormData("extracurriculars", "atHomeFavorites", e.target.value)}
+                  placeholder="e.g., builds with Lego for hours, makes up stories, reads to siblings, plays neighborhood games"
+                  rows={3}
+                />
+              </div>
+            </div>
+          )
+        }
         return (
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm">List up to 10 extracurricular activities with details about your involvement.</p>
@@ -2556,6 +2805,60 @@ function AssessmentContent() {
         )
 
       case 7:
+        // K-5: replace "industries" with kid-friendly questions about curiosity and creation.
+        if (studentType === 'elementary') {
+          const passions = formData.passions as unknown as Record<string, unknown>
+          return (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="topicsExcite">Topics your child gets excited about</Label>
+                <p className="text-[#5a7a9a] text-xs">Things they bring up at the dinner table, ask Google about, or won&apos;t stop talking about.</p>
+                <Textarea
+                  id="topicsExcite"
+                  value={(passions.topicsExcite as string) || ""}
+                  onChange={(e) => updateFormData("passions", "topicsExcite", e.target.value)}
+                  placeholder="e.g., dinosaurs, space, animals, building things, baking, soccer, robots, drawing"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="thingsMadeOrBuilt">Things your child has made, built, or invented this year</Label>
+                <p className="text-[#5a7a9a] text-xs">Doesn&apos;t need to be impressive. Lego sets, drawings, stories, baked goods, forts, science experiments — all count.</p>
+                <Textarea
+                  id="thingsMadeOrBuilt"
+                  value={(passions.thingsMadeOrBuilt as string) || ""}
+                  onChange={(e) => updateFormData("passions", "thingsMadeOrBuilt", e.target.value)}
+                  placeholder="e.g., Built a Lego city, wrote a 4-page story about cats, started a backyard 'ant hospital'"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="wantsToKnowMore">What does your child want to know more about?</Label>
+                <p className="text-[#5a7a9a] text-xs">Their open questions. The 'why' questions you can&apos;t fully answer.</p>
+                <Textarea
+                  id="wantsToKnowMore"
+                  value={(passions.wantsToKnowMore as string) || ""}
+                  onChange={(e) => updateFormData("passions", "wantsToKnowMore", e.target.value)}
+                  placeholder="e.g., How do birds fly? Where does electricity come from? Why do some people get sick?"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hobbiesSkills">Hobbies & skills</Label>
+                <Textarea
+                  id="hobbiesSkills"
+                  value={(passions.hobbiesSkills as string) || ""}
+                  onChange={(e) => updateFormData("passions", "hobbiesSkills", e.target.value)}
+                  placeholder="e.g., reads chapter books, can ride a bike, knows multiplication, plays piano (1 year)"
+                  rows={2}
+                />
+              </div>
+            </div>
+          )
+        }
         return (
           <div className="space-y-6">
             <div className="space-y-3">
@@ -3150,6 +3453,120 @@ function AssessmentContent() {
         )
 
       case 12:
+        // K-5 / middle: rebuilt section with parent goals, frustration response, languages.
+        // HS+ keeps the existing legacy-college-connections + scholarship interest UI.
+        if (studentType === 'elementary' || studentType === 'middle') {
+          const fc = formData.familyContext as unknown as Record<string, unknown>
+          const languages = (fc.languagesAtHome as string[]) || []
+          const toggleLanguage = (lang: string) => {
+            const next = languages.includes(lang) ? languages.filter(l => l !== lang) : [...languages, lang]
+            updateFormData("familyContext", "languagesAtHome", next)
+          }
+          const isElementary = studentType === 'elementary'
+          const childOrYou = isElementary ? "your child" : "you"
+          const yourChildOrYou = isElementary ? "your child" : "you"
+          const ChildOrYou = isElementary ? "Your child" : "You"
+          return (
+            <div className="space-y-6">
+              <p className="text-[#5a7a9a] text-sm italic">Tell us about the home environment so we can tailor recommendations.</p>
+
+              <div className="space-y-4">
+                <Label>Family Professions</Label>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fatherProfession" className="text-sm text-[#5a7a9a]">Parent / Guardian #1 Profession</Label>
+                    <Input
+                      id="fatherProfession"
+                      value={(fc.fatherProfession as string) || ""}
+                      onChange={(e) => updateFormData("familyContext", "fatherProfession", e.target.value)}
+                      placeholder="e.g., Software Engineer, Doctor, Stay-at-home parent"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="motherProfession" className="text-sm text-[#5a7a9a]">Parent / Guardian #2 Profession</Label>
+                    <Input
+                      id="motherProfession"
+                      value={(fc.motherProfession as string) || ""}
+                      onChange={(e) => updateFormData("familyContext", "motherProfession", e.target.value)}
+                      placeholder="e.g., Teacher, Nurse, Self-employed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Languages spoken at home</Label>
+                <p className="text-[#5a7a9a] text-xs">Pick all that apply. Bilingual exposure shapes early development and enrichment recommendations.</p>
+                <div className="flex flex-wrap gap-2">
+                  {["English", "Spanish", "Mandarin", "Hindi", "Arabic", "French", "Tagalog", "Vietnamese", "Korean", "Russian", "Portuguese", "German", "Other"].map(lang => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => toggleLanguage(lang)}
+                      className={`px-3 py-1.5 rounded-full text-sm border transition ${
+                        languages.includes(lang)
+                          ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold'
+                          : 'border-[#e5e0d5] bg-white text-[#5a7a9a] hover:border-[#1e3a5f]/30'
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="parentGoals">Goals for {childOrYou} this year</Label>
+                <p className="text-[#5a7a9a] text-xs">{isElementary ? "What would make this a great year for your child?" : "What would make this a great year for you?"}</p>
+                <Textarea
+                  id="parentGoals"
+                  value={(fc.parentGoals as string) || ""}
+                  onChange={(e) => updateFormData("familyContext", "parentGoals", e.target.value)}
+                  placeholder={isElementary ? "e.g., Build a strong reading habit, find a best friend, try a music instrument, develop persistence on hard problems" : "e.g., Get into the AP track for 9th grade, find a passion project, win a regional competition"}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="parentWorries">Anything {isElementary ? "you're" : "you are"} worried about? (optional)</Label>
+                <p className="text-[#5a7a9a] text-xs">Honest answers here lead to more useful recommendations. Stays private.</p>
+                <Textarea
+                  id="parentWorries"
+                  value={(fc.parentWorries as string) || ""}
+                  onChange={(e) => updateFormData("familyContext", "parentWorries", e.target.value)}
+                  placeholder={isElementary ? "e.g., She's behind in reading, screen time is creeping up, perfectionist about hard problems" : "e.g., Falling behind in math, social anxiety at school, no clear interests yet"}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>How does {yourChildOrYou} handle frustration?</Label>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {[
+                    { value: "gives up quickly", label: `${ChildOrYou} gives up quickly`, sub: "Avoids hard things or shuts down" },
+                    { value: "tries a few times", label: "Tries a few times then asks for help", sub: "Healthy middle ground" },
+                    { value: "persists alone", label: "Persists on their own", sub: "Strong grit, sometimes won't ask for help" },
+                    { value: "frustrated then keeps going", label: "Gets frustrated, then keeps going", sub: "Productive struggle pattern" },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => updateFormData("familyContext", "frustrationResponse", opt.value)}
+                      className={`p-3 rounded-xl border-2 text-left transition ${
+                        fc.frustrationResponse === opt.value
+                          ? 'border-[#1e3a5f] bg-[#1e3a5f]/5'
+                          : 'border-[#e5e0d5] hover:border-[#1e3a5f]/30 bg-white'
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-[#1e3a5f]">{opt.label}</p>
+                      <p className="text-xs text-[#5a7a9a] mt-0.5">{opt.sub}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        }
         return (
           <div className="space-y-6">
             <p className="text-[#5a7a9a] text-sm italic">This section is optional but can help us provide more tailored recommendations.</p>
@@ -3291,6 +3708,129 @@ function AssessmentContent() {
         )
 
       case 13:
+        // K-5 / middle: simpler, parent-friendly personality picker.
+        if (studentType === 'elementary' || studentType === 'middle') {
+          const p = formData.personality as unknown as Record<string, unknown>
+          const isElementary = studentType === 'elementary'
+          const childOrYou = isElementary ? "your child" : "you"
+          const ChildOrYou = isElementary ? "Your child" : "You"
+          const archetypes = (p.archetypes as string[]) || []
+          const freeTime = (p.freeTimeChoices as string[]) || []
+          const toggleArchetype = (a: string) => {
+            const next = archetypes.includes(a) ? archetypes.filter(x => x !== a) : (archetypes.length < 2 ? [...archetypes, a] : archetypes)
+            updateFormData("personality", "archetypes", next)
+          }
+          const toggleFreeTime = (ft: string) => {
+            const next = freeTime.includes(ft) ? freeTime.filter(x => x !== ft) : [...freeTime, ft]
+            updateFormData("personality", "freeTimeChoices", next)
+          }
+          return (
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label>Pick the 2 that describe {childOrYou} best</Label>
+                <p className="text-[#5a7a9a] text-xs">No wrong answers. Pick the two strongest signals.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { value: "Thinker", emoji: "🤔", desc: "Asks 'why', figures things out, loves puzzles" },
+                    { value: "Builder", emoji: "🔧", desc: "Makes things, fixes things, hands-on" },
+                    { value: "Helper", emoji: "💛", desc: "Cares for others, kind, looks out for friends" },
+                    { value: "Creator", emoji: "🎨", desc: "Draws, writes stories, makes up games" },
+                  ].map(opt => {
+                    const selected = archetypes.includes(opt.value)
+                    const disabled = !selected && archetypes.length >= 2
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => toggleArchetype(opt.value)}
+                        disabled={disabled}
+                        className={`p-3 rounded-xl border-2 text-left transition ${
+                          selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/5' : disabled ? 'border-[#e5e0d5] bg-gray-50 opacity-50 cursor-not-allowed' : 'border-[#e5e0d5] hover:border-[#1e3a5f]/30 bg-white'
+                        }`}
+                      >
+                        <div className="text-2xl mb-1">{opt.emoji}</div>
+                        <p className="text-sm font-semibold text-[#1e3a5f]">{opt.value}</p>
+                        <p className="text-xs text-[#5a7a9a] mt-0.5 leading-snug">{opt.desc}</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>When {childOrYou} {isElementary ? "has" : "have"} free time, {childOrYou} usually... (pick all that apply)</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    "Read books", "Build things (Lego, crafts)", "Play outside", "Draw or paint",
+                    "Make up stories or play pretend", "Play with siblings or friends", "Play sports",
+                    "Watch shows or play games", "Practice an instrument", "Help around the house",
+                    "Ask questions about how things work", "Make videos or art",
+                  ].map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => toggleFreeTime(opt)}
+                      className={`px-3 py-2 rounded-lg border text-xs text-left transition ${
+                        freeTime.includes(opt)
+                          ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold'
+                          : 'border-[#e5e0d5] bg-white text-[#5a7a9a] hover:border-[#1e3a5f]/30'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>When {childOrYou} {isElementary ? "meets" : "meet"} a new person, {ChildOrYou.toLowerCase()} usually...</Label>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {[
+                    "Shy at first, warms up over time",
+                    "Curious, asks questions right away",
+                    "Friendly and outgoing immediately",
+                    "Watches and observes before joining",
+                  ].map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => updateFormData("personality", "newPersonResponse", opt)}
+                      className={`p-3 rounded-xl border-2 text-left text-sm transition ${
+                        p.newPersonResponse === opt
+                          ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold'
+                          : 'border-[#e5e0d5] hover:border-[#1e3a5f]/30 bg-white text-[#5a7a9a]'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>{ChildOrYou}{isElementary ? "'s" : "r"} biggest strengths (in your own words)</Label>
+                <p className="text-[#5a7a9a] text-xs">Three short phrases. Don&apos;t overthink it.</p>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <Input
+                    value={(p.strength1 as string) || ""}
+                    onChange={(e) => updateFormData("personality", "strength1", e.target.value)}
+                    placeholder={isElementary ? "e.g., Reads a lot" : "e.g., Math intuition"}
+                  />
+                  <Input
+                    value={(p.strength2 as string) || ""}
+                    onChange={(e) => updateFormData("personality", "strength2", e.target.value)}
+                    placeholder={isElementary ? "e.g., Patient" : "e.g., Patient with hard problems"}
+                  />
+                  <Input
+                    value={(p.strength3 as string) || ""}
+                    onChange={(e) => updateFormData("personality", "strength3", e.target.value)}
+                    placeholder={isElementary ? "e.g., Funny" : "e.g., Loyal to friends"}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        }
         return (
           <div className="space-y-6">
             <div className="space-y-3">

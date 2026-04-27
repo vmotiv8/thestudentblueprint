@@ -57,6 +57,7 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
+import { getScholarshipLabel } from "@/lib/assessment-prompts"
 import {
   RadarChart,
   PolarGrid,
@@ -76,7 +77,7 @@ const RESULT_TABS_BY_TYPE: Record<string, string[]> = {
   grad:        ['archetype', 'gaps', 'career-future', 'scholarships', 'essays'],
   phd:         ['archetype', 'gaps', 'career-future', 'scholarships', 'essays'],
   middle:      ['archetype', 'gaps', 'activities', 'career-future', 'essays'],
-  elementary:  ['archetype', 'activities'],
+  elementary:  ['archetype', 'parent-guide', 'activities'],
 }
 
 function getResultTabs(studentType?: string): string[] {
@@ -484,7 +485,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       try {
         await navigator.share({
           title: `${assessment?.students?.full_name}'s ${orgName} Results`,
-          text: 'Check out my personalized college success roadmap!',
+          text: 'Check out my personalized growth roadmap!',
           url
         })
       } catch {
@@ -878,16 +879,17 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
                     <TabsList className="bg-white border border-[#e5e0d5] p-1 inline-flex h-auto gap-0.5 shadow-sm rounded-2xl min-w-max">
                       {([
-                        { value: "archetype", icon: Sparkles, label: "Archetype" },
-                        { value: "gaps", icon: AlertCircle, label: "Gaps" },
+                        { value: "archetype", icon: Sparkles, label: assessment?.student_type === 'elementary' ? "Profile" : "Archetype" },
+                        { value: "parent-guide", icon: Heart, label: "Parent Guide" },
+                        { value: "gaps", icon: AlertCircle, label: assessment?.student_type === 'middle' ? "Growth" : "Gaps" },
                         { value: "projects", icon: Lightbulb, label: "Projects" },
                         { value: "career-future", icon: Compass, label: "Career" },
                         { value: "academics", icon: BookOpen, label: "Academics" },
-                        { value: "testing", icon: Target, label: "Testing" },
-                        { value: "scholarships", icon: DollarSign, label: "Scholarships" },
+                        { value: "testing", icon: Target, label: assessment?.student_type === 'middle' ? "Test Prep" : "Testing" },
+                        { value: "scholarships", icon: DollarSign, label: getScholarshipLabel(assessment?.student_type) },
                         { value: "activities", icon: Trophy, label: "Activities" },
                         { value: "college-match", icon: Building, label: "Colleges" },
-                        { value: "essays", icon: PenLine, label: assessment?.student_type === 'grad' || assessment?.student_type === 'phd' ? "Personal Statement" : "Essays" },
+                        { value: "essays", icon: PenLine, label: assessment?.student_type === 'grad' || assessment?.student_type === 'phd' ? "Personal Statement" : assessment?.student_type === 'middle' ? "Stories" : "Essays" },
                       ] as { value: string; icon: React.ComponentType<{ className?: string }>; label: string }[])
                         .filter(({ value }) => getResultTabs(assessment?.student_type).includes(value))
                         .map(({ value, icon: Icon, label }) => (
@@ -912,18 +914,39 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               <div className="rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 text-white" style={{ background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColor}dd)` }}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 sm:gap-8">
                   <div>
-                    <p className="text-white/60 mb-1 sm:mb-2 text-sm sm:text-base">Congratulations,</p>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-                      {studentName}
-                    </h1>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Badge className="text-sm sm:text-lg px-3 sm:px-4 py-0.5 sm:py-1 font-semibold" style={{ backgroundColor: secondaryColor, color: primaryColor }}>
-                        {archetype}
-                      </Badge>
-                    </div>
-                    <p className="text-white/70 max-w-xl text-sm sm:text-base leading-relaxed">
-                      Your personalized college roadmap is ready. Based on your profile, we&apos;ve identified your unique strengths and created a customized action plan.
-                    </p>
+                    {assessment?.student_type === 'elementary' ? (
+                      <>
+                        <p className="text-white/60 mb-1 sm:mb-2 text-sm sm:text-base">Here&apos;s</p>
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                          {studentName}&apos;s Learning Profile
+                        </h1>
+                        <div className="flex items-center gap-3 mb-4">
+                          <Badge className="text-sm sm:text-lg px-3 sm:px-4 py-0.5 sm:py-1 font-semibold" style={{ backgroundColor: secondaryColor, color: primaryColor }}>
+                            {archetype}
+                          </Badge>
+                        </div>
+                        <p className="text-white/70 max-w-xl text-sm sm:text-base leading-relaxed">
+                          We&apos;ve mapped {studentName.split(' ')[0]}&apos;s strengths and built a plan you can act on this month. The Parent Guide tab has specific next steps tailored to {studentName.split(' ')[0]}&apos;s archetype.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-white/60 mb-1 sm:mb-2 text-sm sm:text-base">Congratulations,</p>
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                          {studentName}
+                        </h1>
+                        <div className="flex items-center gap-3 mb-4">
+                          <Badge className="text-sm sm:text-lg px-3 sm:px-4 py-0.5 sm:py-1 font-semibold" style={{ backgroundColor: secondaryColor, color: primaryColor }}>
+                            {archetype}
+                          </Badge>
+                        </div>
+                        <p className="text-white/70 max-w-xl text-sm sm:text-base leading-relaxed">
+                          {assessment?.student_type === 'middle'
+                            ? "Your personalized growth roadmap is ready. We've mapped your strengths and built a stage-by-stage plan to set up high school."
+                            : "Your personalized college roadmap is ready. Based on your profile, we've identified your unique strengths and created a customized action plan."}
+                        </p>
+                      </>
+                    )}
                   </div>
                   <div className="flex-shrink-0">
                     <div className="bg-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm max-w-[280px]">
@@ -934,13 +957,34 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       </div>
                       {(() => {
                         const score = assessment.competitiveness_score ?? 0
-                        const tier = score >= 90
-                          ? { label: 'Exceptional', desc: 'National/international-level achievements and near-perfect stats place you among the top 1-2% of applicants.', example: 'Think: Intel ISEF finalist, published researcher, or national debate champion with a 1550+ SAT and 3.95+ GPA.' }
-                          : score >= 80
-                          ? { label: 'Very Competitive', desc: 'Strong regional awards, high-impact leadership, and excellent academics make you a standout candidate.', example: 'Think: State-level competition winner, club president with measurable impact, 1450+ SAT, and a clear "spike" forming.' }
-                          : score >= 70
-                          ? { label: 'Competitive', desc: 'Solid extracurriculars and good academics, but developing a national-level "spike" would strengthen your profile.', example: 'Think: Active in 3-4 clubs with some leadership, 1350+ SAT, good GPA, but lacking a standout achievement that makes admissions officers take notice.' }
-                          : { label: 'Developing', desc: 'Focus on building your narrative through meaningful extracurriculars, leadership roles, and academic growth.', example: 'Think: Involved in a few activities but no deep commitment or leadership yet. Academics are solid but testing and awards need attention.' }
+                        const isElementary = assessment?.student_type === 'elementary'
+                        const isMiddle = assessment?.student_type === 'middle'
+                        const tier = isElementary
+                          ? (score >= 80
+                              ? { label: 'Thriving', desc: 'Strong curiosity, focus, and early skills across multiple areas. Keep nurturing what is already working.', example: 'Think: above-grade-level reader, sustained attention on hard puzzles, comfortable in groups and solo work.' }
+                              : score >= 65
+                              ? { label: 'On Track', desc: 'Solid grade-level skills with clear interests emerging. Add one structured enrichment to deepen what is sparking.', example: 'Think: at or above grade level in core skills, plays a sport or instrument, asks "why" questions about the world.' }
+                              : score >= 50
+                              ? { label: 'Building Foundations', desc: 'Building the routines and reading habits that set up the next few years. Read aloud daily and pick one weekly enrichment.', example: 'Think: meeting grade-level expectations, exploring a few interests but none deep yet.' }
+                              : { label: 'Just Starting', desc: 'Plenty of runway. Focus on reading, free play, and one positive group activity. The rest comes from there.', example: 'Think: still finding where energy and attention naturally land.' }
+                            )
+                          : isMiddle
+                          ? (score >= 80
+                              ? { label: 'Strong Foundation', desc: 'You are ahead of the typical middle-school path. Aim for one selective summer program and your first national-tier competition this year.', example: 'Think: AMC 8 strong scorer, regional competition team member, sustained interest in 1-2 areas.' }
+                              : score >= 65
+                              ? { label: 'On Track for High School', desc: 'You have the academic basics and a few clear interests. Pick one to go deep on and one growth area to push.', example: 'Think: honor roll, plays an instrument or sport, has a few activities but no strong "spike" yet.' }
+                              : score >= 50
+                              ? { label: 'Building', desc: 'Set up the foundations: a sustained project, a regional competition entry, and a 4-year HS course plan with a counselor.', example: 'Think: solid student, exploring activities but no deep commitment yet. Lots of upside.' }
+                              : { label: 'Just Starting', desc: 'Build the habit of finishing one thing. Pick one club, one consistent activity, and a daily reading habit.', example: 'Think: open horizons. Choose one direction this semester.' }
+                            )
+                          : (score >= 90
+                              ? { label: 'Exceptional', desc: 'National/international-level achievements and near-perfect stats place you among the top 1-2% of applicants.', example: 'Think: Intel ISEF finalist, published researcher, or national debate champion with a 1550+ SAT and 3.95+ GPA.' }
+                              : score >= 80
+                              ? { label: 'Very Competitive', desc: 'Strong regional awards, high-impact leadership, and excellent academics make you a standout candidate.', example: 'Think: State-level competition winner, club president with measurable impact, 1450+ SAT, and a clear "spike" forming.' }
+                              : score >= 70
+                              ? { label: 'Competitive', desc: 'Solid extracurriculars and good academics, but developing a national-level "spike" would strengthen your profile.', example: 'Think: Active in 3-4 clubs with some leadership, 1350+ SAT, good GPA, but lacking a standout achievement that makes admissions officers take notice.' }
+                              : { label: 'Developing', desc: 'Focus on building your narrative through meaningful extracurriculars, leadership roles, and academic growth.', example: 'Think: Involved in a few activities but no deep commitment or leadership yet. Academics are solid but testing and awards need attention.' }
+                            )
                         return (
                           <div className="mt-3 text-center">
                             <p className="text-white/70 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: secondaryColor }}>{tier.label}</p>
@@ -1344,14 +1388,136 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 </div>
               </TabsContent>
 
+              {/* ── Parent Guide Tab (elementary only) ──────────────────── */}
+              <TabsContent value="parent-guide" className="mt-6">
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
+                    <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                      Parent Guide
+                    </h3>
+                    <p className="text-white/70 text-sm">
+                      Specific actions you can take this month, plus the talent-search and enrichment programs that match {studentName.split(' ')[0]}&apos;s profile.
+                    </p>
+                  </div>
+
+                  {/* Parent Coaching Tips */}
+                  {(() => {
+                    const tips = (assessment.report_data as { parentCoachingTips?: Array<{ tip: string; why: string }> })?.parentCoachingTips
+                    if (!Array.isArray(tips) || tips.length === 0) return null
+                    return (
+                      <Card className="border-[#e5e0d5]">
+                        <CardHeader>
+                          <CardTitle className="text-[#1e3a5f] text-lg flex items-center gap-2">
+                            <Heart className="w-5 h-5 text-[#c9a227]" />
+                            Coaching Tips for This Week
+                          </CardTitle>
+                          <CardDescription>Each tip is matched to {studentName.split(' ')[0]}&apos;s archetype.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-4">
+                            {tips.map((t, i) => (
+                              <li key={i} className="flex items-start gap-3">
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#c9a227]/10 text-[#c9a227] text-xs font-bold shrink-0 mt-0.5">{i + 1}</span>
+                                <div>
+                                  <p className="text-sm font-semibold text-[#1e3a5f] mb-1">{t.tip}</p>
+                                  <p className="text-xs text-[#5a7a9a] leading-relaxed">{t.why}</p>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )
+                  })()}
+
+                  {/* Talent Search Eligibility */}
+                  {(() => {
+                    const ts = (assessment.report_data as { talentSearchEligibility?: { eligible?: boolean; programs?: Array<{ name: string; whyConsider: string; nextStep: string }> } })?.talentSearchEligibility
+                    const programs = ts?.programs
+                    if (!Array.isArray(programs) || programs.length === 0) return null
+                    return (
+                      <Card className="border-[#e5e0d5]">
+                        <CardHeader>
+                          <CardTitle className="text-[#1e3a5f] text-lg flex items-center gap-2">
+                            <Award className="w-5 h-5 text-[#c9a227]" />
+                            Talent-Search & Gifted Program Eligibility
+                          </CardTitle>
+                          <CardDescription>Programs that match {studentName.split(' ')[0]}&apos;s profile and what to do next.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {programs.map((p, i) => (
+                              <div key={i} className="border border-[#e5e0d5] rounded-xl p-4">
+                                <p className="text-sm font-bold text-[#1e3a5f] mb-2">{p.name}</p>
+                                <p className="text-xs text-[#5a7a9a] leading-relaxed mb-3">{p.whyConsider}</p>
+                                <div className="text-xs text-[#1e3a5f] bg-[#faf8f3] rounded-lg px-3 py-2">
+                                  <span className="font-semibold">Next step: </span>{p.nextStep}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })()}
+
+                  {/* Conversation Starters (static fallback) */}
+                  <Card className="border-[#e5e0d5]">
+                    <CardHeader>
+                      <CardTitle className="text-[#1e3a5f] text-lg flex items-center gap-2">
+                        <Users className="w-5 h-5 text-[#c9a227]" />
+                        Conversation Starters
+                      </CardTitle>
+                      <CardDescription>Three prompts you can use this week to talk to {studentName.split(' ')[0]} about what they love.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3 text-sm text-[#1e3a5f]">
+                        <li className="flex items-start gap-3">
+                          <span className="text-[#c9a227] font-bold">&ldquo;</span>
+                          <span>What was the hardest thing you tried today, even if it didn&apos;t work?</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <span className="text-[#c9a227] font-bold">&ldquo;</span>
+                          <span>If you could spend a whole Saturday on one thing, what would it be?</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <span className="text-[#c9a227] font-bold">&ldquo;</span>
+                          <span>What&apos;s something you noticed today that no one else seemed to?</span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
                 <TabsContent value="gaps" className="mt-6">
               <div className="space-y-5">
+              {assessment?.student_type === 'middle' && (() => {
+                const parentTips = (assessment.report_data as { parentTips?: string[] })?.parentTips
+                if (!Array.isArray(parentTips) || parentTips.length === 0) return null
+                return (
+                  <aside className="rounded-2xl border border-[#c9a227]/30 bg-[#faf8f3] p-4 sm:p-5">
+                    <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#c9a227] mb-2">For your parents</p>
+                    <ul className="space-y-1.5 text-sm text-[#1e3a5f]">
+                      {parentTips.slice(0, 3).map((tip, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-[#c9a227] font-bold shrink-0">→</span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </aside>
+                )
+              })()}
               <div className="grid md:grid-cols-2 gap-5">
                 {[
-                  { title: "Missing Elements", desc: "Areas to develop for target schools", icon: AlertCircle, items: assessment.gap_analysis?.missingElements, color: "#ef4444", accent: "bg-red-50" },
+                  { title: assessment?.student_type === 'middle' ? "Growth Opportunities" : "Missing Elements", desc: assessment?.student_type === 'middle' ? "Where to push next, framed constructively" : "Areas to develop for target schools", icon: AlertCircle, items: assessment.gap_analysis?.missingElements, color: assessment?.student_type === 'middle' ? "#10b981" : "#ef4444", accent: assessment?.student_type === 'middle' ? "bg-emerald-50" : "bg-red-50" },
                   { title: "Activities to Deepen", desc: "Existing activities needing more depth", icon: TrendingUp, items: assessment.gap_analysis?.activitiesToDeepen, color: "#f97316", accent: "bg-orange-50" },
                   { title: "Skills to Develop", desc: "Skills needed for career goals", icon: BookOpen, items: assessment.gap_analysis?.skillsToDevelop || assessment.gap_analysis?.skillsToDevelope, color: "#3b82f6", accent: "bg-blue-50" },
-                  { title: "Vulnerabilities", desc: "Weak spots admissions officers may flag", icon: Target, items: (assessment.gap_analysis as any)?.vulnerabilities, color: "#8b5cf6", accent: "bg-violet-50" },
+                  // Hide vulnerabilities for middle (too punitive for a 12-year-old).
+                  ...(assessment?.student_type === 'middle' ? [] : [
+                    { title: "Vulnerabilities", desc: "Weak spots admissions officers may flag", icon: Target, items: (assessment.gap_analysis as any)?.vulnerabilities, color: "#8b5cf6", accent: "bg-violet-50" },
+                  ]),
                 ].filter(section => section.items && section.items.length > 0).map(({ title, desc, icon: SectionIcon, items, color, accent }) => (
                   <Card key={title} className="border-[#e5e0d5]">
                     <CardHeader className="pb-2">
@@ -1620,6 +1786,66 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
                 <TabsContent value="career-future" className="mt-6">
+                  {/* Middle: render HS course plan above the standard career content. */}
+                  {assessment?.student_type === 'middle' && (() => {
+                    const plan = (assessment.report_data as { highSchoolCoursePlan?: Record<string, { honors?: string[]; regular?: string[]; rationale?: string }> })?.highSchoolCoursePlan
+                    if (!plan) return null
+                    const grades: Array<keyof typeof plan> = ['9th', '10th', '11th', '12th']
+                    return (
+                      <div className="mb-8 space-y-5">
+                        <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
+                          <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                            High School Course Plan
+                          </h3>
+                          <p className="text-white/70 text-sm">Map your 4-year schedule starting in 9th grade. Discuss with your school counselor before registration.</p>
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {grades.map((g) => {
+                            const yr = plan[g]
+                            if (!yr) return null
+                            return (
+                              <Card key={g} className="border-[#e5e0d5]">
+                                <CardHeader className="pb-2">
+                                  <CardTitle className="text-base text-[#1e3a5f]">{g} Grade</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  {Array.isArray(yr.honors) && yr.honors.length > 0 && (
+                                    <div>
+                                      <p className="text-[10px] font-bold text-[#c9a227] uppercase tracking-wider mb-1.5">Honors / Advanced</p>
+                                      <ul className="space-y-1">
+                                        {yr.honors.map((c: string, i: number) => (
+                                          <li key={i} className="text-xs text-[#1e3a5f] flex items-start gap-1.5">
+                                            <span className="text-[#c9a227] mt-0.5">•</span>
+                                            <span>{c}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {Array.isArray(yr.regular) && yr.regular.length > 0 && (
+                                    <div>
+                                      <p className="text-[10px] font-bold text-[#5a7a9a] uppercase tracking-wider mb-1.5">Other Required</p>
+                                      <ul className="space-y-1">
+                                        {yr.regular.map((c: string, i: number) => (
+                                          <li key={i} className="text-xs text-[#5a7a9a] flex items-start gap-1.5">
+                                            <span className="text-[#5a7a9a]/50 mt-0.5">•</span>
+                                            <span>{c}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {yr.rationale && (
+                                    <p className="text-[11px] text-[#5a7a9a] italic leading-relaxed pt-2 border-t border-[#e5e0d5]">{yr.rationale}</p>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })()}
                   {!assessment.career_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="career-future" /> : <div className="space-y-6">
                     <Card className="border-[#e5e0d5] bg-[#1e3a5f] text-white overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -2006,10 +2232,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               {!assessment.scholarship_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="scholarships" /> : <div className="space-y-6">
                 <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
                   <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-                    Scholarship Opportunities
+                    {getScholarshipLabel(assessment?.student_type)} Opportunities
                   </h3>
                   <p className="text-white/70 text-sm">
-                    Curated scholarships matched to your profile, interests, and background.
+                    Curated {getScholarshipLabel(assessment?.student_type).toLowerCase()} matched to your profile, interests, and background.
                   </p>
                 </div>
                 {(() => {
@@ -2065,6 +2291,162 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
 
             <TabsContent value="activities" className="mt-6">
+              {/* Elementary: render age-appropriate enrichment programs only. */}
+              {assessment?.student_type === 'elementary' ? (() => {
+                const enrichments = (assessment.report_data as { enrichmentRecommendations?: Array<{ name: string; category: string; description: string; ageFit: string; timeCommitment: string }> })?.enrichmentRecommendations
+                if (!Array.isArray(enrichments) || enrichments.length === 0) {
+                  return (
+                    <Card className="border-[#e5e0d5]">
+                      <CardContent className="py-12 text-center text-[#5a7a9a]">
+                        Enrichment recommendations are still being generated.
+                      </CardContent>
+                    </Card>
+                  )
+                }
+                const grouped = enrichments.reduce((acc: Record<string, typeof enrichments>, e) => {
+                  const key = (e.category || 'other').toLowerCase()
+                  if (!acc[key]) acc[key] = []
+                  acc[key].push(e)
+                  return acc
+                }, {})
+                const categoryLabels: Record<string, { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color: string }> = {
+                  literacy: { label: 'Literacy & Reading', icon: BookOpen, color: '#3b82f6' },
+                  math: { label: 'Math & Logic', icon: Brain, color: '#8b5cf6' },
+                  science: { label: 'Science & Discovery', icon: FlaskConical, color: '#06b6d4' },
+                  arts: { label: 'Arts & Creativity', icon: Palette, color: '#ec4899' },
+                  social: { label: 'Social & Physical', icon: Users, color: '#f59e0b' },
+                }
+                return (
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white">
+                      <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                        Enrichment Programs
+                      </h3>
+                      <p className="text-white/70 text-sm">Specific programs and activities matched to {studentName.split(' ')[0]}&apos;s strengths and age. Most are low-cost or free.</p>
+                    </div>
+                    {Object.entries(grouped).map(([category, items]) => {
+                      const meta = categoryLabels[category] || { label: category, icon: Trophy, color: '#5a7a9a' }
+                      const CategoryIcon = meta.icon
+                      return (
+                        <Card key={category} className="border-[#e5e0d5]">
+                          <CardHeader>
+                            <CardTitle className="text-[#1e3a5f] text-lg flex items-center gap-2">
+                              <CategoryIcon className="w-5 h-5" style={{ color: meta.color }} />
+                              {meta.label}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              {items.map((e, i) => (
+                                <div key={i} className="border border-[#e5e0d5] rounded-xl p-4">
+                                  <p className="text-sm font-bold text-[#1e3a5f] mb-1">{e.name}</p>
+                                  <p className="text-xs text-[#5a7a9a] leading-relaxed mb-2">{e.description}</p>
+                                  <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {e.timeCommitment && <Badge variant="outline" className="text-[#5a7a9a] border-[#e5e0d5] text-[10px]">{e.timeCommitment}</Badge>}
+                                  </div>
+                                  {e.ageFit && <p className="text-[11px] text-[#5a7a9a] italic">Why it fits: {e.ageFit}</p>}
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )
+              })() : (
+              <>
+              {/* Middle: render the competition pipeline + summer program ladder above the standard activity content. */}
+              {assessment?.student_type === 'middle' && (() => {
+                const pipeline = (assessment.report_data as { competitionPipeline?: { local?: Array<{ name: string; description: string; whyFit: string; deadline: string; difficulty: string }>; regional?: Array<{ name: string; description: string; whyFit: string; deadline: string; difficulty: string }>; national?: Array<{ name: string; description: string; whyFit: string; deadline: string; difficulty: string }> } })?.competitionPipeline
+                const ladder = (assessment.report_data as { summerProgramLadder?: { intro?: Array<{ name: string; description: string; applicationDeadline: string; cost: string; whyFit: string }>; intermediate?: Array<{ name: string; description: string; applicationDeadline: string; cost: string; whyFit: string }>; advanced?: Array<{ name: string; description: string; applicationDeadline: string; cost: string; whyFit: string }> } })?.summerProgramLadder
+                return (
+                  <div className="space-y-8 mb-8">
+                    {pipeline && (
+                      <div>
+                        <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white mb-5">
+                          <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                            Competition Pipeline
+                          </h3>
+                          <p className="text-white/70 text-sm">A 3-tier path from local entry-level competitions to national stretch goals.</p>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-4">
+                          {([
+                            { label: 'Local', items: pipeline.local, color: '#10b981' },
+                            { label: 'Regional', items: pipeline.regional, color: '#f59e0b' },
+                            { label: 'National', items: pipeline.national, color: '#ef4444' },
+                          ] as const).map(({ label, items, color }) => (
+                            <Card key={label} className="border-[#e5e0d5]">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                                  <Trophy className="w-4 h-4" style={{ color }} />
+                                  {label}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                {Array.isArray(items) && items.length > 0 ? items.map((it, i) => (
+                                  <div key={i} className="border border-[#e5e0d5] rounded-lg p-3">
+                                    <p className="text-sm font-semibold text-[#1e3a5f] mb-1">{it.name}</p>
+                                    <p className="text-xs text-[#5a7a9a] leading-relaxed mb-2">{it.description}</p>
+                                    <div className="flex flex-wrap gap-1 mb-1">
+                                      {it.deadline && <Badge variant="outline" className="text-[10px] border-[#e5e0d5] text-[#5a7a9a]">{it.deadline}</Badge>}
+                                      {it.difficulty && <Badge className="text-[10px] capitalize" style={{ backgroundColor: `${color}15`, color }}>{it.difficulty}</Badge>}
+                                    </div>
+                                    {it.whyFit && <p className="text-[11px] text-[#5a7a9a] italic">{it.whyFit}</p>}
+                                  </div>
+                                )) : (
+                                  <p className="text-xs text-[#5a7a9a] italic">No items at this tier.</p>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {ladder && (
+                      <div>
+                        <div className="bg-gradient-to-r from-[#1e3a5f] to-[#152a45] p-6 rounded-2xl text-white mb-5">
+                          <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
+                            Summer Program Ladder
+                          </h3>
+                          <p className="text-white/70 text-sm">Three tiers from low-cost intro options to selective stretch programs.</p>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-4">
+                          {([
+                            { label: 'Intro (free / low cost)', items: ladder.intro, color: '#10b981' },
+                            { label: 'Intermediate (selective)', items: ladder.intermediate, color: '#f59e0b' },
+                            { label: 'Advanced (stretch)', items: ladder.advanced, color: '#ef4444' },
+                          ] as const).map(({ label, items, color }) => (
+                            <Card key={label} className="border-[#e5e0d5]">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-base text-[#1e3a5f] flex items-center gap-2">
+                                  <Sun className="w-4 h-4" style={{ color }} />
+                                  {label}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                {Array.isArray(items) && items.length > 0 ? items.map((it, i) => (
+                                  <div key={i} className="border border-[#e5e0d5] rounded-lg p-3">
+                                    <p className="text-sm font-semibold text-[#1e3a5f] mb-1">{it.name}</p>
+                                    <p className="text-xs text-[#5a7a9a] leading-relaxed mb-2">{it.description}</p>
+                                    <div className="flex flex-wrap gap-1 mb-1">
+                                      {it.applicationDeadline && <Badge variant="outline" className="text-[10px] border-[#e5e0d5] text-[#5a7a9a]">{it.applicationDeadline}</Badge>}
+                                      {it.cost && <Badge className="text-[10px]" style={{ backgroundColor: `${color}15`, color }}>{it.cost}</Badge>}
+                                    </div>
+                                    {it.whyFit && <p className="text-[11px] text-[#5a7a9a] italic">{it.whyFit}</p>}
+                                  </div>
+                                )) : (
+                                  <p className="text-xs text-[#5a7a9a] italic">No items at this tier.</p>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
               {!assessment.competitions_recommendations && isPhase2Loading ? <Phase2Placeholder tabKey="activities" /> : <div className="space-y-8">
                 <div>
                   <h3 className="text-lg font-semibold text-[#1e3a5f] mb-4 flex items-center gap-2">
@@ -2264,6 +2646,8 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   </div>
                 </div>
               </div>}
+              </>
+              )}
             </TabsContent>
 
                 <TabsContent value="college-match" className="mt-6">
@@ -2379,7 +2763,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                             Strategic Network Targets
                           </h3>
                           <p className="text-white/70 text-sm sm:text-base">
-                            Connecting with the right mentors and professors is a critical differentiator for Ivy League admissions. We&apos;ve identified real professors, prioritizing those at local state schools and community colleges in your area for realistic networking opportunities.
+                            Connecting with the right mentors and professors is a critical differentiator at every stage of your journey. We&apos;ve identified real people, prioritizing those at nearby institutions in your area for realistic networking opportunities.
                           </p>
                         </div>
 
@@ -2567,9 +2951,19 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               <div className="space-y-6">
                 <div className="bg-gradient-to-r from-[#1e3a5f] to-[#c9a227] text-white rounded-xl p-4 sm:p-6 mb-6">
                   <h3 className="text-lg sm:text-2xl font-bold mb-1" style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}>
-                    Personal Essay Brainstorm
+                    {assessment?.student_type === 'grad' || assessment?.student_type === 'phd'
+                      ? 'Personal Statement Brainstorm'
+                      : assessment?.student_type === 'middle'
+                      ? 'Story Practice'
+                      : 'Personal Essay Brainstorm'}
                   </h3>
-                  <p className="text-white/70 text-sm">Five compelling essay concepts that weave your unique experiences into an Ivy League-worthy narrative.</p>
+                  <p className="text-white/70 text-sm">
+                    {assessment?.student_type === 'grad' || assessment?.student_type === 'phd'
+                      ? 'Compelling personal statement concepts that weave your research, experience, and motivation into a cohesive program-application narrative.'
+                      : assessment?.student_type === 'middle'
+                      ? 'Five story angles you can practice telling now. Write them in a journal — they will become your high-school application essays in a few years.'
+                      : 'Five compelling essay concepts that weave your unique experiences into a memorable application narrative.'}
+                  </p>
                 </div>
 
                 {assessment.report_data?.essayBrainstorm && Array.isArray(assessment.report_data.essayBrainstorm) ? (

@@ -12,6 +12,16 @@ function getDemoData(demoType: string) {
     return getFinanceDemoData()
   } else if (demoType === "engineering") {
     return getEngineeringDemoData()
+  } else if (demoType === "elementary") {
+    return getElementaryDemoData()
+  } else if (demoType === "middle") {
+    return getMiddleDemoData()
+  } else if (demoType === "undergrad") {
+    return getUndergradDemoData()
+  } else if (demoType === "grad") {
+    return getGradDemoData()
+  } else if (demoType === "phd") {
+    return getPhdDemoData()
   }
   return getHealthcareDemoData()
 }
@@ -2488,6 +2498,1006 @@ function getEngineeringDemoData() {
 }
 
 /**
+ * Elementary demo: Sarah Chen, 3rd grade. Showcases the K-5 parent-facing
+ * report with the new sections (parent-guide tab, enrichment recommendations,
+ * talent-search eligibility). Most HS-only fields are intentionally empty
+ * since the elementary results page only renders archetype + parent-guide +
+ * activities tabs.
+ */
+function getElementaryDemoData() {
+  const student = {
+    first_name: "Sarah",
+    last_name: "Chen",
+    full_name: "Sarah Chen",
+    current_grade: "3rd Grade",
+    parent_email: "parent.demo@thestudentblueprint.com",
+  }
+
+  const formData = {
+    basicInfo: {
+      firstName: "Sarah",
+      lastName: "Chen",
+      email: "__EMAIL__",
+      studentType: "elementary",
+      currentGrade: "3rd Grade",
+      gradeLevel: "3rd Grade",
+      schoolName: "Lincoln Elementary",
+      parentName: "Wei Chen",
+      parentEmail: "parent.demo@thestudentblueprint.com",
+    },
+    academicProfile: {
+      favoriteSubjects: ["Math", "Reading", "Science"],
+      academicAwards: "Reading Star of the Month (Sept), 1st place school spelling bee.",
+    },
+    extracurriculars: {
+      activities: [
+        { name: "School Soccer Team", role: "Player", yearsActive: "2", hoursPerWeek: "3", description: "Plays weekly during the fall season; loves being on a team." },
+        { name: "Library Reading Club", role: "Member", yearsActive: "1", hoursPerWeek: "1", description: "Saturday morning program at the public library; reads above grade level." },
+        { name: "Lego Robotics (after-school)", role: "Builder", yearsActive: "1", hoursPerWeek: "2", description: "Builds with WeDo kits; learning simple block-based programming." },
+        { name: "Beginner Piano (private lessons)", role: "Student", yearsActive: "1", hoursPerWeek: "2", description: "Weekly 30-min lessons plus 15-min daily practice." },
+      ],
+    },
+    passions: {
+      topicsYouLove: ["building things", "animals", "space"],
+      industriesCurious: [],
+      hobbiesSkills: "Loves chapter books, building Lego sets above her age range, asking 'why' questions, drawing maps.",
+    },
+    careerAspirations: {
+      career1: "Veterinarian",
+      career2: "Engineer who builds robots",
+      dreamJobTitle: "Someone who helps animals using cool technology",
+    },
+    specialTalents: {
+      musicalInstruments: "Piano (1 year, beginner level)",
+      visualArts: "Drawing maps and animals",
+      athletics: "Soccer (defender on school team)",
+    },
+    familyContext: {
+      familyProfessions: "Mother: software engineer; Father: pediatrician.",
+    },
+    personality: {
+      topStrengths: ["Curious", "Patient", "Kind"],
+      archetypes: ["Builder", "Researcher"],
+      introvertExtrovert: "Ambivert",
+    },
+  }
+
+  const analysis = {
+    studentArchetype: "Curious Builder",
+    archetypeScores: { Visionary: 62, Builder: 88, Healer: 70, Analyst: 78, Artist: 55, Advocate: 50, Entrepreneur: 48, Researcher: 80 },
+    competitivenessScore: 78,
+    strengthsAnalysis: {
+      competitiveAdvantages: [
+        "Reads chapter books well above 3rd-grade level — sustained attention is a real strength.",
+        "Builds complex Lego sets (8+ rated) without losing patience, finishing what she starts.",
+        "Asks 'why' and 'what if' questions across many topics — natural intellectual curiosity.",
+        "Comfortable in both team settings (soccer) and solo focused work (reading, building) — flexible learner.",
+        "Already exposed to introductory robotics — early on-ramp to STEM.",
+      ],
+      uniqueDifferentiators: [
+        "Bridges builder and reader profiles — most 3rd graders lean strongly one way; Sarah has both.",
+        "Family environment that models both engineering and healthcare careers gives unusual breadth of role models.",
+      ],
+      alignedActivities: [
+        "Library Reading Club — perfectly matched to her reading drive.",
+        "Lego Robotics — perfectly matched to her building and 'why' instincts.",
+        "Soccer — provides physical and team-based balance to focused indoor work.",
+      ],
+    },
+    gapAnalysis: {
+      missingElements: [
+        "No exposure yet to a structured math enrichment program. Try Beast Academy or Khan Kids 30 minutes a few days per week.",
+        "No experience with a sustained project (anything that takes 3+ weeks to finish). Pick one: a small garden, a build series, a story she writes a chapter at a time.",
+        "Hasn't yet visited a science museum or hands-on STEM workshop. Look for monthly weekend programs at your local children's museum.",
+        "No formal music performance opportunity yet. Ask her piano teacher about end-of-year recitals or family-friendly recital groups.",
+        "Hasn't tried a writing club or journaling habit; her reading level suggests she'd enjoy creating stories too.",
+      ],
+      activitiesToDeepen: [
+        "Lego Robotics — push toward the FIRST LEGO League Jr. program (age 6-10) for a low-stakes team experience.",
+        "Library Reading Club — ask the librarian for a stretch chapter-book series matched to her interests.",
+      ],
+      skillsToDevelope: [
+        "Persistence on hard problems (one challenging puzzle per week, celebrate effort not outcome).",
+        "Basic typing fluency (BBC Dance Mat, Typing Club for Kids).",
+        "Simple money/time math (let her handle small purchases or plan a Saturday timeline).",
+        "Public speaking (have her teach you something she's learned, or join a 'show and tell' habit at home).",
+        "Emotional regulation under frustration (model self-talk: 'I can try again').",
+      ],
+      vulnerabilities: [],
+    },
+    roadmap: {
+      immediate: [
+        "Take Sarah to the public library this Saturday and ask the librarian about reading challenges and chapter-book recommendations.",
+        "Sign up for Beast Academy (online) or borrow Beast Academy comic books for a math enrichment trial.",
+        "Add one weekly 'Family Project Hour' — pick something Sarah leads (Lego challenge, baking experiment, garden bed).",
+        "Look up your district's Gifted & Talented identification process and confirm next testing window.",
+        "Visit your local children's museum or science center this month — start a habit.",
+      ],
+      shortTerm: [
+        "Register Sarah for the Johns Hopkins CTY talent search testing if she scores in the top 10% on a school standardized test.",
+        "Enroll in a Saturday or summer week-long enrichment camp (math, robotics, or creative writing).",
+        "Add a 5-minute daily reading-aloud habit so she can practice fluency and expression.",
+        "Choose one 6-week project (mini-garden, book she writes herself, build series) and plan it together.",
+        "Join the FIRST LEGO League Jr. program if your area has a team for ages 6-10.",
+      ],
+      mediumTerm: [
+        "Pursue district G&T testing if eligible; understand what programs unlock if she qualifies.",
+        "Try a week of overnight summer camp by 4th or 5th grade (independence-building).",
+        "Begin a passion notebook: she records ideas, sketches, observations weekly.",
+      ],
+      longTerm: [
+        "By 5th grade, Sarah should have one chosen 'depth area' (math, building, reading, sports) plus broad exploration.",
+        "Maintain the family habit of museums, libraries, and weekend projects through middle school.",
+      ],
+    },
+    parentCoachingTips: [
+      { tip: "Read aloud with Sarah every night, even after she can read alone.", why: "Hearing fluent reading models pacing, vocabulary, and expression that silent reading doesn't teach." },
+      { tip: "When she's stuck on a Lego or math problem, count to 60 before helping.", why: "Builders need to feel productive struggle. Quick rescues teach learned helplessness; waiting teaches grit." },
+      { tip: "Praise specific effort, not 'smart'. Say 'I noticed you tried three different ways' not 'You're so smart'.", why: "Effort-praised kids take harder challenges. Trait-praised kids avoid them." },
+      { tip: "Pick one cooking or baking project a week where Sarah leads.", why: "Real-world math, sequencing, and patience all in one — and the output is delicious feedback." },
+      { tip: "Resist over-scheduling. Two structured activities + free time beats five activities.", why: "Builders need unstructured time to invent and explore. Schedules kill creativity at this age." },
+      { tip: "Ask 'What's something you noticed today?' instead of 'How was school?'", why: "Trains observation; gets richer answers; signals you care about her thinking." },
+    ],
+    enrichmentRecommendations: [
+      { name: "Beast Academy (Art of Problem Solving)", category: "math", description: "Comic-book style math curriculum for grades 2-5; rigorous and playful. Online subscription or printed books.", ageFit: "Designed for elementary students who are ahead in math; matches Sarah's curiosity and patience.", timeCommitment: "30 min, 3-4 days per week" },
+      { name: "Local Public Library Summer Reading Program", category: "literacy", description: "Free; tracks books read, awards prizes, often includes weekly story hours and craft sessions.", ageFit: "Sarah is already a self-motivated reader; this rewards and extends the habit.", timeCommitment: "1-2 hours per week (visits + reading)" },
+      { name: "FIRST LEGO League Jr. (Discover or Explore)", category: "science", description: "Beginner robotics and engineering teamwork program for ages 6-10. Local teams meet weekly for a season.", ageFit: "Builds on her existing Lego robotics interest in a team setting.", timeCommitment: "2-3 hours per week, fall-spring season" },
+      { name: "Local Children's Museum or Science Center membership", category: "science", description: "Most cities have one. Annual family memberships are usually $80-$150 and include free entry plus discounts on programs.", ageFit: "Hands-on exhibits match her 'why' question style.", timeCommitment: "1-2 visits per month" },
+      { name: "Khan Kids (free app)", category: "math", description: "Free, ad-free app with math, reading, and social-emotional games for ages 2-8.", ageFit: "Perfect for short, low-pressure daily practice.", timeCommitment: "15 min, 4-5 days per week" },
+      { name: "Scholastic Storyworks Jr. magazine", category: "literacy", description: "Monthly nonfiction + fiction magazine for grades 2-3; comes with read-aloud audio.", ageFit: "Stretches her reading with real-world topics; great for parent-child discussion.", timeCommitment: "30 min per issue" },
+      { name: "Local YMCA Swim Lessons or Youth Soccer League", category: "social", description: "Affordable, social, builds physical confidence outside school PE.", ageFit: "Sarah is on a school team; broaden through community-level play.", timeCommitment: "1-2 hours per week" },
+      { name: "Junior Music Recital Group (via current piano teacher)", category: "arts", description: "Group performance opportunities — usually 2x per year through Music Teachers National Association local chapters.", ageFit: "Builds performance confidence; gives goal-setting framework for piano practice.", timeCommitment: "Monthly group lessons + recital prep" },
+    ],
+    talentSearchEligibility: {
+      eligible: true,
+      programs: [
+        { name: "Johns Hopkins CTY (Center for Talented Youth)", whyConsider: "Sarah's reading-above-grade-level and high curiosity profile typically maps to a strong showing on talent-search testing. CTY identifies students through above-grade-level testing and unlocks summer programs, online courses, and a global community.", nextStep: "Visit cty.jhu.edu and search for the 'Talent Search' eligibility criteria for your state. Testing windows usually open in late fall and early spring." },
+        { name: "Duke TIP (Duke Identification Program)", whyConsider: "Similar to CTY; Duke TIP also serves K-5 students and offers free family resources even for non-enrolled students. Sarah's profile suggests she'd be in the candidate pool.", nextStep: "Search 'Duke TIP elementary talent search' — eligibility usually requires a top-percentile score on a school standardized test." },
+        { name: "District Gifted & Talented (G&T) Program", whyConsider: "Most public districts identify G&T students between 2nd and 4th grade. Eligibility opens access to magnet programs, accelerated math, or pull-out enrichment.", nextStep: "Email Sarah's school counselor this week: ask what G&T identification process the district uses and when the next testing window is." },
+      ],
+    },
+  }
+
+  // Grade-by-grade roadmap through 5th grade
+  const gradeByGradeRoadmap = {
+    currentGrade: {
+      grade: "3rd Grade",
+      focus: "Build the habit of sustained reading and one structured math enrichment. Begin G&T identification process.",
+      academics: ["Maintain reading-above-grade-level habit (chapter books).", "Add 30 min/day of Beast Academy or Khan Kids math.", "Practice handwriting and basic typing fluency.", "Learn multiplication facts up through 12s by year-end."],
+      extracurriculars: ["Continue Library Reading Club, Lego Robotics, soccer, piano.", "Add monthly children's museum visits.", "Try one new weekend workshop per quarter."],
+      testing: ["Take whatever district standardized test is offered (often a Spring assessment).", "Sign up for Johns Hopkins CTY or Duke TIP talent search testing if eligible."],
+      leadership: ["Pick one 'classroom helper' role each week (line leader, supply manager).", "Lead a family project once a month (Sunday Project Hour)."],
+      summerPlan: "Library summer reading program + one week-long enrichment camp (math/robotics/writing) + family museum visits. Daily 30-min reading and 30-min Beast Academy.",
+    },
+    nextYears: [
+      {
+        grade: "4th Grade",
+        focus: "Deepen one chosen 'depth area' while continuing broad exploration.",
+        academics: ["Continue accelerated math trajectory.", "Begin reading longer chapter books and short biographies.", "Introduce structured writing (one short story or report per month)."],
+        extracurriculars: ["Continue robotics, soccer, piano.", "Add one new sustained project (3-month minimum)."],
+        testing: ["G&T testing if not yet completed.", "Continue talent search participation."],
+        leadership: ["Try for safety patrol, peer reading buddy, or class representative roles."],
+        summerPlan: "Try one CTY/TIP day camp if eligible. Family travel with educational components. First week of overnight camp recommended.",
+      },
+      {
+        grade: "5th Grade",
+        focus: "Prepare for middle-school transition. Identify which middle-school enrichment paths matter (math acceleration, gifted humanities).",
+        academics: ["Aim to complete pre-algebra concepts by end of year.", "Read at least 20 books across genres.", "Practice structured essay writing (5-paragraph format)."],
+        extracurriculars: ["Continue depth area; try one new domain (debate, theater, coding club)."],
+        testing: ["Middle-school math placement tests; CTY/TIP if continuing."],
+        leadership: ["Run for student council or take a lead on a school project."],
+        summerPlan: "Selective summer program (CTY 2-week, university pre-college lite). Begin 'big project' planning for middle school.",
+      },
+    ],
+  }
+
+  return {
+    student, formData, analysis, gradeByGradeRoadmap,
+    // Empty arrays/objects for HS-shaped fields that don't apply at K-5
+    passionProjects: [],
+    academicCourses: { apCourses: [], ibCourses: [], curriculumSpecificCourses: { label: "", courses: [] }, honorsCourses: [], electivesRecommended: [] },
+    satActGoals: null,
+    researchPubs: { researchTopics: [], publicationOpportunities: [], mentorshipSuggestions: [], timeline: "" },
+    leadership: { clubLeadership: [], schoolWideRoles: [], communityLeadership: [], leadershipDevelopment: [] },
+    serviceCommunity: { localOpportunities: [], nationalPrograms: [], internationalService: [], sustainedCommitment: [] },
+    summerPrograms: null,
+    sports: { varsitySports: [], clubSports: [], recruitingStrategy: [], fitnessLeadership: [] },
+    competitions: { academicCompetitions: [], businessCompetitions: [], artsCompetitions: [], debateSpeech: [] },
+    studentGov: { schoolGovernment: [], districtStateRoles: [], youthGovernment: [], advocacyRoles: [] },
+    internships: { industryInternships: [], researchInternships: [], nonprofitInternships: [], virtualOpportunities: [] },
+    cultureArts: { performingArts: [], visualArts: [], creativeWriting: [], culturalClubs: [] },
+    career: null,
+    collegeRecs: null,
+    mentors: { mentors: [] },
+    wasteOfTime: { activities: [] },
+    scholarships: { scholarships: [] },
+  }
+}
+
+/**
+ * Middle school demo: Alex Rodriguez, 7th grade. Showcases the 5-tab middle
+ * results page with new sections (HS course plan, competition pipeline,
+ * summer program ladder).
+ */
+function getMiddleDemoData() {
+  const student = {
+    first_name: "Alex",
+    last_name: "Rodriguez",
+    full_name: "Alex Rodriguez",
+    current_grade: "7th Grade",
+    parent_email: "parent.demo@thestudentblueprint.com",
+  }
+
+  const formData = {
+    basicInfo: {
+      firstName: "Alex",
+      lastName: "Rodriguez",
+      email: "__EMAIL__",
+      studentType: "middle",
+      currentGrade: "7th Grade",
+      gradeLevel: "7th Grade",
+      schoolName: "Roosevelt Middle School",
+      parentName: "Maria Rodriguez",
+      parentEmail: "parent.demo@thestudentblueprint.com",
+    },
+    academicProfile: {
+      curriculum: "US Middle School",
+      coursesTaken: ["Pre-Algebra (advanced)", "English 7", "Life Science", "World Cultures", "Spanish I"],
+      favoriteSubjects: ["Math", "Science", "Music"],
+      academicAwards: "MATHCOUNTS school team (5th place at chapter), straight-A honor roll, 1st violin in school orchestra.",
+    },
+    extracurriculars: {
+      activities: [
+        { name: "School MATHCOUNTS Team", role: "Team Member", yearsActive: "2", hoursPerWeek: "3", description: "Practices weekly; placed 5th at the chapter competition; aiming for top 10 individual at chapter next year." },
+        { name: "Regional Science Olympiad", role: "Team Member (Disease Detectives, Anatomy)", yearsActive: "1", hoursPerWeek: "4", description: "Made the 7th grade competition team; team placed 8th at regional invitational." },
+        { name: "School Orchestra (Violin, 1st chair section)", role: "1st Violin", yearsActive: "5", hoursPerWeek: "5", description: "Five years of private lessons + school orchestra. Auditioned into the Youth Symphony track for next year." },
+        { name: "Soccer (Travel Team)", role: "Midfielder", yearsActive: "4", hoursPerWeek: "8", description: "Plays for a travel club team; 2-3 tournaments per season." },
+      ],
+    },
+    leadership: {
+      positions: "MATHCOUNTS team co-captain (informal), Section leader in orchestra, Soccer team captain at 12U level last season.",
+      impactDescription: "Helps newer MATHCOUNTS members with practice problems weekly. Organizes orchestra section sectionals.",
+    },
+    competitions: {
+      competitions: "MATHCOUNTS Chapter (5th, school team 3rd), Science Olympiad Regional (8th), All-State Orchestra audition (made 1st violin section).",
+      awards: "MATHCOUNTS school team plaque, Science Olympiad regional medal in Disease Detectives.",
+    },
+    passions: {
+      topicsYouLove: ["Math", "Public health", "Music theory"],
+      industriesCurious: ["Medicine", "Tech", "Music"],
+      hobbiesSkills: "Loves logic puzzles, watches medical YouTube channels, learning music composition basics.",
+    },
+    careerAspirations: {
+      career1: "Doctor (epidemiologist or surgeon)",
+      career2: "Software engineer working on healthcare AI",
+      career3: "Concert violinist",
+      dreamJobTitle: "A doctor who builds AI tools that catch diseases earlier",
+    },
+    summerPrograms: {
+      programs: "Did a 1-week local STEM day camp last summer. Looking for something more substantive for next summer.",
+    },
+    specialTalents: {
+      musicalInstruments: "Violin (5 years, 1st chair school orchestra, made youth symphony track)",
+      athletics: "Soccer (travel team midfielder, 4 years)",
+    },
+    familyContext: {
+      familyProfessions: "Mother: nurse practitioner; Father: high school math teacher.",
+    },
+    personality: {
+      topStrengths: ["Disciplined", "Curious", "Empathetic"],
+      topWeaknesses: ["Perfectionist", "Sometimes overcommits", "Avoids failure"],
+      archetypes: ["Analyst", "Healer"],
+      introvertExtrovert: "Ambivert",
+    },
+    personalStories: {
+      lifeChallenge: "Sister was hospitalized with severe pneumonia last year — sparked Alex's interest in medicine and Disease Detectives Science Olympiad event.",
+      proudMoment: "Making the regional MATHCOUNTS team in 7th grade after not making it in 6th.",
+    },
+    timeCommitment: {
+      hoursSchoolYear: "15-20 hours per week across all activities",
+      hoursSummer: "Up to 30 hours per week available for programs",
+      preferredPace: "Steady Progress (balanced with schoolwork)",
+    },
+  }
+
+  const analysis = {
+    studentArchetype: "Emerging Innovator",
+    archetypeScores: { Visionary: 70, Builder: 65, Healer: 80, Analyst: 88, Artist: 72, Advocate: 60, Entrepreneur: 55, Researcher: 82 },
+    competitivenessScore: 78,
+    strengthsAnalysis: {
+      competitiveAdvantages: [
+        "Already a competitive MATHCOUNTS team member at 7th grade — most competitors don't qualify until 8th.",
+        "5 years of sustained violin study with audition-track progression — rare combination of analytical and artistic depth.",
+        "Personal story (sister's hospitalization) gives genuine motivation for medicine that admissions and program reviewers will sense as authentic.",
+        "Top of class in math AND making it onto a regional Science Olympiad team — STEM trajectory is on rails.",
+      ],
+      uniqueDifferentiators: [
+        "Bridges hard sciences (MATHCOUNTS, Science Olympiad), arts (violin), and team athletics (soccer) — unusually balanced for a 12-year-old.",
+        "Family role models in both medicine (mom) and math/teaching (dad) create unusual intellectual environment.",
+      ],
+      alignedActivities: [
+        "MATHCOUNTS — perfectly matched to analytical strength.",
+        "Science Olympiad Disease Detectives — directly aligned with medicine interest sparked by sister's illness.",
+        "Violin — sustained discipline that translates to all other domains.",
+      ],
+    },
+    gapAnalysis: {
+      missingElements: [
+        "No participation yet in a national-level competition — try MATHCOUNTS Chapter podium or USACO Bronze in 8th grade.",
+        "No sustained personal project (anything self-initiated, lasting 3+ months). Pick one: a healthcare YouTube channel, a Python tool to track Science Olympiad practice, a community fundraiser.",
+        "Hasn't yet attempted a selective summer program (CTY, Stanford EPGY, university math camps). Apply this winter for next summer.",
+        "No coding skill yet despite tech career interest. Begin Python via Codecademy or Khan Academy this semester.",
+        "No formal high-school course planning yet. Map out the 4-year schedule with the school counselor before 8th grade ends.",
+        "Avoidance of failure is showing up (avoids hard problems). Build a deliberate 'try and miss' habit — pick one stretch goal per quarter and accept that some won't work.",
+      ],
+      activitiesToDeepen: [
+        "MATHCOUNTS — push for individual chapter qualification next year, not just team participation.",
+        "Science Olympiad — aim to lead one event prep at school.",
+      ],
+      skillsToDevelope: [
+        "Beginner Python coding (start with Khan Academy or Codecademy free tier).",
+        "Time management with a written weekly plan.",
+        "Public speaking via Toastmasters Youth or school debate.",
+        "Writing clarity — keep a weekly journal entry on something Alex learned.",
+        "Basic AI fluency: practice using ChatGPT and Perplexity for homework brainstorming (with parent guidance on appropriate use).",
+        "Comfort with productive failure — pick one challenge per quarter that's likely to fail.",
+        "Music composition basics (Alex has expressed interest) — apps like MuseScore or Soundtrap.",
+      ],
+      vulnerabilities: [],
+    },
+    roadmap: {
+      immediate: [
+        "Sign up for MATHCOUNTS Chapter individual competition (not just team) for next cycle.",
+        "Begin Codecademy's free Python track — 30 min, 4 days per week.",
+        "Apply to Johns Hopkins CTY summer program (next year's session) — deadline is typically January.",
+        "Schedule a meeting with 8th-grade counselor to map out 9th-grade course selection (honors track).",
+        "Pick one 3-month personal project and write down a finish date.",
+      ],
+      shortTerm: [
+        "Compete in one regional competition besides MATHCOUNTS and Science Olympiad — try a writing contest or coding competition.",
+        "Read one book per month outside of school assignments — start with science memoirs (Sapiens, The Emperor of All Maladies for the medicine interest).",
+        "Audition for the Youth Symphony chair role.",
+        "Build first small Python project (e.g., a quiz app or a daily-questions tracker).",
+      ],
+      mediumTerm: [
+        "Plan and apply to a selective summer program for the summer after 8th grade.",
+        "Take a high-school math course (Algebra I or Geometry) over the summer or as an 8th grader for HS credit if possible.",
+        "Start a project that combines two interests (e.g., a music-theory blog, a healthcare data analysis with Python).",
+      ],
+      longTerm: [
+        "Enter 9th grade with: 1 selective summer experience, 1 sustained project, Algebra I/Geometry already done, beginner Python under belt.",
+        "Map a 4-year HS plan that lands on AP Calculus BC by 11th grade and APs in Bio/Chem for the medicine interest.",
+      ],
+    },
+    parentTips: [
+      "Help Alex find one 3-month project this semester — pick a manageable scope and protect time on the calendar.",
+      "Visit your high-school counselor or registrar with Alex before 8th grade ends to map the 4-year course plan.",
+      "Encourage Alex to attempt a hard competition where she might not place. Failure stories matter more than wins at this age.",
+    ],
+    highSchoolCoursePlan: {
+      "9th": {
+        honors: ["Honors Algebra I or Geometry", "Honors English 9", "Honors Biology", "Honors World History", "Spanish II"],
+        regular: ["PE", "Music (Orchestra)", "Health"],
+        rationale: "Place out of standard math via the summer-before-9th plan. Lock in the honors track in core subjects. Continue violin via school orchestra.",
+      },
+      "10th": {
+        honors: ["Honors Geometry or Algebra II", "Honors English 10", "Honors Chemistry", "Honors World History II / AP Human Geography", "Spanish III"],
+        regular: ["Orchestra (Concertmaster track)", "Computer Science elective"],
+        rationale: "Add CS as elective to lock in tech-meets-medicine identity. Maintain orchestra leadership progression.",
+      },
+      "11th": {
+        honors: ["AP Calculus AB or BC", "AP English Language", "AP Biology", "AP US History", "AP Spanish Language"],
+        regular: ["Orchestra (leadership role)", "Independent Study or Dual Enrollment"],
+        rationale: "Junior year is the most-watched. Stack 4-5 APs aligned with the medicine + tech interest. Concertmaster or section leader in orchestra.",
+      },
+      "12th": {
+        honors: ["AP Calculus BC (if AB taken)", "AP English Literature", "AP Chemistry or AP Physics C", "AP Statistics or AP Computer Science Principles", "Multivariable Calculus (dual enrollment)"],
+        regular: ["Orchestra", "Senior project"],
+        rationale: "Continue rigor through senior year (no senioritis). Senior project ties together medicine/tech/music threads for college applications.",
+      },
+    },
+    competitionPipeline: {
+      local: [
+        { name: "School MATHCOUNTS Chapter Round", description: "Individual + team rounds at the chapter level — Alex's existing arena.", whyFit: "Already on the team; aim for individual top-10 next cycle.", deadline: "Late winter every year", difficulty: "intro" },
+        { name: "Local Library Math Club / Code Club", description: "Most public libraries run free coding or math enrichment for middle schoolers.", whyFit: "Low-stakes, weekly — perfect place to start Python practice with peers.", deadline: "Rolling enrollment", difficulty: "intro" },
+        { name: "Regional Science Olympiad B Division", description: "Continue Disease Detectives + Anatomy events Alex is already doing.", whyFit: "Already on the team; push for top-3 in one event.", deadline: "Spring competition season", difficulty: "intro" },
+      ],
+      regional: [
+        { name: "MATHCOUNTS Chapter Individual Qualifier", description: "Top scorers at chapter advance to state.", whyFit: "Realistic stretch goal in 8th grade with a focused practice plan.", deadline: "February (varies by chapter)", difficulty: "intermediate" },
+        { name: "American Mathematics Competition (AMC 8 / AMC 10)", description: "Standardized math competition — top scorers in AMC 10 advance to AIME.", whyFit: "AMC 8 in 7th-8th grade builds toward AMC 10 in HS — directly on the path.", deadline: "November (AMC 8), February (AMC 10)", difficulty: "intermediate" },
+        { name: "USACO (USA Computing Olympiad) Bronze Division", description: "After ~6 months of Python practice, Bronze is a realistic target.", whyFit: "Locks in CS competition resume at the start of HS.", deadline: "Quarterly contests, December-March", difficulty: "intermediate" },
+      ],
+      national: [
+        { name: "MATHCOUNTS National Competition", description: "Top 4 from each state advance to the national stage.", whyFit: "Long-shot for 7th grade but a clear North Star — the focus of state-level practice.", deadline: "May (national finals)", difficulty: "advanced" },
+        { name: "Science Olympiad National Tournament", description: "State-winning teams advance to Nationals.", whyFit: "Push the Science Olympiad team toward state qualification in 8th grade.", deadline: "May (nationals)", difficulty: "advanced" },
+      ],
+    },
+    summerProgramLadder: {
+      intro: [
+        { name: "Local Public Library Coding Workshops", description: "Free or under-$50 weekly summer coding workshops at most public libraries.", applicationDeadline: "Rolling, no app needed", cost: "Free", whyFit: "Low-commitment way to start the Python journey before applying to selective programs." },
+        { name: "Community College Pre-College Day Camps", description: "Many community colleges run 1-week STEM, music, or writing camps for ages 11-13. ~$200-400.", applicationDeadline: "Spring rolling", cost: "$200-400 per week", whyFit: "Affordable on-ramp to college-style instruction." },
+        { name: "MATHCOUNTS Summer Practice Group (school or district)", description: "Free or low-cost MATHCOUNTS prep groups in summer.", applicationDeadline: "May/June", cost: "Free", whyFit: "Keeps competition skills sharp over summer with no app barrier." },
+      ],
+      intermediate: [
+        { name: "Johns Hopkins CTY Summer Program (2-week residential or commuter)", description: "Selective; courses range from intro programming to genetics. Application requires above-grade-level test score.", applicationDeadline: "January-February for summer enrollment", cost: "$2500-4500 (financial aid available)", whyFit: "Alex's MATHCOUNTS profile suggests strong CTY eligibility. Builds national network." },
+        { name: "Duke TIP eStudies / Summer Studies", description: "Online or in-person summer courses for talent-identified middle schoolers.", applicationDeadline: "January-March", cost: "$1500-3500", whyFit: "Similar to CTY but often more affordable. Strong fit for the medicine interest (genetics, neuroscience tracks)." },
+        { name: "University of Maryland Center for Talented Youth Summer", description: "Local university-hosted advanced math + science programs for middle schoolers.", applicationDeadline: "Spring", cost: "$1000-2500", whyFit: "Regional alternative to CTY/TIP." },
+      ],
+      advanced: [
+        { name: "MathPath (residential, for ages 11-14)", description: "Highly selective month-long residential math camp for top middle-school math students.", applicationDeadline: "March", cost: "$5000+ (need-based aid available)", whyFit: "MATHCOUNTS competitors are exactly MathPath's audience; a strong stretch goal." },
+        { name: "AwesomeMath Summer Program (online intensive)", description: "Pre-AMC/AIME prep online program for serious competition math students.", applicationDeadline: "Spring", cost: "$1200-2500", whyFit: "Direct prep for the AMC 10/12 → AIME pipeline starting in HS." },
+        { name: "PROMYS Junior or Ross Math Camp Junior (residential, 8th grade)", description: "Top-tier number theory / pure math camps. Highly selective; expect to apply in 8th grade.", applicationDeadline: "March", cost: "$5000+ (significant aid)", whyFit: "Long-shot but on-trajectory — apply in 8th grade for the summer before 9th." },
+      ],
+    },
+    essayBrainstorm: [
+      { title: "The Word She Couldn't Spell: Pneumonia", hook: "When my sister was hospitalized last year, I learned a word I'd never spelled before — and a question I couldn't put down.", narrative: "Alex's sister's pneumonia sparks her Disease Detectives interest, which leads to the Science Olympiad team, which connects to her medicine career goals. The arc is genuine.", connectingThreads: ["Sister's illness", "Disease Detectives event", "Family medicine background", "Career interest in epidemiology"], whyItWorks: "Anchored in a real moment, builds outward to current activities and future goals. Most authentic-sounding college essay angle in this profile." },
+      { title: "Counting in Two Languages", hook: "Math is supposed to be universal — but my dad teaches it in English and my mom diagnoses in Spanish.", narrative: "Use bilingual / bicultural family as the lens for how Alex processes both technical and human problems differently.", connectingThreads: ["Family", "Math", "Medicine", "Cultural identity"], whyItWorks: "Differentiator. Most STEM-track students don't have this angle." },
+      { title: "First Chair, Last Place", hook: "I made first chair in orchestra the same week I came in last at MATHCOUNTS chapter.", narrative: "Story of holding excellence and failure in the same week, and what it taught Alex about identity beyond outcomes.", connectingThreads: ["Violin", "MATHCOUNTS", "Identity", "Productive failure"], whyItWorks: "Failure stories age very well; this one already has the vivid detail." },
+      { title: "The Diagnosis That Wasn't on the Worksheet", hook: "In Disease Detectives prep, we study real outbreaks. Then I got home and realized my grandmother had been describing symptoms for two weeks.", narrative: "If Alex has a real story like this, use it. Otherwise, draft from the closest analog.", connectingThreads: ["Science Olympiad", "Family", "Medicine"], whyItWorks: "Concrete and personal." },
+      { title: "Why I'm Learning Python in 7th Grade", hook: "Most of my friends think coding is what high schoolers do. I think they're four years late.", narrative: "Frame Alex's early-coding choice as evidence of long-term thinking; tie to AI's role in healthcare's future.", connectingThreads: ["Coding journey", "Medicine + tech vision", "Decision-making"], whyItWorks: "Forward-looking; signals both initiative and self-awareness." },
+    ],
+  }
+
+  const gradeByGradeRoadmap = {
+    currentGrade: {
+      grade: "7th Grade",
+      focus: "Build 8th-grade competition readiness, start Python, plan HS course schedule, apply to one selective summer.",
+      academics: ["Maintain straight-A track in advanced courses.", "Begin daily Python practice (30 min, 4 days/week).", "Read one book per month outside school assignments."],
+      extracurriculars: ["Continue MATHCOUNTS, Science Olympiad, orchestra, soccer.", "Add one library coding club or community math group."],
+      testing: ["AMC 8 (November).", "Johns Hopkins CTY talent-search test if not already taken."],
+      leadership: ["Lead one Science Olympiad event prep.", "Help newer MATHCOUNTS members with practice problems weekly."],
+      summerPlan: "Apply to CTY or Duke TIP for next summer (deadline January). Free library workshops + MATHCOUNTS practice group + read 4-5 books.",
+    },
+    nextYears: [
+      {
+        grade: "8th Grade",
+        focus: "Push for individual MATHCOUNTS Chapter podium. Take Algebra I (HS credit). Apply to selective summer for the summer-before-9th.",
+        academics: ["Algebra I (for HS credit if school allows)", "Take AMC 10 in February.", "Continue Python; build first small project."],
+        extracurriculars: ["MATHCOUNTS Chapter individual qualifier.", "Science Olympiad: aim for state qualification."],
+        testing: ["AMC 10.", "USACO Bronze attempt.", "AP-style placement tests if district offers."],
+        leadership: ["Run for student council or Science Olympiad team captain."],
+        summerPlan: "Selective summer program (CTY 2-week, Duke TIP, or local university pre-college). Math practice for AMC 10 retake.",
+      },
+      {
+        grade: "High School Transition (9th Grade)",
+        focus: "Land in honors-track everywhere. Begin AMC 10 → AIME pipeline. Continue violin and one sport. Sustain the medicine + tech identity.",
+        academics: ["Honors Algebra I or Geometry", "Honors Biology, English, World History", "Spanish II"],
+        extracurriculars: ["Find HS MATHCOUNTS / Math Team / Science Olympiad equivalent.", "Continue orchestra (audition for Concert or Wind groups)."],
+        testing: ["AMC 10, AIME if eligible.", "PSAT 8/9 in fall."],
+        leadership: ["Try out for student council or club leadership in spring."],
+        summerPlan: "MathPath, AwesomeMath, or selective university summer. First medical-related volunteer placement.",
+      },
+    ],
+  }
+
+  return {
+    student, formData, analysis, gradeByGradeRoadmap,
+    passionProjects: [],
+    academicCourses: { apCourses: [], ibCourses: [], curriculumSpecificCourses: { label: "", courses: [] }, honorsCourses: [], electivesRecommended: [] },
+    satActGoals: null,
+    researchPubs: { researchTopics: [], publicationOpportunities: [], mentorshipSuggestions: [], timeline: "" },
+    leadership: { clubLeadership: [], schoolWideRoles: [], communityLeadership: [], leadershipDevelopment: [] },
+    serviceCommunity: { localOpportunities: [], nationalPrograms: [], internationalService: [], sustainedCommitment: [] },
+    summerPrograms: null,
+    sports: { varsitySports: [], clubSports: [], recruitingStrategy: [], fitnessLeadership: [] },
+    competitions: { academicCompetitions: [], businessCompetitions: [], artsCompetitions: [], debateSpeech: [] },
+    studentGov: { schoolGovernment: [], districtStateRoles: [], youthGovernment: [], advocacyRoles: [] },
+    internships: { industryInternships: [], researchInternships: [], nonprofitInternships: [], virtualOpportunities: [] },
+    cultureArts: { performingArts: [], visualArts: [], creativeWriting: [], culturalClubs: [] },
+    career: null,
+    collegeRecs: null,
+    mentors: { mentors: [] },
+    wasteOfTime: { activities: [] },
+    scholarships: { scholarships: [] },
+  }
+}
+
+/**
+ * Undergrad demo: Maya Patel, college junior, pre-med pivoting toward MD-PhD.
+ * RESULT_TABS_BY_TYPE.undergrad shows: archetype, gaps, projects, career-future,
+ * academics, scholarships, activities, essays.
+ */
+function getUndergradDemoData() {
+  const student = {
+    first_name: "Maya",
+    last_name: "Patel",
+    full_name: "Maya Patel",
+    current_grade: "Junior (3rd Year)",
+    parent_email: "",
+  }
+
+  const formData = {
+    basicInfo: {
+      firstName: "Maya",
+      lastName: "Patel",
+      email: "__EMAIL__",
+      studentType: "undergrad",
+      currentGrade: "Junior (3rd Year)",
+      collegeYear: "Junior (3rd Year)",
+      universityName: "University of Michigan",
+      major: "Biology (Pre-Med track)",
+      postGradGoal: "MD or MD-PhD",
+      schoolName: "University of Michigan",
+    },
+    academicProfile: {
+      gpaScale: "4.0 Scale (Unweighted)",
+      gpaUnweighted: "3.85",
+      favoriteSubjects: ["Biochemistry", "Genetics", "Public Health"],
+      academicAwards: "Dean's List 6 semesters, Honors Biology cohort, undergraduate research grant ($2K).",
+    },
+    extracurriculars: {
+      activities: [
+        { name: "Undergraduate Research Lab (Genetics)", role: "Research Assistant", yearsActive: "2", hoursPerWeek: "12", description: "Two summers + one academic year. Co-author on one conference abstract; aiming for first-author submission this year." },
+        { name: "Pediatric ER Volunteer", role: "Volunteer", yearsActive: "2", hoursPerWeek: "5", description: "200+ hours at the university hospital pediatric ER. Patient interaction with families." },
+        { name: "Pre-Med Society", role: "Vice President", yearsActive: "2", hoursPerWeek: "3", description: "Leads MCAT study cohort; organizes monthly speaker series with med-school admissions officers." },
+      ],
+    },
+    careerAspirations: {
+      career1: "Physician (Pediatrician or Pediatric Geneticist)",
+      career2: "Physician-Scientist (MD-PhD)",
+      dreamJobTitle: "MD-PhD pediatric geneticist running a translational research lab",
+    },
+    researchExperience: {
+      entries: [
+        { type: "Research", organization: "U-Michigan Genetics Lab", role: "Undergraduate Researcher", description: "Sub-project on rare pediatric disease variants.", duration: "2 years ongoing" },
+      ],
+      publicationCount: "0",
+      conferencePresentation: "1 poster (regional)",
+    },
+    personality: {
+      topStrengths: ["Disciplined", "Empathetic", "Detail-oriented"],
+      archetypes: ["Analyst", "Healer"],
+    },
+  }
+
+  const analysis = {
+    studentArchetype: "Research-Driven Pre-Med",
+    archetypeScores: { Visionary: 65, Builder: 60, Healer: 85, Analyst: 88, Artist: 50, Advocate: 70, Entrepreneur: 50, Researcher: 90 },
+    competitivenessScore: 81,
+    strengthsAnalysis: {
+      competitiveAdvantages: [
+        "Two-year sustained research lab tenure with abstract submission — rare for an undergrad junior.",
+        "200+ clinical volunteer hours give a clinical-rec letter writer ready to vouch for patient interaction.",
+        "Pre-Med Society VP role demonstrates leadership AND peer mentorship in academic context.",
+        "3.85 GPA in honors biology track puts her in striking range of top-25 medical schools.",
+      ],
+      uniqueDifferentiators: [
+        "Bridges bench (research) and bedside (clinical) — most pre-meds lean one way.",
+        "Pediatric focus is specific and consistent across activities — clear narrative.",
+      ],
+      alignedActivities: ["Genetics Lab", "Pediatric ER Volunteer", "Pre-Med Society leadership"],
+    },
+    gapAnalysis: {
+      missingElements: [
+        "No first-author publication yet. Convert lab sub-project to a JEM, JCI Insight, or PLOS ONE submission this year.",
+        "MCAT not yet taken. Lock in a January or April test date; target 515+.",
+        "Clinical mentor is ad-hoc — replace with one recurring 6-month relationship that produces a strong LOR.",
+        "No leadership outside the lab — start a campus health-equity initiative or run a peer-led MCAT cohort.",
+      ],
+      activitiesToDeepen: ["Research Lab — push for first-author paper.", "Pediatric ER Volunteer — formalize a mentor relationship."],
+      skillsToDevelope: [
+        "MCAT-grade test-taking endurance.",
+        "Scientific writing (paper drafting, peer-review iteration).",
+        "Statistical analysis in R or Python for genetics data.",
+        "Public speaking (poster presentation, conference Q&A).",
+        "Grant-writing fundamentals.",
+      ],
+      vulnerabilities: [],
+    },
+    roadmap: {
+      immediate: [
+        "Lock in MCAT date (January or April) and start UWorld + AAMC full-lengths.",
+        "Submit a 1-page sub-project proposal to your PI for first-author paper.",
+        "Identify one clinical attending or fellow to ask for a sustained mentorship.",
+        "Apply to summer research positions at the Broad, NIH, or top peds research labs.",
+      ],
+      shortTerm: [
+        "Take the MCAT.",
+        "Submit research paper to a journal.",
+        "Lead the MCAT study cohort through a full prep cycle.",
+        "Begin secondary brainstorming — gather 3-5 personal-statement story angles.",
+      ],
+      mediumTerm: [
+        "Apply to medical schools next cycle (June application open).",
+        "Decide on MD vs MD-PhD path; if MD-PhD, identify 5-10 program targets.",
+      ],
+      longTerm: [
+        "Match to a top-25 medical school. Decide pediatric subspecialty by 3rd year of med school.",
+      ],
+    },
+  }
+
+  const gradeByGradeRoadmap = {
+    currentGrade: {
+      grade: "Junior (3rd Year)",
+      focus: "Lock in MCAT, push for first-author paper, secure clinical LOR-track mentor.",
+      academics: ["Maintain 3.85+ GPA", "Take Honors Biochemistry II", "Strong showing in upper-division genetics elective"],
+      extracurriculars: ["Lab paper push", "Pediatric ER → recurring mentorship", "Pre-Med Society MCAT cohort lead"],
+      testing: ["MCAT — January or April"],
+      leadership: ["MCAT cohort lead", "Pre-Med Society VP through year-end"],
+      summerPlan: "NIH or top-tier research summer + secondary brainstorming + MCAT prep finish.",
+    },
+    nextYears: [
+      {
+        grade: "Senior (4th Year)",
+        focus: "Apply to medical schools, finalize MCAT/GPA/research story, secure 3 strong LORs.",
+        academics: ["Honors thesis defense", "Upper-division electives in genetics, immunology, public health"],
+        extracurriculars: ["Continue lab; aim for paper acceptance", "Continue clinical volunteering", "Hand off Pre-Med Society leadership"],
+        testing: ["Retake MCAT only if needed for target schools"],
+        leadership: ["Senior thesis advisor relationship", "Clinical mentor LOR cultivation"],
+        summerPlan: "Summer between graduation and matriculation: apply, interview, decide. Or: gap year with a clinical research coordinator role.",
+      },
+    ],
+  }
+
+  return {
+    student, formData, analysis, gradeByGradeRoadmap,
+    passionProjects: [
+      { title: "Honors Thesis: Pediatric Disease Variant Cataloging", description: "Convert lab sub-project into a senior honors thesis with a defended write-up and faculty advisor signature.", timeCommitment: "9 months", impact: "High", skillsDeveloped: ["Scientific writing", "Statistical analysis", "Peer review iteration"], applicationImpact: "Strong differentiator for MD-PhD applications.", resources: "Lab PI, biostats consult center, university honors program.", implementationSteps: ["Draft proposal", "Collect data", "Statistical analysis in R", "Write 40-60 page thesis", "Defense"] },
+    ],
+    academicCourses: { apCourses: [], ibCourses: [], curriculumSpecificCourses: { label: "Undergraduate Pre-Med", courses: ["Biochemistry II", "Genetics Lab", "Medical Ethics", "Statistics for Health Sciences"] }, honorsCourses: ["Honors Biology Senior Seminar"], electivesRecommended: ["Public Health Policy", "Genomics", "Medical Anthropology"] },
+    satActGoals: null,
+    researchPubs: { researchTopics: ["Pediatric variant cataloging", "Translational genetics review", "Health-equity case study"], publicationOpportunities: ["JEM", "JCI Insight", "PLOS ONE", "Pediatrics journal undergraduate track"], mentorshipSuggestions: ["Lab PI", "Honors program advisor", "Clinical attending"], timeline: "Submit by end of senior fall." },
+    leadership: { clubLeadership: ["Pre-Med Society VP → President next year option"], schoolWideRoles: ["Honors Society"], communityLeadership: ["Health-equity initiative founding role"], leadershipDevelopment: ["MCAT cohort lead", "Mentor a sophomore pre-med"] },
+    serviceCommunity: { localOpportunities: [], nationalPrograms: [], internationalService: [], sustainedCommitment: [{ name: "Pediatric ER Volunteer (sustained 2+ years)", description: "Continue weekly shifts with formal mentor relationship.", dates: "Ongoing", relevance: "Generates strong clinical LOR." }] },
+    summerPrograms: { preFreshmanPrograms: [], competitivePrograms: [], researchPrograms: [{ name: "NIH Summer Internship Program", description: "Paid 8-10 week research at NIH labs.", dates: "Apply Feb; program June-Aug", relevance: "Strongest possible MD-PhD signal." }], enrichmentPrograms: [] },
+    sports: { varsitySports: [], clubSports: [], recruitingStrategy: [], fitnessLeadership: [] },
+    competitions: { academicCompetitions: [], businessCompetitions: [], artsCompetitions: [], debateSpeech: [] },
+    studentGov: { schoolGovernment: [], districtStateRoles: [], youthGovernment: [], advocacyRoles: [] },
+    internships: { industryInternships: [], researchInternships: [{ name: "NIH IRTA Postbac if gap year", description: "1-2 year postbac IRTA boosts MD-PhD apps.", dates: "Apply Jan", relevance: "Top MD-PhD pipeline." }], nonprofitInternships: [], virtualOpportunities: [] },
+    cultureArts: { performingArts: [], visualArts: [], creativeWriting: [], culturalClubs: [] },
+    career: { jobTitles: ["Physician (Pediatrics)", "Physician-Scientist (MD-PhD)", "Clinical Research Coordinator (gap year)", "Biotech Industry Analyst"], blueOceanIndustries: [{ industry: "Pediatric rare-disease therapeutics", why: "Family-and-disease-specific therapies are an under-served growth area." }], salaryPotential: "Resident: ~$60K. Attending pediatrician: $200-280K. MD-PhD academic: $130-200K with research time.", linkedInBioHeadline: "Pre-Med | Genetics Researcher | Aspiring Pediatric Physician-Scientist" },
+    collegeRecs: null,
+    mentors: { mentors: [{ name: "Dr. Sarah Lin", university: "U-Michigan Medical School", department: "Pediatric Genetics", why: "MD-PhD attending, runs a pediatric variant lab — natural mentor for Maya's profile." }] },
+    wasteOfTime: { activities: [{ activity: "Generic tutoring center shifts", whyQuit: "High effort, low admissions signal — time better spent on the honors thesis and MCAT prep." }] },
+    scholarships: { scholarships: [
+      { name: "Goldwater Scholarship", organization: "Goldwater Foundation", amount: "$7,500", deadline: "January", why: "Top STEM undergrad scholarship; Maya's research profile is a strong fit.", url: "https://goldwater.scholarsapply.org/" },
+      { name: "Beckman Scholars Program", organization: "Arnold & Mabel Beckman Foundation", amount: "$26,000 over 15 months", deadline: "February (institution-nominated)", why: "Two-summer fully-funded undergraduate research scholarship.", url: "https://www.beckman-foundation.org/" },
+      { name: "AMA Foundation Physicians of Tomorrow", organization: "AMA Foundation", amount: "$10,000", deadline: "May", why: "For rising 4th-year medical students; bookmark for next year.", url: "https://amafoundation.org/" },
+      { name: "NIH Undergraduate Scholarship Program", organization: "NIH", amount: "Up to $20,000/year", deadline: "March", why: "For students from disadvantaged backgrounds pursuing biomedical research.", url: "https://www.training.nih.gov/" },
+    ] },
+  }
+}
+
+/**
+ * Grad demo: James Park, MBA candidate (Year 1) at a top-15 program.
+ * RESULT_TABS_BY_TYPE.grad shows: archetype, gaps, career-future, scholarships, essays.
+ */
+function getGradDemoData() {
+  const student = {
+    first_name: "James",
+    last_name: "Park",
+    full_name: "James Park",
+    current_grade: "1st Year",
+    parent_email: "",
+  }
+
+  const formData = {
+    basicInfo: {
+      firstName: "James",
+      lastName: "Park",
+      email: "__EMAIL__",
+      studentType: "grad",
+      currentGrade: "1st Year",
+      targetProgramType: "MBA",
+      undergradInstitution: "UC Berkeley",
+      undergradMajor: "Industrial Engineering",
+      workExperienceYears: "5",
+      schoolName: "Northwestern Kellogg",
+    },
+    academicProfile: {
+      gpaScale: "4.0 Scale (Unweighted)",
+      gpaUnweighted: "3.78",
+      favoriteSubjects: ["Strategy", "Behavioral Economics", "Operations"],
+      academicAwards: "Berkeley Phi Beta Kappa, Kellogg Forte Fellow.",
+    },
+    extracurriculars: {
+      activities: [
+        { name: "Strategy Consulting Club, Kellogg (VP of Recruiting)", role: "VP", yearsActive: "1", hoursPerWeek: "8", description: "Leads recruiting prep for ~80 first-years targeting MBB and Tier-2 firms." },
+        { name: "Healthcare Industry Group", role: "Member", yearsActive: "1", hoursPerWeek: "3", description: "Healthcare-focused speaker series, case prep cohort." },
+        { name: "Kellogg Marathon Team", role: "Captain", yearsActive: "1", hoursPerWeek: "8", description: "Trains the cohort for Chicago Marathon; 30 participants this year." },
+      ],
+    },
+    careerAspirations: {
+      career1: "Healthcare Strategy Consultant (MBB)",
+      career2: "Healthcare PE / VC Investor",
+      dreamJobTitle: "Partner at a top healthcare-focused private equity firm",
+      whyProgramNow: "5 years in operations at a healthcare unicorn made it clear my next move requires the financial fluency and brand of a top MBA.",
+      fiveYearGoal: "Senior associate at MBB by year 3 post-MBA, then transition to healthcare PE associate by year 5.",
+    },
+    researchExperience: { entries: [], publicationCount: "0" },
+    personality: {
+      topStrengths: ["Strategic thinker", "Operator", "Empathetic leader"],
+      archetypes: ["Analyst", "Entrepreneur"],
+    },
+  }
+
+  const analysis = {
+    studentArchetype: "Healthcare Operator",
+    archetypeScores: { Visionary: 75, Builder: 78, Healer: 65, Analyst: 88, Artist: 45, Advocate: 60, Entrepreneur: 82, Researcher: 60 },
+    competitivenessScore: 82,
+    strengthsAnalysis: {
+      competitiveAdvantages: [
+        "5 years of pre-MBA operating experience at a healthcare unicorn — rare and credible for healthcare-track recruiters.",
+        "VP of Strategy Consulting Club at Kellogg gives direct MBB recruiting visibility.",
+        "Berkeley Industrial Engineering + healthcare ops creates a distinctive technical-to-strategy story.",
+        "Healthcare Industry Group + recruiting role create a coherent post-MBA narrative for healthcare-focused recruiters.",
+      ],
+      uniqueDifferentiators: [
+        "Operator-to-investor pivot is sharper than the typical 'consultant-to-PE' story most MBA candidates pitch.",
+        "Marathon Captain demonstrates leadership outside the resume — admissions / firms read this signal.",
+      ],
+      alignedActivities: ["Strategy Consulting Club VP", "Healthcare Industry Group", "Marathon Captain"],
+    },
+    gapAnalysis: {
+      missingElements: [
+        "No formal case-prep practice partner network yet. Lock in 2-3 sparring partners by November.",
+        "Healthcare PE firm relationships are thin. Identify 5 target firms and start informational coffees this term.",
+        "No PE/VC internship lined up yet. Aim for a healthcare PE summer associate role; backup is MBB healthcare practice.",
+        "Public-speaking polish for client-facing partner-track work could improve. Take Kellogg's negotiation + executive presence electives.",
+      ],
+      activitiesToDeepen: ["Strategy Consulting Club VP — convert into a National Recruiting Director title for senior year.", "Healthcare Industry Group — co-lead one major event."],
+      skillsToDevelope: [
+        "LBO modeling and PE-style case math.",
+        "Investment memo writing (1-2 page deal summaries).",
+        "Healthcare market sizing fluency (drug pricing, payer dynamics, regulatory).",
+        "Behavioral interview polish for partner-style interviews.",
+        "Network management — CRM-style follow-up discipline.",
+      ],
+      vulnerabilities: [],
+    },
+    roadmap: {
+      immediate: [
+        "Identify 5 target healthcare PE firms; book informational coffees with associates.",
+        "Lock in case-prep partners and a 12-week prep calendar.",
+        "Apply to MBB healthcare practice summer associate roles by November.",
+        "Take Kellogg's negotiation elective in winter quarter.",
+      ],
+      shortTerm: [
+        "Land summer internship: ideally healthcare PE associate; backup MBB healthcare.",
+        "Build a personal investment memo portfolio (3-5 deals).",
+        "Co-lead one major Healthcare Industry Group event.",
+      ],
+      mediumTerm: [
+        "Convert summer offer to full-time post-MBA role.",
+        "If MBB: target healthcare practice and 2-year exit to PE associate.",
+        "If PE: lock in long-term track at the firm.",
+      ],
+      longTerm: [
+        "Make associate-to-VP within 4-5 years post-MBA.",
+        "Build a personal brand on healthcare investing (deal commentary, conference talks).",
+      ],
+    },
+  }
+
+  const gradeByGradeRoadmap = {
+    currentGrade: {
+      grade: "1st Year MBA",
+      focus: "Land summer healthcare PE or MBB healthcare internship; build PE/VC firm relationships.",
+      academics: ["Core MBA curriculum", "Negotiation elective", "Healthcare strategy elective"],
+      extracurriculars: ["Strategy Consulting Club VP", "Healthcare Industry Group event lead", "Marathon Captain"],
+      testing: ["Already submitted GMAT — no further testing needed"],
+      leadership: ["Strategy Club VP", "Marathon Captain"],
+      summerPlan: "Summer internship at healthcare PE firm or MBB healthcare practice.",
+    },
+    nextYears: [
+      {
+        grade: "2nd Year MBA",
+        focus: "Convert summer offer; build personal brand; finalize career trajectory.",
+        academics: ["Advanced electives: Private Equity, Healthcare Markets, Executive Presence"],
+        extracurriculars: ["Promote to Strategy Club National Recruiting Director", "Co-lead Healthcare Industry Group conference"],
+        testing: [],
+        leadership: ["Convert recruiting role into a senior leadership story"],
+        summerPlan: "Graduate; start full-time role.",
+      },
+    ],
+  }
+
+  return {
+    student, formData, analysis, gradeByGradeRoadmap,
+    passionProjects: [],
+    academicCourses: { apCourses: [], ibCourses: [], curriculumSpecificCourses: { label: "MBA Electives", courses: ["Negotiation", "Healthcare Strategy", "Private Equity", "Executive Presence"] }, honorsCourses: [], electivesRecommended: ["Private Equity II", "Healthcare Markets seminar"] },
+    satActGoals: null,
+    researchPubs: { researchTopics: [], publicationOpportunities: [], mentorshipSuggestions: ["Healthcare-track Kellogg professor", "Kellogg PE alumni network", "Healthcare PE associate informational coffees"], timeline: "" },
+    leadership: { clubLeadership: ["Strategy Consulting Club VP → Director"], schoolWideRoles: [], communityLeadership: ["Marathon Captain — community sport leadership"], leadershipDevelopment: ["Promote to Director", "Co-lead Healthcare conference"] },
+    serviceCommunity: { localOpportunities: [], nationalPrograms: [], internationalService: [], sustainedCommitment: [] },
+    summerPrograms: null,
+    sports: { varsitySports: [], clubSports: [], recruitingStrategy: [], fitnessLeadership: [] },
+    competitions: { academicCompetitions: [], businessCompetitions: [], artsCompetitions: [], debateSpeech: [] },
+    studentGov: { schoolGovernment: [], districtStateRoles: [], youthGovernment: [], advocacyRoles: [] },
+    internships: { industryInternships: [], researchInternships: [], nonprofitInternships: [], virtualOpportunities: [] },
+    cultureArts: { performingArts: [], visualArts: [], creativeWriting: [], culturalClubs: [] },
+    career: { jobTitles: ["Healthcare Strategy Consultant (MBB)", "Healthcare Private Equity Associate", "Healthcare Investment Banking VP (post-MBB exit)", "Pharma BD/Strategy Director"], blueOceanIndustries: [{ industry: "Healthcare AI / digital health PE", why: "Capital flowing to this category outpaces the supply of healthcare-fluent investors." }], salaryPotential: "Post-MBA: $200-275K all-in for MBB; $250-400K for PE associate; $400K+ at VP/Principal.", linkedInBioHeadline: "MBA Candidate at Kellogg | Healthcare Operations → Strategy & Investing" },
+    collegeRecs: null,
+    mentors: { mentors: [{ name: "Healthcare PE Associate (5+ years out)", university: "Kellogg alumni network", department: "Healthcare PE", why: "Direct path to recruiter relationships and mock interviews." }] },
+    wasteOfTime: { activities: [{ activity: "Joining 5+ clubs without a leadership role", whyQuit: "MBA recruiters look for depth + leadership in 1-2 clubs, not surface-level membership in many." }] },
+    scholarships: { scholarships: [
+      { name: "Forté Foundation MBA Fellowship", organization: "Forté Foundation", amount: "Partial to full tuition", deadline: "Varies by school", why: "Broadens the candidate's leadership profile through Forté programming.", url: "https://www.fortefoundation.org/" },
+      { name: "Consortium Fellowship", organization: "The Consortium", amount: "Full tuition + stipend", deadline: "October", why: "Top diversity MBA fellowship if eligible by background.", url: "https://cgsm.org/" },
+      { name: "Toigo MBA Fellowship", organization: "Toigo Foundation", amount: "Multi-year programming + network", deadline: "January", why: "Healthcare PE pipeline support specifically.", url: "https://toigofoundation.org/" },
+      { name: "Kellogg Merit Scholarships", organization: "Kellogg School of Management", amount: "Variable, awarded at admit", deadline: "Auto-considered at admit", why: "Already received Forte Fellow status; pursue additional named scholarships.", url: "https://www.kellogg.northwestern.edu/" },
+    ] },
+  }
+}
+
+/**
+ * PhD demo: Dr. James Liu, computational biology PhD candidate Year 3.
+ * RESULT_TABS_BY_TYPE.phd shows: archetype, gaps, career-future, scholarships, essays.
+ */
+function getPhdDemoData() {
+  const student = {
+    first_name: "James",
+    last_name: "Liu",
+    full_name: "James Liu",
+    current_grade: "3rd Year",
+    parent_email: "",
+  }
+
+  const formData = {
+    basicInfo: {
+      firstName: "James",
+      lastName: "Liu",
+      email: "__EMAIL__",
+      studentType: "phd",
+      currentGrade: "3rd Year",
+      currentInstitution: "Stanford University",
+      researchField: "Computational Biology / Bioinformatics",
+      department: "Department of Bioengineering",
+      targetAdvisor: "Dr. A. Khavari (skin disease genomics)",
+      dissertationStage: "Proposal complete; data collection in progress",
+      schoolName: "Stanford University",
+    },
+    academicProfile: {
+      gpaScale: "4.0 Scale (Unweighted)",
+      gpaUnweighted: "3.92",
+      favoriteSubjects: ["Machine Learning", "Genomics", "Statistical Methods"],
+      academicAwards: "NIH F31 awardee (Year 2), Stanford Bio-X graduate fellow.",
+    },
+    extracurriculars: {
+      activities: [
+        { name: "Stanford Computational Biology Journal Club", role: "Co-Organizer", yearsActive: "2", hoursPerWeek: "3", description: "Co-organizes weekly journal club for ~25 grad students; runs the speaker pipeline." },
+        { name: "Bay Area ML in Biology Meetup", role: "Co-founder", yearsActive: "1", hoursPerWeek: "4", description: "Co-founded a quarterly meetup with industry researchers from Recursion, Insitro, and Genentech; ~80 attendees." },
+      ],
+    },
+    careerAspirations: {
+      dissertationTopicArea: "ML methods for predicting drug-drug interactions in oncology contexts using protein-protein networks.",
+      researchQuestionsToAnswer: "Can graph neural networks reduce false-positive rate in DDI prediction by 30%+ vs current methods?",
+      academiaVsIndustry: "Open — leaning industry research scientist (Genentech, Insitro, or 23andMe-tier biotech) but keeping faculty option open with 1-2 more first-author papers.",
+      dreamJobTitle: "Principal Research Scientist at AI-first biotech (Insitro, Recursion) OR Assistant Professor at R1 Bioengineering department.",
+    },
+    researchExperience: {
+      entries: [
+        { type: "Research", organization: "Stanford Bioengineering (current)", role: "PhD Candidate", description: "Dissertation work on GNN-based DDI prediction.", duration: "3 years ongoing" },
+        { type: "Internship", organization: "Genentech (summer Year 2)", role: "Computational Biology Intern", description: "10-week summer internship — published paper from this work.", duration: "10 weeks" },
+      ],
+      publicationCount: "2 first-author + 3 co-author",
+      conferencePresentation: "RECOMB poster (Year 2), ISMB talk (Year 3)",
+      patents: "1 provisional (filed via Stanford OTL Year 3)",
+    },
+    personality: {
+      topStrengths: ["Methodical", "Collaborative", "Strong scientific writer"],
+      archetypes: ["Researcher", "Analyst"],
+    },
+    timeCommitment: { hoursSchoolYear: "60+ hours per week (research-heavy)", hoursSummer: "Summer is research-only" },
+  }
+
+  const analysis = {
+    studentArchetype: "Computational Biologist",
+    archetypeScores: { Visionary: 70, Builder: 75, Healer: 60, Analyst: 92, Artist: 50, Advocate: 55, Entrepreneur: 65, Researcher: 95 },
+    competitivenessScore: 84,
+    strengthsAnalysis: {
+      competitiveAdvantages: [
+        "NIH F31 awardee — major external funding, strongest indicator of faculty placement potential.",
+        "2 first-author publications by Year 3 — competitive for top postdoc positions.",
+        "Genentech summer internship + paper from it — industry option fully open.",
+        "Co-founded the Bay Area ML in Biology Meetup — visibility and network beyond Stanford.",
+      ],
+      uniqueDifferentiators: [
+        "Bridges ML methodology and wet-lab biology — most computational biologists fall on one side.",
+        "Provisional patent filed via Stanford OTL — entrepreneurial vector activated; rare for grad students.",
+      ],
+      alignedActivities: ["Journal Club organizer", "ML in Biology Meetup co-founder"],
+    },
+    gapAnalysis: {
+      missingElements: [
+        "Industry vs academia decision is unresolved — needs to be made within 12 months to optimize remaining PhD time.",
+        "No K99/R00 application submitted yet — if academia route, file by end of Year 4.",
+        "Limited cross-disciplinary collaboration — co-author one paper with a clinical or wet-lab group this year to broaden methods footprint.",
+        "Conference visibility could grow — push for RECOMB or ISMB oral talks rather than posters.",
+      ],
+      activitiesToDeepen: ["Journal Club — organize a special issue or invited speaker series.", "ML in Biology Meetup — convert to a regional symposium with industry sponsors."],
+      skillsToDevelope: [
+        "Grant-writing at the K99/R00 level.",
+        "Faculty job-talk preparation (45-min seminar polish).",
+        "Industry technical-interview prep (case studies on biological ML problems).",
+        "Lab management fundamentals (if academia track).",
+        "Patent portfolio building (if industry/founder track).",
+      ],
+      vulnerabilities: [],
+    },
+    roadmap: {
+      immediate: [
+        "Schedule a 'career path conversation' with PI in next 30 days to align on academia vs industry signal.",
+        "Submit RECOMB or ISMB oral talk abstract this cycle (not just poster).",
+        "Identify one wet-lab or clinical collaborator and start a co-author project.",
+      ],
+      shortTerm: [
+        "Decide academia vs industry by end of Year 3 / start of Year 4.",
+        "If academia: outline K99/R00 application; line up postdoc PI conversations.",
+        "If industry: schedule informational interviews with Insitro, Recursion, Genentech.",
+        "Write paper #3 (first-author).",
+      ],
+      mediumTerm: [
+        "Submit K99 (if academia) or accept industry offer (if industry route).",
+        "Defend dissertation by end of Year 5.",
+      ],
+      longTerm: [
+        "Postdoc → faculty (academia track) OR principal scientist → manager (industry track).",
+        "Build a research program around DDI / drug repurposing in cancer.",
+      ],
+    },
+  }
+
+  const gradeByGradeRoadmap = {
+    currentGrade: {
+      grade: "Year 3 PhD",
+      focus: "Decide academia vs industry. Push for one more first-author paper. Build cross-disciplinary collaboration.",
+      academics: ["Continue dissertation research", "Audit one wet-lab method course", "Stats methods seminar"],
+      extracurriculars: ["Journal Club organizing", "ML in Biology Meetup hosting"],
+      testing: ["No further testing required"],
+      leadership: ["Mentor a 1st-year PhD in your sub-area", "Lead one journal-club special session"],
+      summerPlan: "Either: (a) industry summer at top biotech for offer optionality, or (b) intensive dissertation writing block + paper submission.",
+    },
+    nextYears: [
+      {
+        grade: "Year 4 PhD",
+        focus: "Lock in path. If academia: K99 submission. If industry: convert summer to full-time offer.",
+        academics: ["Dissertation writing", "Defense prep"],
+        extracurriculars: ["Continue Meetup leadership", "Conference talks (not just posters)"],
+        testing: [],
+        leadership: ["Co-author #4-5", "Faculty job-talk prep if academia"],
+        summerPlan: "Final dissertation push; postdoc visits; industry interviews if applicable.",
+      },
+      {
+        grade: "Year 5 PhD",
+        focus: "Defend. Transition to postdoc (academia) or industry role.",
+        academics: ["Defense"],
+        extracurriculars: [],
+        testing: [],
+        leadership: ["Hand off Meetup co-founder role to a junior grad student"],
+        summerPlan: "Defend, take a real break, start next role.",
+      },
+    ],
+  }
+
+  return {
+    student, formData, analysis, gradeByGradeRoadmap,
+    passionProjects: [],
+    academicCourses: { apCourses: [], ibCourses: [], curriculumSpecificCourses: { label: "PhD Program", courses: ["Advanced ML for Genomics", "Wet-lab Methods Audit", "Stats Methods seminar"] }, honorsCourses: [], electivesRecommended: [] },
+    satActGoals: null,
+    researchPubs: { researchTopics: ["GNN for DDI prediction (dissertation)", "Cross-disciplinary co-author project with wet-lab", "Drug repurposing in oncology"], publicationOpportunities: ["RECOMB (oral)", "ISMB (oral)", "Nature Methods", "Cell Systems"], mentorshipSuggestions: ["Lab PI for academia path", "Postdoc PIs at Broad / EBI / Stanford", "Industry hiring manager network"], timeline: "Paper #3 submitted by end of Year 4." },
+    leadership: { clubLeadership: ["Journal Club Co-Organizer", "ML in Biology Meetup Co-founder"], schoolWideRoles: [], communityLeadership: ["Bay Area ML in Biology Meetup convener"], leadershipDevelopment: ["Mentor 1st-year PhD", "Lead conference symposium"] },
+    serviceCommunity: { localOpportunities: [], nationalPrograms: [], internationalService: [], sustainedCommitment: [] },
+    summerPrograms: null,
+    sports: { varsitySports: [], clubSports: [], recruitingStrategy: [], fitnessLeadership: [] },
+    competitions: { academicCompetitions: [], businessCompetitions: [], artsCompetitions: [], debateSpeech: [] },
+    studentGov: { schoolGovernment: [], districtStateRoles: [], youthGovernment: [], advocacyRoles: [] },
+    internships: { industryInternships: [{ name: "Insitro / Recursion / Genentech full-time research scientist track", description: "Convert summer internships to full-time offers.", dates: "Year 4 summer for FT conversion", relevance: "Industry path." }], researchInternships: [], nonprofitInternships: [], virtualOpportunities: [] },
+    cultureArts: { performingArts: [], visualArts: [], creativeWriting: [], culturalClubs: [] },
+    career: { jobTitles: ["Tenure-Track Faculty (R1 Bioengineering)", "Industry Research Scientist (Insitro, Recursion, Genentech)", "Computational Biology Postdoc (Broad / Stanford / EBI)", "AI Biotech Founder"], blueOceanIndustries: [{ industry: "AI-first drug discovery / digital biology", why: "Capital + talent flowing in faster than the supply of PhD-level computational biologists." }], salaryPotential: "Postdoc $60-80K. Tenure-track AP $90-130K starting. Industry research scientist $180-280K total comp.", linkedInBioHeadline: "PhD Candidate, Stanford Bioengineering | Computational Biology | ML for Drug Discovery" },
+    collegeRecs: null,
+    mentors: { mentors: [{ name: "Dr. A. Khavari", university: "Stanford", department: "Dermatology / Bioengineering", why: "Current advisor; aligned with computational + clinical bridge." }, { name: "Industry hiring manager (Insitro)", university: "Industry", department: "Computational Biology", why: "Direct path for industry-track conversion." }] },
+    wasteOfTime: { activities: [{ activity: "Sitting on too many graduate-program committees", whyQuit: "Service is good in moderation; over-committing eats dissertation hours and signals scattered focus to faculty job committees." }] },
+    scholarships: { scholarships: [
+      { name: "NIH F31 Predoctoral Fellowship (renewal)", organization: "NIH", amount: "$28K stipend + budget", deadline: "Rolling (December cycle)", why: "Already an F31 awardee; consider NRSA F32 for postdoc next.", url: "https://www.nih.gov/" },
+      { name: "Hertz Foundation Fellowship", organization: "Hertz Foundation", amount: "$36K + tuition (5 years)", deadline: "October", why: "Top STEM PhD fellowship if eligible.", url: "https://www.hertzfoundation.org/" },
+      { name: "Schmidt Science Fellowship", organization: "Schmidt Sciences", amount: "$110K postdoc + programming", deadline: "September (institution-nominated)", why: "Top postdoc fellowship for cross-disciplinary scientists.", url: "https://schmidtsciencefellows.org/" },
+      { name: "K99/R00 Pathway to Independence Award", organization: "NIH", amount: "$90K stipend + $750K independent budget", deadline: "October / February / June (3 cycles)", why: "Critical for faculty placement; submit by end of Year 4.", url: "https://www.nih.gov/" },
+    ] },
+  }
+}
+
+/**
  * POST /api/admin/demo
  * Creates a demo assessment with pre-filled sample data and analysis results.
  * Used by super admins to demonstrate the platform to prospects.
@@ -2518,7 +3528,9 @@ export async function POST(request: Request) {
     const isSuperAdmin = admin.role === "super_admin" || admin.role === "god"
 
     const body = await request.json().catch(() => ({}))
-    const { organizationId, demoType = "healthcare" } = body
+    const { organizationId, demoType = "healthcare", studentType = "high_school" } = body
+    const validTypes = ['elementary', 'middle', 'high_school', 'undergrad', 'grad', 'phd']
+    const resolvedStudentType: string = validTypes.includes(studentType) ? studentType : 'high_school'
 
     // Determine which org to use
     // For non-super admins, always use their own org
@@ -2560,6 +3572,11 @@ export async function POST(request: Request) {
 
     // Replace email placeholder in form data
     demoData.formData.basicInfo.email = demoStudentEmail
+    // Stamp the student_type onto the demo's responses so the AI prompts and
+    // result rendering treat this demo as the requested stage. The pre-baked
+    // demo content stays HS-shaped, but RESULT_TABS_BY_TYPE will gate which
+    // tabs show on the results page, which is enough for visual QA.
+    ;(demoData.formData.basicInfo as Record<string, unknown>).studentType = resolvedStudentType
 
     // Create demo student
     const { data: studentRecord, error: studentError } = await supabase
@@ -2587,6 +3604,7 @@ export async function POST(request: Request) {
         student_id: studentRecord.id,
         organization_id: org.id,
         is_demo: true,
+        student_type: resolvedStudentType,
         status: "completed",
         responses: demoData.formData,
         scores: {

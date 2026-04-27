@@ -307,6 +307,7 @@ export async function POST(request: Request) {
           responses: formData,
           current_section: currentSection || 1,
           updated_at: new Date().toISOString(),
+          ...(studentTypeFromForm && { student_type: studentTypeFromForm }),
         }
         if (organization.free_assessments) updateData.payment_status = 'free'
 
@@ -332,6 +333,7 @@ export async function POST(request: Request) {
         status: 'in_progress',
         responses: formData,
         current_section: currentSection || 1,
+        student_type: studentTypeFromForm || 'high_school',
         coupon_code: validatedCoupon ? couponCode!.toUpperCase() : null,
         payment_status: organization.free_assessments
           ? 'free'

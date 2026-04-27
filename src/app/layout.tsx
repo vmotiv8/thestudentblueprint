@@ -19,19 +19,19 @@ const oswald = Oswald({
 export const metadata: Metadata = {
   metadataBase: new URL("https://thestudentblueprint.com"),
   title: "The Student Blueprint",
-  description: "Data-driven personalized college admissions roadmaps",
+  description: "Data-driven personalized growth roadmaps for students from kindergarten to PhD",
   icons: {
     icon: '/logo.png',
   },
   openGraph: {
     title: "The Student Blueprint",
-    description: "Data-driven personalized college admissions roadmaps",
+    description: "Data-driven personalized growth roadmaps for students from kindergarten to PhD",
     images: [
       {
         url: "/og-thumbnail.png",
         width: 1200,
         height: 630,
-        alt: "The Student Blueprint - Data-driven personalized college admissions roadmaps",
+        alt: "The Student Blueprint - Data-driven personalized growth roadmaps for students from kindergarten to PhD",
       },
     ],
     type: "website",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The Student Blueprint",
-    description: "Data-driven personalized college admissions roadmaps",
+    description: "Data-driven personalized growth roadmaps for students from kindergarten to PhD",
     images: ["/og-thumbnail.png"],
   },
 };

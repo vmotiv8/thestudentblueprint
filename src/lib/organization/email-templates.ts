@@ -223,7 +223,7 @@ function generateAssessmentCompleteTemplate(
                   Congratulations, ${studentName}!
                 </h2>
                 <p style="margin: 0; color: #5a7a9a; font-size: 17px; line-height: 1.7; max-width: 500px; margin: 0 auto;">
-                  Your comprehensive college success roadmap has been generated. We've analyzed your unique profile to create a personalized action plan.
+                  Your comprehensive personalized growth roadmap has been generated. We've analyzed your unique profile to create a personalized action plan.
                 </p>
               </div>
             </td>
@@ -305,7 +305,7 @@ function generateAssessmentCompleteTemplate(
                   ? `<img src="${org.logoUrl}" alt="${org.name}" style="max-width: 120px; max-height: 40px; margin-bottom: 16px; filter: brightness(0) invert(1);">`
                   : `<h4 style="margin: 0 0 8px; color: ${org.secondaryColor}; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">${org.name}</h4>`
               }
-              <p style="margin: 0; color: #ffffff; font-size: 14px; opacity: 0.8;">Your personalized path to college success</p>
+              <p style="margin: 0; color: #ffffff; font-size: 14px; opacity: 0.8;">Your personalized growth roadmap</p>
               ${poweredBy}
               <div style="width: 50px; height: 2px; background-color: ${org.secondaryColor}; margin: 20px auto 0;"></div>
             </td>
@@ -407,7 +407,7 @@ function generateResumeCodeTemplate(
                   ? `<img src="${org.logoUrl}" alt="${org.name}" style="max-width: 100px; max-height: 35px; margin-bottom: 12px;">`
                   : `<h4 style="margin: 0 0 8px; color: ${org.secondaryColor}; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">${org.name}</h4>`
               }
-              <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
+              <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized growth roadmap</p>
               ${poweredBy}
               <div style="width: 40px; height: 2px; background-color: ${org.secondaryColor}; margin: 20px auto 0;"></div>
             </td>
@@ -498,7 +498,7 @@ function generateOTPTemplate(
                   ? `<img src="${org.logoUrl}" alt="${org.name}" style="max-width: 100px; max-height: 35px; margin-bottom: 12px;">`
                   : `<h4 style="margin: 0 0 8px; color: ${org.secondaryColor}; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">${org.name}</h4>`
               }
-              <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized path to college success</p>
+              <p style="margin: 0; color: #ffffff; font-size: 14px; line-height: 1.6; opacity: 0.8;">Your personalized growth roadmap</p>
               ${poweredBy}
               <div style="width: 40px; height: 2px; background-color: ${org.secondaryColor}; margin: 20px auto 0;"></div>
             </td>

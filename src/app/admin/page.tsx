@@ -353,6 +353,7 @@ export default function SuperAdminDashboard() {
   const [showDemoDialog, setShowDemoDialog] = useState(false)
   const [demoOrgId, setDemoOrgId] = useState<string>("")
   const [demoType, setDemoType] = useState<string>("healthcare")
+  const [demoStudentType, setDemoStudentType] = useState<string>("high_school")
 
   // Co-Super Admin management
   const [superAdmins, setSuperAdmins] = useState<Array<{
@@ -1244,7 +1245,7 @@ export default function SuperAdminDashboard() {
       const response = await fetch("/api/admin/demo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ organizationId: demoOrgId || undefined, demoType }),
+        body: JSON.stringify({ organizationId: demoOrgId || undefined, demoType, studentType: demoStudentType }),
       })
       const data = await response.json()
       if (response.ok) {
@@ -4159,17 +4160,26 @@ export default function SuperAdminDashboard() {
             </div>
 
             <div className="space-y-2">
-              <Label>Demo Profile</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <Label>Demo Profile (prefilled per stage)</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: "healthcare", label: "Healthcare", emoji: "🩺", name: "Priya Sharma", grade: "9th", score: 94 },
-                  { id: "finance", label: "Finance", emoji: "📊", name: "Marcus Chen", grade: "10th", score: 91 },
-                  { id: "engineering", label: "Engineering", emoji: "⚙️", name: "Sofia Rodriguez", grade: "11th", score: 89 },
+                  { id: "elementary", label: "Elementary", emoji: "🌱", name: "Sarah Chen", grade: "3rd", score: 78, stage: "elementary" },
+                  { id: "middle", label: "Middle School", emoji: "📚", name: "Alex Rodriguez", grade: "7th", score: 78, stage: "middle" },
+                  { id: "healthcare", label: "HS · Healthcare", emoji: "🩺", name: "Priya Sharma", grade: "9th", score: 94, stage: "high_school" },
+                  { id: "finance", label: "HS · Finance", emoji: "📊", name: "Marcus Chen", grade: "10th", score: 91, stage: "high_school" },
+                  { id: "engineering", label: "HS · Engineering", emoji: "⚙️", name: "Sofia Rodriguez", grade: "11th", score: 89, stage: "high_school" },
+                  { id: "undergrad", label: "Undergrad", emoji: "🎓", name: "Maya Patel", grade: "Junior", score: 81, stage: "undergrad" },
+                  { id: "grad", label: "Grad / MBA", emoji: "💼", name: "James Park", grade: "1st Yr MBA", score: 82, stage: "grad" },
+                  { id: "phd", label: "PhD", emoji: "🔬", name: "James Liu", grade: "Year 3", score: 84, stage: "phd" },
                 ].map((demo) => (
                   <button
                     key={demo.id}
                     type="button"
-                    onClick={() => setDemoType(demo.id)}
+                    onClick={() => {
+                      setDemoType(demo.id)
+                      // Auto-sync the Student Stage dropdown to match the picked profile.
+                      setDemoStudentType(demo.stage)
+                    }}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${demoType === demo.id ? 'border-[#c9a227] bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}
                   >
                     <div className="text-lg mb-1">{demo.emoji}</div>
@@ -4179,6 +4189,26 @@ export default function SuperAdminDashboard() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Student Stage</Label>
+              <Select value={demoStudentType} onValueChange={setDemoStudentType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="elementary">Elementary (K–5)</SelectItem>
+                  <SelectItem value="middle">Middle School (6–8)</SelectItem>
+                  <SelectItem value="high_school">High School (9–12)</SelectItem>
+                  <SelectItem value="undergrad">Undergraduate</SelectItem>
+                  <SelectItem value="grad">Graduate (MS / MBA / MD / JD)</SelectItem>
+                  <SelectItem value="phd">PhD / Research</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Drives which result tabs and report sections appear for this demo.
+              </p>
             </div>
 
             <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm text-amber-700">

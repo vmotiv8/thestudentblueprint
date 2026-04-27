@@ -18,6 +18,7 @@ export async function GET(request: Request) {
         id,
         organization_id,
         student_id,
+        student_type,
         status,
         payment_status,
         payment_intent_id,

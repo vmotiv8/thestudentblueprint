@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase"
 import { resend } from "@/lib/resend"
 import { callAI } from "@/lib/ai-caller"
-import { buildStudentProfileContext, sanitizeForPrompt } from "@/lib/assessment-prompts"
+import {
+  buildProcessPhase1Prompt,
+  buildProcessPhase2Prompt,
+  buildProcessPhase3Prompt,
+  buildProcessPhase4Prompt,
+} from "@/lib/assessment-prompts"
 import { fetchKnowledgeHubWithContent } from "@/lib/knowledge-hub-content"
 import { savePhaseResults } from "@/lib/assessment-save"
 
@@ -79,43 +84,22 @@ export async function POST(request: NextRequest) {
       ? await fetchKnowledgeHubWithContent(assessment.organization_id)
       : []
 
-    const { context: studentContext, currentGrade } = buildStudentProfileContext(formData, knowledgeHubResources)
-    const academicProfile = (formData.academicProfile || {}) as Record<string, unknown>
+    // Source studentType from the persisted DB column first; fall back to formData.
     const basicInfo = (formData.basicInfo || {}) as Record<string, unknown>
-    const curriculum = sanitizeForPrompt(academicProfile.curriculum || basicInfo.curriculum)
-
-    const SYSTEM = `You are an elite college admissions strategist who has placed 500+ students into Harvard, Stanford, MIT, Yale, Princeton, and other Top 20 universities. Every recommendation must be SPECIFIC (name real programs, professors, competitions), ACTIONABLE (concrete next steps), and AMBITIOUS. Respond ONLY with valid JSON, no additional text.`
-    const GUIDELINES = `
-IMPORTANT GUIDELINES:
-1. If the student is from India, include local Indian competitions, hackathons, and opportunities.
-2. If planning to study abroad, tailor recommendations to target countries.
-3. Tailor to the student's location and curriculum (${curriculum}).
-4. If school-specific resources are listed, PRIORITIZE those in recommendations.`
+    const studentType: string = (assessment.student_type as string)
+      || (basicInfo.studentType as string)
+      || 'high_school'
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allResults: Record<string, any> = {}
 
     // ── Phase 1: Core Analysis (REQUIRED — fail if this fails) ──
-    console.log(`[Regenerate] Phase 1 starting for ${assessmentId}`)
-    const phase1 = await callAI(`${SYSTEM}
-
-Analyze this student and produce a brutally honest analysis:
-
-${studentContext}
-${GUIDELINES}
-
-Generate JSON:
-{
-  "studentArchetype": "Unique 2-3 word archetype",
-  "archetypeScores": { "Visionary": 0-100, "Builder": 0-100, "Healer": 0-100, "Analyst": 0-100, "Artist": 0-100, "Advocate": 0-100, "Entrepreneur": 0-100, "Researcher": 0-100 },
-  "competitivenessScore": number 0-100,
-  "strengthsAnalysis": { "competitiveAdvantages": ["5-6 items"], "uniqueDifferentiators": ["3-4 items"], "alignedActivities": ["4-5 items"] },
-  "gapAnalysis": { "missingElements": ["EXACTLY 10 brutally honest gaps"], "activitiesToDeepen": ["3-4 items"], "skillsToDevelope": ["EXACTLY 10 skills — at least 5 AI skills"], "vulnerabilities": ["3-4 items"] },
-  "roadmap": { "immediate": ["6-8 items"], "shortTerm": ["6-8 items"], "mediumTerm": ["5-6 items"], "longTerm": ["5-6 items"] },
-  "gradeByGradeRoadmap": { "currentGrade": { "grade": "${currentGrade}", "focus": "focus", "academics": [], "extracurriculars": [], "testing": [], "leadership": [], "summerPlan": "plan" }, "nextYears": [] },
-  "essayBrainstorm": [{ "title": "title", "hook": "hook", "narrative": "narrative", "connectingThreads": [], "whyItWorks": "why" }]
-}
-Generate exactly 5 essay ideas.`, 8000, 120000)
+    console.log(`[Regenerate] Phase 1 starting for ${assessmentId} (type: ${studentType})`)
+    const phase1 = await callAI(
+      buildProcessPhase1Prompt(formData, knowledgeHubResources, studentType),
+      8000,
+      120000
+    )
 
     if (!phase1.success) {
       console.error(`[Regenerate] Phase 1 FAILED:`, phase1.error)
@@ -127,55 +111,31 @@ Generate exactly 5 essay ideas.`, 8000, 120000)
 
     // ── Phase 2: Academics, Testing, Colleges, Career (non-fatal) ──
     console.log(`[Regenerate] Phase 2 starting`)
-    const phase2 = await callAI(`${SYSTEM}
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Score: ${allResults.competitivenessScore}/100)
-${studentContext}
-${GUIDELINES}
-Generate JSON:
-{
-  "academicCoursesRecommendations": { "apCourses": [], "ibCourses": [], "curriculumSpecificCourses": {"label": "curriculum", "courses": []}, "honorsCourses": [], "electivesRecommended": [] },
-  "satActGoals": { "targetSATScore": "", "satSectionGoals": {"reading":"","math":""}, "targetACTScore": "", "actSectionGoals": {"english":"","math":"","reading":"","science":""}, "prepStrategy": "", "timeline": "" },
-  "collegeRecommendations": { "collegeBreakdown": { "reach": ["10 schools. ALL Ivy League MUST be reach. Format: 'Name: BRUTALLY HONEST why reach — cite student's SPECIFIC weaknesses like low GPA vs median, missing test scores, weak extracurriculars, no research, acceptance rate'"], "target": ["10 schools. Format: 'Name: honest fit assessment — cite student's specific stats vs school's median admits, what's competitive and what's weak'"], "safety": ["10 schools. Format: 'Name: why likely admitted — cite how student's stats exceed school averages, acceptance rate, program fit'"] }, "schoolMatches": [{"schoolName":"","matchScore":0,"why":""}] },
-  "careerRecommendations": { "jobTitles": [], "blueOceanIndustries": [{"industry":"","why":""}], "salaryPotential": "", "linkedInBioHeadline": "" }
-}
-Generate 12+ schoolMatches. For EVERY school in reach/target/safety, the reason MUST reference the student's actual stats, gaps, and weaknesses — not generic praise about the school's programs.`, 10000, 60000)
+    const phase2 = await callAI(
+      buildProcessPhase2Prompt(formData, knowledgeHubResources, studentType, allResults.studentArchetype, allResults.competitivenessScore),
+      10000,
+      60000
+    )
     if (phase2.success) { Object.assign(allResults, phase2.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Regenerate] Phase 2 failed (non-fatal):`, phase2.error)
 
     // ── Phase 3: Projects, Research, Mentors (non-fatal) ──
     console.log(`[Regenerate] Phase 3 starting`)
-    const phase3 = await callAI(`${SYSTEM}
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Score: ${allResults.competitivenessScore}/100)
-${studentContext}
-${GUIDELINES}
-Generate JSON:
-{
-  "passionProjects": [{"title":"","description":"","timeCommitment":"","skillsDeveloped":[],"applicationImpact":"","resources":"","implementationSteps":[]}],
-  "researchPublicationsRecommendations": { "researchTopics": [], "publicationOpportunities": [], "mentorshipSuggestions": [], "timeline": "" },
-  "mentorRecommendations": { "mentors": [{"name":"","university":"","department":"","why":""}] },
-  "wasteOfTimeActivities": { "activities": [{"activity":"","whyQuit":""}] }
-}
-Generate exactly 3 passion projects. Generate 5+ mentors. RESEARCH TOPICS: Generate EXACTLY 5 PhD-level, unexplored research topics that correlate with the student's interests. Format each as "Concise Title: Detailed description with methodology, target variable/outcome, and real-world application."`, 7000, 60000)
+    const phase3 = await callAI(
+      buildProcessPhase3Prompt(formData, knowledgeHubResources, studentType, allResults.studentArchetype, allResults.competitivenessScore),
+      7000,
+      60000
+    )
     if (phase3.success) { Object.assign(allResults, phase3.data); await savePhaseResults(assessmentId, allResults, 'partial') }
     else console.error(`[Regenerate] Phase 3 failed (non-fatal):`, phase3.error)
 
     // ── Phase 4: Activities, Competitions, Summer Programs (non-fatal) ──
     console.log(`[Regenerate] Phase 4 starting`)
-    const phase4 = await callAI(`${SYSTEM}
-Student: ${sanitizeForPrompt(basicInfo.fullName)} — ${allResults.studentArchetype} (Score: ${allResults.competitivenessScore}/100)
-${studentContext}
-${GUIDELINES}
-Generate JSON with each activity as {name, description, dates, relevance}:
-{
-  "summerIvyProgramsRecommendations": { "preFreshmanPrograms": [], "competitivePrograms": [], "researchPrograms": [], "enrichmentPrograms": [] },
-  "sportsRecommendations": { "varsitySports": [], "clubSports": [], "recruitingStrategy": [], "fitnessLeadership": [] },
-  "competitionsRecommendations": { "academicCompetitions": [], "businessCompetitions": [], "artsCompetitions": [], "debateSpeech": [] },
-  "internshipsRecommendations": { "industryInternships": [], "researchInternships": [], "nonprofitInternships": [], "virtualOpportunities": [] },
-  "serviceCommunityRecommendations": { "localOpportunities": [], "nationalPrograms": [], "internationalService": [], "sustainedCommitment": [] },
-  "cultureArtsRecommendations": { "performingArts": [], "visualArts": [], "creativeWriting": [], "culturalClubs": [] },
-  "leadershipRecommendations": { "clubLeadership": [], "schoolWideRoles": [], "communityLeadership": [], "leadershipDevelopment": [] }
-}
-Be SPECIFIC — name real programs, competitions, deadlines. Generate EXACTLY 5 items per array/category.`, 12000, 60000)
+    const phase4 = await callAI(
+      buildProcessPhase4Prompt(formData, knowledgeHubResources, studentType, allResults.studentArchetype, allResults.competitivenessScore),
+      12000,
+      60000
+    )
     if (phase4.success) { Object.assign(allResults, phase4.data) }
     else console.error(`[Regenerate] Phase 4 failed (non-fatal):`, phase4.error)
 

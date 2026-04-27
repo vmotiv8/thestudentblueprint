@@ -25,12 +25,12 @@ const stats: Stat[] = [
 const reportSections = [
   {
     title: "Student Archetype & Competitiveness Score",
-    description: "Discover your child\u2019s unique applicant identity \u2014 like \u201CAnalytical Entrepreneur\u201D or \u201CCreative Humanitarian\u201D \u2014 plus a 0-100 competitiveness score benchmarked against real admits.",
+    description: "Discover your child\u2019s unique applicant identity (like \u201CAnalytical Entrepreneur\u201D or \u201CCreative Humanitarian\u201D), plus a 0-100 competitiveness score benchmarked against real admits.",
     featured: true
   },
   {
     title: "Gap Analysis",
-    description: "What\u2019s missing from your child\u2019s profile \u2014 blind spots that admissions officers will notice, with specific actions to close each gap."
+    description: "What\u2019s missing from your child\u2019s profile: blind spots that admissions officers will notice, with specific actions to close each gap."
   },
   {
     title: "Projects & Research",
@@ -42,7 +42,7 @@ const reportSections = [
   },
   {
     title: "Academics",
-    description: "Course recommendations by grade \u2014 AP, IB, Honors, and electives \u2014 plus GPA targets and SAT/ACT prep strategy."
+    description: "Course recommendations by grade (AP, IB, Honors, and electives), plus GPA targets and SAT/ACT prep strategy."
   },
   {
     title: "Scholarships",
@@ -50,15 +50,15 @@ const reportSections = [
   },
   {
     title: "Activities & Leadership",
-    description: "Which clubs, competitions, and leadership roles to pursue \u2014 and which to drop. Prioritized by admissions impact."
+    description: "Which clubs, competitions, and leadership roles to pursue, and which to drop. Prioritized by admissions impact."
   },
   {
     title: "College Match List",
-    description: "Reach, Target, and Safety schools with match scores and explanations \u2014 built from your child\u2019s actual profile data."
+    description: "Reach, Target, and Safety schools with match scores and explanations, built from your child\u2019s actual profile data."
   },
   {
     title: "Essay Strategy",
-    description: "Narrative themes and personal story angles drawn from your child\u2019s experiences \u2014 the foundation for standout application essays."
+    description: "Narrative themes and personal story angles drawn from your child\u2019s experiences: the foundation for standout application essays."
   }
 ]
 
@@ -95,11 +95,11 @@ const faqs = [
   },
   {
     question: "What is the competitiveness score?",
-    answer: "The competitiveness score is a number from 0 to 100 that evaluates how strong your overall college application profile is relative to successful Ivy League and Top 20 applicants. It considers your academics, testing, extracurriculars, leadership, research experience, and personal narrative to give you a clear benchmark."
+    answer: "The competitiveness score is a number from 0 to 100 that benchmarks your overall profile against successful applicants at the next stage of your journey: Ivy League and Top 20 admits for high schoolers, top graduate programs and fellowships for undergraduate and post-grad applicants, and stage-appropriate benchmarks for younger students. It considers your academics, testing, extracurriculars, leadership, research experience, and personal narrative."
   },
   {
     question: "What is a student archetype?",
-    answer: "Your student archetype is a unique two-to-three word descriptor that captures your core strengths and identity as an applicant \u2014 for example, \u2018Analytical Entrepreneur\u2019 or \u2018Creative Humanitarian.\u2019 It\u2019s derived from your personality traits, interests, and activities, and serves as the foundation for your personalized roadmap."
+    answer: "Your student archetype is a unique two-to-three word descriptor that captures your core strengths and identity as an applicant (for example, \u2018Analytical Entrepreneur\u2019 or \u2018Creative Humanitarian\u2019). It\u2019s derived from your personality traits, interests, and activities, and serves as the foundation for your personalized roadmap."
   },
   {
     question: "How accurate are the college recommendations?",
@@ -111,7 +111,7 @@ const faqs = [
   },
   {
     question: "What grade levels is this designed for?",
-    answer: "The assessment is designed for students in grades 8 through 12. The roadmap automatically adapts to your current grade level, providing age-appropriate recommendations and a year-by-year plan through graduation. Earlier is better \u2014 students who start in 8th or 9th grade get the most actionable runway."
+    answer: "The assessment supports students from kindergarten through PhD. When you start, you select a stage (Elementary (K-5), Middle School (6-8), High School (9-12), Undergraduate, Graduate (MS/MBA/MD/JD), or PhD), and the entire intake form, AI analysis, and report adapt to that stage. The roadmap is age-appropriate at every level: discovery and enrichment for younger learners, college admissions strategy for high schoolers, internship and grad-school positioning for undergrads, fellowship and research strategy for grad and PhD applicants. Earlier is better. Students who start sooner get the most actionable runway."
   },
   {
     question: "Do I need to pay before taking the assessment?",
@@ -123,7 +123,7 @@ const faqs = [
   },
   {
     question: "What makes this different from a regular college counselor?",
-    answer: "A traditional counselor offers subjective advice based on their experience. Blueprint Intelligence combines AI-powered analysis with admissions data to deliver a structured, comprehensive strategy covering academics, testing, extracurriculars, leadership, research, internships, competitions, and more \u2014 all personalized to your specific profile, location, and curriculum."
+    answer: "A traditional counselor offers subjective advice based on their experience. Blueprint Intelligence combines AI-powered analysis with admissions data to deliver a structured, comprehensive strategy covering academics, testing, extracurriculars, leadership, research, internships, competitions, and more, all personalized to your specific profile, location, and curriculum."
   },
   {
     question: "Does this work for international students?",
@@ -139,7 +139,7 @@ const faqs = [
   },
   {
     question: "What exactly is included in my results report?",
-    answer: "Your report includes over 20 personalized sections: a student archetype and personality profile with scores across 8 dimensions, a competitiveness score out of 100, a detailed strengths analysis with competitive advantages and differentiators, a gap analysis highlighting what\u2019s missing from your profile, a phased roadmap (immediate, short-term, medium-term, and long-term actions), a grade-by-grade plan through 12th grade, academic course recommendations (AP, IB, Honors, electives), SAT/ACT target scores and prep strategy, research and publication opportunities, leadership development recommendations, community service suggestions, summer program picks including Ivy League pre-college programs, sports and competition strategies, student government pathways, internship opportunities, culture and arts recommendations, passion project ideas with implementation steps, career recommendations with salary potential, college match analysis with Reach/Target/Safety tiers and match scores, mentor suggestions, and a list of activities to deprioritize."
+    answer: "Your report adapts to your selected stage. Every report includes a student archetype and personality profile with scores across 8 dimensions, a competitiveness score out of 100, a strengths analysis, a gap analysis, a phased roadmap (immediate, short-term, medium-term, long-term), a stage-by-stage plan, academic course recommendations, leadership development, community service, sports, competitions, internships, culture and arts, passion projects with implementation steps, career recommendations with salary potential, mentor suggestions, and a list of activities to deprioritize. High schoolers also get SAT/ACT goals, college match analysis (Reach/Target/Safety), summer Ivy programs, and essay brainstorms. Undergrads get college and post-grad targets. Grad and PhD applicants get personal statement strategy and fellowship matches in place of SAT and undergraduate college lists."
   },
   {
     question: "How do payments work?",
@@ -147,7 +147,7 @@ const faqs = [
   },
   {
     question: "What is the grade-by-grade roadmap?",
-    answer: "The grade-by-grade roadmap is a year-by-year action plan that starts from your current grade and extends through 12th grade graduation. For each year, it provides specific goals across five areas: academics (courses to take and GPA targets), extracurriculars (activities to pursue and deepen), testing (when to take the PSAT, SAT, ACT, and AP exams), leadership (age-appropriate roles and responsibilities), and a summer plan (programs, internships, or projects to pursue). Each year builds on the previous one, ensuring a cohesive narrative for your college applications."
+    answer: "The roadmap is a year-by-year action plan that starts from your current stage and extends through the natural end-point of that stage: 5th grade for elementary, 12th grade for high school, graduation for undergrads, program completion for grad students, dissertation defense for PhD candidates. For each year, it provides specific goals across academics, extracurriculars or research, testing (stage-appropriate: SAT/ACT for high school, GRE/GMAT/MCAT/LSAT for grad applicants), leadership, and a summer/break plan. Each year builds on the previous to create a cohesive narrative."
   },
   {
     question: "Can my parents see my results?",
@@ -175,15 +175,6 @@ interface FAQ {
   answer: string
   display_order: number
 }
-
-// ─── Competitiveness Score Tiers ─────────────────────────────────────────────
-
-const scoreTiers = [
-  { range: "90-100", tier: "Exceptional", color: "text-emerald-400", dot: "bg-emerald-400", desc: "ISEF finalist, published researcher, 1550+ SAT, clear \u201Cspike\u201D and national/international recognition." },
-  { range: "80-89", tier: "Very Competitive", color: "text-blue-400", dot: "bg-blue-400", desc: "State-level winner, 1450+ SAT, clear narrative forming. Strong shot at T20 schools." },
-  { range: "70-79", tier: "Competitive", color: "text-amber-400", dot: "bg-amber-400", desc: "1350+ SAT, good GPA, but lacking a standout \u201Cspike.\u201D Needs a defining achievement." },
-  { range: "Below 70", tier: "Developing", color: "text-red-400", dot: "bg-red-400", desc: "Time to build your story \u2014 testing & leadership need attention." }
-]
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
@@ -298,7 +289,7 @@ function FamiliesHomePage() {
             transition={{ duration: 1, delay: 0.7 }}
             className="text-base sm:text-lg md:text-xl text-[#1E2849]/50 max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2 font-semibold"
           >
-            Your child&apos;s GPA, test scores, extracurriculars, and goals analyzed against real admissions data from <span className="text-[#1E2849] font-bold">150k data points</span> and over <span className="text-[#1E2849] font-bold">1,200+ accepted students</span>. You walk away with a custom grade-by-grade plan: what to take, what to build, what to skip, and exactly when to do it. It&apos;s a detailed roadmap that works.
+            Your student&apos;s academics, activities, and goals analyzed against real outcome data from <span className="text-[#1E2849] font-bold">150k data points</span> and over <span className="text-[#1E2849] font-bold">1,200+ accepted students</span>. You walk away with a custom stage-by-stage plan: what to take, what to build, what to skip, and exactly when to do it. Tailored for every stage: elementary through PhD.
           </motion.p>
 
           <motion.p

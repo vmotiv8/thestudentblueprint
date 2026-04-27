@@ -22,27 +22,30 @@ import { toast } from "sonner"
 
 // ─── Pricing Logic ──────────────────────────────────────────────────────────
 
+// Minimum agency purchase is 10 licenses; tiers scale down by $50 from $400.
+const MIN_LICENSES = 10
+const MAX_LICENSES = 2000
+const BASE_PRICE_PER_STUDENT = 400
+
 const PRICING_TIERS = [
-  { min: 1, max: 9, price: 350, label: "1–9" },
-  { min: 10, max: 24, price: 300, label: "10–24" },
-  { min: 25, max: 49, price: 250, label: "25–49" },
-  { min: 50, max: 99, price: 200, label: "50–99", popular: true },
-  { min: 100, max: 999, price: 150, label: "100–999" },
-  { min: 1000, max: Infinity, price: 100, label: "1000+" },
+  { min: 10, max: 24, price: 400, label: "10–24" },
+  { min: 25, max: 49, price: 350, label: "25–49" },
+  { min: 50, max: 99, price: 300, label: "50–99", popular: true },
+  { min: 100, max: 999, price: 250, label: "100–999" },
+  { min: 1000, max: Infinity, price: 200, label: "1000+" },
 ]
 
 function getPricePerStudent(qty: number): number {
-  if (qty >= 1000) return 100
-  if (qty >= 100) return 150
-  if (qty >= 50) return 200
-  if (qty >= 25) return 250
-  if (qty >= 10) return 300
-  return 350
+  if (qty >= 1000) return 200
+  if (qty >= 100) return 250
+  if (qty >= 50) return 300
+  if (qty >= 25) return 350
+  return 400
 }
 
 function getSavingsPercent(qty: number): number {
   const price = getPricePerStudent(qty)
-  return Math.round((1 - price / 350) * 100)
+  return Math.round((1 - price / BASE_PRICE_PER_STUDENT) * 100)
 }
 
 function getTierIndex(qty: number): number {
@@ -112,7 +115,7 @@ export default function GetStartedPage() {
 
   const pricePerStudent = getPricePerStudent(quantity)
   const total = quantity * pricePerStudent
-  const savings = quantity * 350 - total
+  const savings = quantity * BASE_PRICE_PER_STUDENT - total
   const savingsPercent = getSavingsPercent(quantity)
   const activeTier = getTierIndex(quantity)
 
@@ -247,12 +250,15 @@ export default function GetStartedPage() {
 
   function handleSliderChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = parseInt(e.target.value)
-    const qty = Math.round(1 + (raw / 100) ** 2 * 1499)
-    setQuantity(Math.max(1, Math.min(1500, qty)))
+    const span = 1500 - MIN_LICENSES
+    const qty = Math.round(MIN_LICENSES + (raw / 100) ** 2 * span)
+    setQuantity(Math.max(MIN_LICENSES, Math.min(1500, qty)))
   }
 
   function sliderValue(): number {
-    return Math.round(Math.sqrt((quantity - 1) / 1499) * 100)
+    const span = 1500 - MIN_LICENSES
+    const ratio = Math.max(0, (quantity - MIN_LICENSES) / span)
+    return Math.round(Math.sqrt(ratio) * 100)
   }
 
   const stepLabels = ["Plan", "Account", "Payment"]
@@ -412,7 +418,7 @@ function Step1({
         </h1>
         <p className="text-sm text-[#1E2849]/60 font-bold uppercase tracking-[0.1em] leading-relaxed">
           Select the number of student licenses for your agency.<br />
-          Resell to your clients at any price you set — you keep the margin.
+          Resell to your clients at any price you set, and you keep the margin.
         </p>
       </motion.div>
 
@@ -420,20 +426,26 @@ function Step1({
       <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={1}>
         <div className="flex items-center justify-center gap-6 mb-8">
           <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-11 h-11 rounded-full bg-[#1b2034] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#af8f5b] transition-all active:scale-95"
+            onClick={() => setQuantity(Math.max(MIN_LICENSES, quantity - 1))}
+            disabled={quantity <= MIN_LICENSES}
+            className="w-11 h-11 rounded-full bg-[#1b2034] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#af8f5b] transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#1b2034] disabled:hover:text-white/60"
           >
             <Minus className="w-4 h-4" />
           </button>
           <div className="text-center">
             <input
               type="number"
-              min={1}
-              max={2000}
+              min={MIN_LICENSES}
+              max={MAX_LICENSES}
               value={quantity}
               onChange={(e) => {
                 const v = parseInt(e.target.value)
-                if (!isNaN(v) && v >= 1) setQuantity(Math.min(2000, v))
+                if (!isNaN(v)) setQuantity(Math.max(MIN_LICENSES, Math.min(MAX_LICENSES, v)))
+              }}
+              onBlur={(e) => {
+                // Snap up to the minimum if the user typed a low value and tabbed away.
+                const v = parseInt(e.target.value)
+                if (isNaN(v) || v < MIN_LICENSES) setQuantity(MIN_LICENSES)
               }}
               className="w-24 text-center text-5xl font-bold bg-transparent border-none outline-none text-[#1E2849] appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] tracking-tight"
               style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600 }}
@@ -441,7 +453,7 @@ function Step1({
             <div className="text-xs text-[#af8f5b] font-bold uppercase tracking-[0.15em] mt-0.5">licenses</div>
           </div>
           <button
-            onClick={() => setQuantity(Math.min(2000, quantity + 1))}
+            onClick={() => setQuantity(Math.min(MAX_LICENSES, quantity + 1))}
             className="w-11 h-11 rounded-full bg-[#1b2034] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#af8f5b] transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
@@ -525,7 +537,7 @@ function Step1({
 
       {/* Tiers */}
       <motion.div variants={fadeIn} initial="hidden" animate="visible" custom={3}>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
           {PRICING_TIERS.map((tier, i) => {
             const isActive = i === activeTier
             return (

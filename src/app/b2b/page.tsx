@@ -60,7 +60,7 @@ const features = [
   {
     icon: Award,
     title: "Elite Benchmarking",
-    description: "Give your clients confidence by comparing their profile against thousands of successful Ivy League applications."
+    description: "Give your clients confidence by benchmarking their profile against thousands of successful applicants at every stage: Ivy League, top graduate programs, and stage-appropriate outcomes for younger students."
   }
 ]
 
@@ -73,7 +73,7 @@ const testimonials = [
   {
     name: "David Okafor",
     school: "CEO, Meridian College Consulting",
-    quote: "The white-label feature was the game-changer for us. Our clients have no idea the roadmaps come from Blueprint \u2014 they think we built it all in-house. We added it as a $2,500 premium tier and it became our highest-margin service overnight. Revenue is up 47% year over year."
+    quote: "The white-label feature was the game-changer for us. Our clients have no idea the roadmaps come from Blueprint, and they think we built it all in-house. We added it as a $2,500 premium tier and it became our highest-margin service overnight. Revenue is up 47% year over year."
   },
   {
     name: "Sarah Mitchell",
@@ -108,12 +108,12 @@ const testimonials = [
   {
     name: "Dr. Priya Sharma",
     school: "Director, Global Scholars Academy",
-    quote: "We work with students across India, Dubai, and Singapore who are targeting US universities. The platform understands international curricula — CBSE, IB, A-Levels — and tailors the roadmap accordingly. No other tool we've tried gets the nuance of cross-border admissions strategy right."
+    quote: "We work with students across India, Dubai, and Singapore who are targeting US universities. The platform understands international curricula (CBSE, IB, A-Levels) and tailors the roadmap accordingly. No other tool we've tried gets the nuance of cross-border admissions strategy right."
   },
   {
     name: "Tom Brennan",
     school: "Co-Founder, Northeast Admissions Co.",
-    quote: "I've been in admissions consulting for 12 years. The competitiveness scoring is shockingly accurate — it identified the same gaps I would have, plus a few I missed. We now use the Blueprint report as the starting point for every student engagement. It saves our senior counselors about 4 hours per student."
+    quote: "I've been in admissions consulting for 12 years. The competitiveness scoring is shockingly accurate; it identified the same gaps I would have, plus a few I missed. We now use the Blueprint report as the starting point for every student engagement. It saves our senior counselors about 4 hours per student."
   },
   {
     name: "Yuki Tanaka",
@@ -123,12 +123,12 @@ const testimonials = [
   {
     name: "Olivia Grant",
     school: "Managing Director, Prestige Prep Partners",
-    quote: "We white-labeled the entire platform under our brand. Our clients think we built a proprietary AI system. The custom domain, our logo, our colors — it's seamless. That perception of innovation has helped us close enterprise contracts with three private schools this year."
+    quote: "We white-labeled the entire platform under our brand. Our clients think we built a proprietary AI system. The custom domain, our logo, our colors. It's seamless. That perception of innovation has helped us close enterprise contracts with three private schools this year."
   },
   {
     name: "Daniel Reyes",
     school: "Head of Operations, CollegeMap Advisors",
-    quote: "Before Blueprint, our bottleneck was the strategy report. Each one took a senior counselor an entire day. Now we generate them in minutes and spend that time on what actually matters — the one-on-one coaching sessions. Our student satisfaction scores went from 4.1 to 4.8 out of 5."
+    quote: "Before Blueprint, our bottleneck was the strategy report. Each one took a senior counselor an entire day. Now we generate them in minutes and spend that time on what actually matters: the one-on-one coaching sessions. Our student satisfaction scores went from 4.1 to 4.8 out of 5."
   },
   {
     name: "Fatima Al-Rashid",
@@ -138,12 +138,12 @@ const testimonials = [
   {
     name: "Robert Chang",
     school: "Partner, Keystone Academic Group",
-    quote: "The passion project recommendations alone are worth the price. Three of our students launched initiatives directly from Blueprint's suggestions — one built a climate research blog that got cited by a local newspaper, and she used it as the centerpiece of her Columbia application. She got in."
+    quote: "The passion project recommendations alone are worth the price. Three of our students launched initiatives directly from Blueprint's suggestions. One built a climate research blog that got cited by a local newspaper, and she used it as the centerpiece of her Columbia application. She got in."
   },
   {
     name: "Catherine Dubois",
     school: "Founder, Lumière College Consulting",
-    quote: "I run a boutique firm serving 30 families per cycle. Blueprint didn't replace my expertise — it amplified it. I use the AI report as a diagnostic foundation, then layer my personal insights on top. My students are better prepared, and I can confidently charge premium rates because the deliverables are exceptional."
+    quote: "I run a boutique firm serving 30 families per cycle. Blueprint didn't replace my expertise; it amplified it. I use the AI report as a diagnostic foundation, then layer my personal insights on top. My students are better prepared, and I can confidently charge premium rates because the deliverables are exceptional."
   },
   {
     name: "Jason Adebayo",
@@ -153,7 +153,7 @@ const testimonials = [
   {
     name: "Stephanie Nguyen",
     school: "Director, Horizon Education Group",
-    quote: "The grade-by-grade roadmap is what parents are willing to pay for. It's not just a list of suggestions — it's a structured, year-by-year plan with specific milestones. When a parent sees their 9th grader's path mapped all the way to senior year, they understand exactly why our services are worth the investment."
+    quote: "The grade-by-grade roadmap is what parents are willing to pay for. It's not just a list of suggestions; it's a structured, year-by-year plan with specific milestones. When a parent sees their 9th grader's path mapped all the way to senior year, they understand exactly why our services are worth the investment."
   }
 ]
 
@@ -186,11 +186,11 @@ const faqs = [
   },
   {
     question: "What is the competitiveness score?",
-    answer: "The competitiveness score is a number from 0 to 100 that evaluates how strong your overall college application profile is relative to successful Ivy League and Top 20 applicants. It considers your academics, testing, extracurriculars, leadership, research experience, and personal narrative to give you a clear benchmark."
+    answer: "The competitiveness score is a number from 0 to 100 that benchmarks your overall profile against successful applicants at the next stage of your journey: Ivy League and Top 20 admits for high schoolers, top graduate programs and fellowships for undergraduate and post-grad applicants, and stage-appropriate benchmarks for younger students. It considers your academics, testing, extracurriculars, leadership, research experience, and personal narrative."
   },
   {
     question: "What is a student archetype?",
-    answer: "Your student archetype is a unique two-to-three word descriptor that captures your core strengths and identity as an applicant — for example, 'Analytical Entrepreneur' or 'Creative Humanitarian.' It's derived from your personality traits, interests, and activities, and serves as the foundation for your personalized roadmap."
+    answer: "Your student archetype is a unique two-to-three word descriptor that captures your core strengths and identity as an applicant (for example, 'Analytical Entrepreneur' or 'Creative Humanitarian'). It's derived from your personality traits, interests, and activities, and serves as the foundation for your personalized roadmap."
   },
   {
     question: "How accurate are the college recommendations?",
@@ -202,7 +202,7 @@ const faqs = [
   },
   {
     question: "What grade levels is this designed for?",
-    answer: "The assessment is designed for students in grades 8 through 12. The roadmap automatically adapts to your current grade level, providing age-appropriate recommendations and a year-by-year plan through graduation. Earlier is better — students who start in 8th or 9th grade get the most actionable runway."
+    answer: "The assessment supports students from kindergarten through PhD. When you start, you select a stage (Elementary (K-5), Middle School (6-8), High School (9-12), Undergraduate, Graduate (MS/MBA/MD/JD), or PhD), and the entire intake form, AI analysis, and report adapt to that stage. Agencies can serve their entire roster from one platform: enrichment plans for elementary clients, college admissions strategy for high schoolers, internship and grad-school positioning for undergrads, fellowship and research strategy for grad and PhD applicants."
   },
   {
     question: "Do I need to pay before taking the assessment?",
@@ -214,7 +214,7 @@ const faqs = [
   },
   {
     question: "What makes this different from a regular college counselor?",
-    answer: "A traditional counselor offers subjective advice based on their experience. Blueprint Intelligence combines AI-powered analysis with admissions data to deliver a structured, comprehensive strategy covering academics, testing, extracurriculars, leadership, research, internships, competitions, and more — all personalized to your specific profile, location, and curriculum."
+    answer: "A traditional counselor offers subjective advice based on their experience. Blueprint Intelligence combines AI-powered analysis with admissions data to deliver a structured, comprehensive strategy covering academics, testing, extracurriculars, leadership, research, internships, competitions, and more, all personalized to your specific profile, location, and curriculum."
   },
   {
     question: "Does this work for international students?",
@@ -230,7 +230,7 @@ const faqs = [
   },
   {
     question: "What exactly is included in my results report?",
-    answer: "Your report includes over 20 personalized sections: a student archetype and personality profile with scores across 8 dimensions, a competitiveness score out of 100, a detailed strengths analysis with competitive advantages and differentiators, a gap analysis highlighting what's missing from your profile, a phased roadmap (immediate, short-term, medium-term, and long-term actions), a grade-by-grade plan through 12th grade, academic course recommendations (AP, IB, Honors, electives), SAT/ACT target scores and prep strategy, research and publication opportunities, leadership development recommendations, community service suggestions, summer program picks including Ivy League pre-college programs, sports and competition strategies, student government pathways, internship opportunities, culture and arts recommendations, passion project ideas with implementation steps, career recommendations with salary potential, college match analysis with Reach/Target/Safety tiers and match scores, mentor suggestions, and a list of activities to deprioritize."
+    answer: "Your report adapts to your selected stage. Every report includes a student archetype and personality profile with scores across 8 dimensions, a competitiveness score out of 100, a strengths analysis, a gap analysis, a phased roadmap (immediate, short-term, medium-term, long-term), a stage-by-stage plan, academic course recommendations, leadership development, community service, sports, competitions, internships, culture and arts, passion projects with implementation steps, career recommendations with salary potential, mentor suggestions, and a list of activities to deprioritize. High schoolers also get SAT/ACT goals, college match analysis (Reach/Target/Safety), summer Ivy programs, and essay brainstorms. Undergrads get college and post-grad targets. Grad and PhD applicants get personal statement strategy and fellowship matches in place of SAT and undergraduate college lists."
   },
   {
     question: "How do payments work?",
@@ -238,11 +238,11 @@ const faqs = [
   },
   {
     question: "How do agencies collect payments from their students?",
-    answer: "Agencies have two options. First, you can set your own assessment price through your admin dashboard — when students go through your white-labeled assessment link, they pay the price you've configured, and funds go directly to your connected Stripe account via Stripe Connect. Second, you can mark assessments as free for your organization and handle billing separately through your own invoicing process. Either way, you have full control over your pricing and revenue."
+    answer: "Agencies have two options. First, you can set your own assessment price through your admin dashboard. When students go through your white-labeled assessment link, they pay the price you've configured, and funds go directly to your connected Stripe account via Stripe Connect. Second, you can mark assessments as free for your organization and handle billing separately through your own invoicing process. Either way, you have full control over your pricing and revenue."
   },
   {
     question: "What is the grade-by-grade roadmap?",
-    answer: "The grade-by-grade roadmap is a year-by-year action plan that starts from your current grade and extends through 12th grade graduation. For each year, it provides specific goals across five areas: academics (courses to take and GPA targets), extracurriculars (activities to pursue and deepen), testing (when to take the PSAT, SAT, ACT, and AP exams), leadership (age-appropriate roles and responsibilities), and a summer plan (programs, internships, or projects to pursue). Each year builds on the previous one, ensuring a cohesive narrative for your college applications."
+    answer: "The roadmap is a year-by-year action plan that starts from your current stage and extends through the natural end-point of that stage: 5th grade for elementary, 12th grade for high school, graduation for undergrads, program completion for grad students, dissertation defense for PhD candidates. For each year, it provides specific goals across academics, extracurriculars or research, testing (stage-appropriate: SAT/ACT for high school, GRE/GMAT/MCAT/LSAT for grad applicants), leadership, and a summer/break plan. Each year builds on the previous to create a cohesive narrative."
   },
   {
     question: "Can my parents see my results?",
@@ -360,7 +360,7 @@ function TestimonialMarquee({ testimonials: initialTestimonials }: { testimonial
   const isDragging = useRef(false)
   const doubledTestimonials = [...initialTestimonials, ...initialTestimonials]
 
-  // Card width + gap in pixels — computed safely for SSR
+  // Card width + gap in pixels, computed safely for SSR
   const [cardWidth, setCardWidth] = useState(452)
   useEffect(() => {
     setCardWidth(window.innerWidth < 640 ? 332 : 452)
@@ -1031,7 +1031,7 @@ function ClockTransition() {
           <circle cx="100" cy="100" r="95" fill="none" stroke="#1E2849" strokeWidth="2" opacity="0.15" />
           <circle cx="100" cy="100" r="88" fill="none" stroke="#af8f5b" strokeWidth="1" opacity="0.3" />
 
-          {/* Hour markers — pre-computed to avoid hydration mismatch */}
+          {/* Hour markers, pre-computed to avoid hydration mismatch */}
           {[
             { x1: 100, y1: 15, x2: 100, y2: 26, main: true },
             { x1: 142.5, y1: 24.55, x2: 139, y2: 32.45, main: false },
@@ -1427,7 +1427,7 @@ function B2BPage() {
                   </svg>
                 </div>
                 <p className="text-sm sm:text-base leading-relaxed mt-auto font-bold text-white">
-                  Personalized Ivy League roadmaps generated in seconds. Data-driven insights your counselors can act on immediately.
+                  Personalized roadmaps for every stage (Ivy League prep, grad school strategy, fellowships, and enrichment plans), generated in seconds. Data-driven insights your counselors can act on immediately.
                 </p>
               </div>
             </motion.div>
@@ -1577,7 +1577,7 @@ function B2BPage() {
               <div className="space-y-0">
                 {[
                   "Data-driven profile analysis",
-                  "Automated Ivy League-level roadmaps",
+                  "Automated stage-specific roadmaps (K through PhD)",
                   "Full white-label reporting",
                   "Instant student onboarding",
                   "Unlimited scalability",

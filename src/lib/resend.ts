@@ -1523,3 +1523,89 @@ export async function sendPartnerWelcomeEmail(
     return { success: false, error }
   }
 }
+
+/**
+ * Internal notification to partners@vmotiv8.com whenever a student completes
+ * an assessment. Concise, text-heavy summary plus a link to the report.
+ */
+export async function sendInternalCompletionNotification(props: {
+  assessmentId: string
+  studentName: string
+  studentEmail: string
+  studentType?: string | null
+  grade?: string | null
+  organizationName?: string | null
+  archetype?: string | null
+  competitivenessScore?: number | null
+}) {
+  const to = 'partners@vmotiv8.com'
+  const safeName = escapeHtml(props.studentName || 'Unknown student')
+  const safeEmail = escapeHtml(props.studentEmail || '—')
+  const safeStudentType = escapeHtml((props.studentType || 'high_school').replace('_', ' '))
+  const safeGrade = escapeHtml(props.grade || '—')
+  const safeOrg = escapeHtml(props.organizationName || 'Platform Default')
+  const safeArchetype = escapeHtml(props.archetype || 'Pending')
+  const score = typeof props.competitivenessScore === 'number' ? props.competitivenessScore : null
+  const resultsUrl = buildResultsUrl(props.assessmentId)
+  const completedAt = new Date().toISOString()
+
+  const subject = `Assessment completed: ${props.studentName} (${safeStudentType})`
+
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:24px;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1e3a5f;">
+  <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5e0d5;border-radius:12px;padding:28px;">
+    <h2 style="margin:0 0 16px;font-size:18px;color:#1e3a5f;">Assessment completed</h2>
+    <table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;line-height:1.6;">
+      <tr><td style="padding:4px 0;width:140px;color:#5a7a9a;">Student</td><td style="padding:4px 0;font-weight:600;">${safeName}</td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Email</td><td style="padding:4px 0;"><a href="mailto:${safeEmail}" style="color:#1e3a5f;">${safeEmail}</a></td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Stage</td><td style="padding:4px 0;text-transform:capitalize;">${safeStudentType}</td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Grade</td><td style="padding:4px 0;">${safeGrade}</td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Agency</td><td style="padding:4px 0;">${safeOrg}</td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Archetype</td><td style="padding:4px 0;">${safeArchetype}</td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Score</td><td style="padding:4px 0;">${score !== null ? `${score}/100` : '—'}</td></tr>
+      <tr><td style="padding:4px 0;color:#5a7a9a;">Completed</td><td style="padding:4px 0;">${completedAt}</td></tr>
+    </table>
+    <div style="margin-top:24px;text-align:center;">
+      <a href="${resultsUrl}" style="display:inline-block;background:#1e3a5f;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Report</a>
+    </div>
+    <p style="margin:24px 0 0;font-size:11px;color:#5a7a9a;text-align:center;">Internal notification from The Student Blueprint platform.</p>
+  </div>
+</body>
+</html>`
+
+  const text = `Assessment completed
+Student: ${props.studentName}
+Email: ${props.studentEmail}
+Stage: ${(props.studentType || 'high_school').replace('_', ' ')}
+Grade: ${props.grade || '—'}
+Agency: ${props.organizationName || 'Platform Default'}
+Archetype: ${props.archetype || 'Pending'}
+Score: ${score !== null ? `${score}/100` : '—'}
+Completed: ${completedAt}
+
+View report: ${resultsUrl}`
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject,
+      html,
+      text,
+    })
+
+    await logEmailSend('internal-completion', to, !error, error)
+
+    if (error) {
+      console.error('Internal completion notification error:', error)
+      return { success: false, error }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Failed to send internal completion notification:', error)
+    await logEmailSend('internal-completion', to, false, error)
+    return { success: false, error }
+  }
+}

@@ -56,10 +56,11 @@ export async function POST(request: Request) {
         unique_code,
         assessments (
           id,
-          current_section,
-          is_completed,
-          payment_status,
-          coupon_code_used,
+              current_section,
+              is_completed,
+              payment_status,
+              coupon_code,
+              coupon_code_used,
           basic_info,
           academic_profile,
           testing_info,
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
     }
 
     let hasPaid = false
-    if (assessment.payment_status === 'paid' || assessment.coupon_code_used) {
+    if (assessment.payment_status === 'paid' || assessment.payment_status === 'free' || assessment.coupon_code || assessment.coupon_code_used) {
       hasPaid = true
     } else {
       const { data: payment } = await supabase

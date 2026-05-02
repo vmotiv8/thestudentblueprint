@@ -7,7 +7,7 @@ import { savePhaseResults, updatePhaseStatus } from '@/lib/assessment-save'
 import { verifyQStashSignature } from '@/lib/qstash'
 import { webhookEvents } from '@/lib/organization/webhooks'
 import { buildResultsUrl } from '@/lib/url'
-import { sendStudentResultsEmail, sendParentEmail } from '@/lib/resend'
+import { sendStudentResultsEmail, sendParentEmail, sendInternalCompletionNotification } from '@/lib/resend'
 
 export const maxDuration = 120
 
@@ -103,6 +103,17 @@ export async function POST(
                   .catch(err => console.error('Parent email failed:', err))
               }
             }
+            // Internal team notification — fire on every completion regardless of student email presence.
+            sendInternalCompletionNotification({
+              assessmentId,
+              studentName: student ? `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
+              studentEmail: student?.email || '—',
+              studentType: fullAssessment.student_type,
+              grade: (student as { grade_level?: string } | null)?.grade_level || (student as { current_grade?: string } | null)?.current_grade,
+              organizationName: org?.name,
+              archetype: fullAssessment.student_archetype,
+              competitivenessScore: fullAssessment.competitiveness_score,
+            }).catch(err => console.error('Internal completion notification failed:', err))
           } catch (err) { console.error('[Phase4] Background error:', err) }
         })
       } catch { console.warn('[Phase4] after() unavailable') }

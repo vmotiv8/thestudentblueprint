@@ -117,7 +117,7 @@ export async function GET(request: Request) {
 
       let studentQuery = supabase
         .from('students')
-        .select('id, assessments(coupon_code_used)')
+        .select('id, assessments(coupon_code, coupon_code_used)')
         .eq('email', email.toLowerCase())
 
       if (organization) {
@@ -127,8 +127,8 @@ export async function GET(request: Request) {
       const { data: student } = await studentQuery.maybeSingle()
       
       if (student) {
-        const assessments = student.assessments as unknown as { coupon_code_used: string | null }[]
-        if (assessments?.[0]?.coupon_code_used) {
+        const assessments = student.assessments as unknown as { coupon_code: string | null; coupon_code_used: string | null }[]
+        if (assessments?.[0]?.coupon_code || assessments?.[0]?.coupon_code_used) {
           return NextResponse.json({ 
             paid: true, 
             email: email,

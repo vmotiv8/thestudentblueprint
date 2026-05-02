@@ -51,6 +51,14 @@ export async function POST(request: Request) {
 
     // Determine payment status
     let paymentStatus: 'paid' | 'free' | 'unpaid' = 'unpaid'
+    const normalizedCouponCode = couponCode ? couponCode.trim().toUpperCase() : null
+    let validatedCoupon: {
+      id: string
+      discount_type: string
+      max_uses: number | null
+      current_uses: number
+      valid_until: string | null
+    } | null = null
 
     if (organization.free_assessments) {
       paymentStatus = 'free'
@@ -69,11 +77,11 @@ export async function POST(request: Request) {
     }
 
     // Validate coupon if provided
-    if (couponCode) {
+    if (normalizedCouponCode) {
       const { data: coupon } = await supabase
         .from('coupons')
         .select('id, discount_type, max_uses, current_uses, valid_until, is_active')
-        .eq('code', couponCode.toUpperCase())
+        .eq('code', normalizedCouponCode)
         .eq('organization_id', organization.id)
         .eq('is_active', true)
         .single()
@@ -89,18 +97,35 @@ export async function POST(request: Request) {
       }
 
       paymentStatus = coupon.discount_type === 'free' ? 'free' : 'paid'
+      validatedCoupon = coupon
+    }
 
-      // Issue #1: Increment coupon usage with optimistic lock
-      const previousUses = coupon.current_uses || 0
-      const { error: incrementError } = await supabase
+    const incrementCouponUsage = async () => {
+      if (!validatedCoupon) return null
+
+      const previousUses = validatedCoupon.current_uses || 0
+      if (validatedCoupon.max_uses && previousUses >= validatedCoupon.max_uses) {
+        return NextResponse.json({ error: 'Coupon has reached its usage limit' }, { status: 400 })
+      }
+
+      const { data, error: incrementError } = await supabase
         .from('coupons')
         .update({ current_uses: previousUses + 1 })
-        .eq('id', coupon.id)
+        .eq('id', validatedCoupon.id)
         .eq('current_uses', previousUses)
+        .select('id, current_uses')
+        .maybeSingle()
 
       if (incrementError) {
+        console.error('[StudentRegister] Coupon usage increment failed:', incrementError)
         return NextResponse.json({ error: 'Coupon usage conflict. Please try again.' }, { status: 409 })
       }
+      if (!data) {
+        return NextResponse.json({ error: 'Coupon usage changed. Please try again.' }, { status: 409 })
+      }
+
+      validatedCoupon.current_uses = data.current_uses
+      return null
     }
 
     // Check org student limits
@@ -196,7 +221,7 @@ export async function POST(request: Request) {
     if (existingStudent) {
       const { data: existingAssessment } = await supabase
         .from('assessments')
-        .select('id')
+        .select('id, coupon_code, coupon_code_used')
         .eq('student_id', studentId)
         .eq('organization_id', organization.id)
         .in('status', ['in_progress', 'partial'])
@@ -204,12 +229,18 @@ export async function POST(request: Request) {
 
       if (existingAssessment) {
         assessmentId = existingAssessment.id
+        const existingCouponCode = existingAssessment.coupon_code || existingAssessment.coupon_code_used || null
+        if (normalizedCouponCode && existingCouponCode !== normalizedCouponCode) {
+          const incrementResponse = await incrementCouponUsage()
+          if (incrementResponse) return incrementResponse
+        }
+
         // Update payment status if needed
         await supabase
           .from('assessments')
           .update({
             payment_status: paymentStatus,
-            ...(couponCode ? { coupon_code: couponCode.toUpperCase() } : {}),
+            ...(normalizedCouponCode ? { coupon_code: normalizedCouponCode, coupon_code_used: normalizedCouponCode } : {}),
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingAssessment.id)
@@ -235,6 +266,11 @@ export async function POST(request: Request) {
       }
     }
 
+    if (normalizedCouponCode) {
+      const incrementResponse = await incrementCouponUsage()
+      if (incrementResponse) return incrementResponse
+    }
+
     // Single assessment insert for both new students and existing students without an in-progress assessment
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
@@ -244,7 +280,8 @@ export async function POST(request: Request) {
         status: 'in_progress',
         current_section: 1,
         payment_status: paymentStatus,
-        coupon_code: couponCode ? couponCode.toUpperCase() : null,
+        coupon_code: normalizedCouponCode,
+        coupon_code_used: normalizedCouponCode,
         responses: {
           basicInfo: {
             fullName: trimmedName,

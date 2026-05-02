@@ -30,11 +30,11 @@ export async function POST(request: Request) {
     let formData = providedFormData
 
     if (reanalyze || !formData) {
-      let fetchQuery = supabase.from('assessments').select('responses, payment_status').eq('id', assessmentId)
+      let fetchQuery = supabase.from('assessments').select('responses, payment_status, coupon_code, coupon_code_used').eq('id', assessmentId)
       if (!reanalyze && organization) fetchQuery = fetchQuery.eq('organization_id', organization.id)
       const { data: existing, error: fetchError } = await fetchQuery.single()
       if (fetchError || !existing) return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
-      if (!reanalyze && existing.payment_status !== 'paid' && existing.payment_status !== 'free') {
+      if (!reanalyze && existing.payment_status !== 'paid' && existing.payment_status !== 'free' && !existing.coupon_code && !existing.coupon_code_used) {
         return NextResponse.json({ error: 'Payment required' }, { status: 402 })
       }
       formData = existing.responses
@@ -42,8 +42,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Assessment has no saved responses' }, { status: 400 })
       }
     } else if (!reanalyze) {
-      const { data: paymentCheck } = await supabase.from('assessments').select('payment_status').eq('id', assessmentId).single()
-      if (paymentCheck && paymentCheck.payment_status !== 'paid' && paymentCheck.payment_status !== 'free') {
+      const { data: paymentCheck } = await supabase.from('assessments').select('payment_status, coupon_code, coupon_code_used').eq('id', assessmentId).single()
+      if (paymentCheck && paymentCheck.payment_status !== 'paid' && paymentCheck.payment_status !== 'free' && !paymentCheck.coupon_code && !paymentCheck.coupon_code_used) {
         return NextResponse.json({ error: 'Payment required' }, { status: 402 })
       }
     }
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     const { after } = await import('next/server')
     const { webhookEvents } = await import('@/lib/organization/webhooks')
     const { buildResultsUrl } = await import('@/lib/url')
-    const { sendStudentResultsEmail, sendParentEmail } = await import('@/lib/resend')
+    const { sendStudentResultsEmail, sendParentEmail, sendInternalCompletionNotification } = await import('@/lib/resend')
 
     const knowledgeHubResources = organization?.id
       ? await fetchKnowledgeHubWithContent(organization.id)
@@ -202,6 +202,20 @@ export async function POST(request: Request) {
               sendParentEmail(student.parent_email, name, allResults.studentArchetype || 'Your Archetype', assessmentId, allResults)
                 .catch(err => console.error('Parent email failed:', err))
             }
+          }
+          // Internal team notification — fire on every completion regardless of student email presence.
+          {
+            const stu = assessment.student as { email?: string; first_name?: string; last_name?: string; grade_level?: string; current_grade?: string } | null
+            sendInternalCompletionNotification({
+              assessmentId,
+              studentName: stu ? `${stu.first_name || ''} ${stu.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
+              studentEmail: stu?.email || '—',
+              studentType: assessment.student_type,
+              grade: stu?.grade_level || stu?.current_grade,
+              organizationName: org?.name,
+              archetype: allResults.studentArchetype,
+              competitivenessScore: allResults.competitivenessScore,
+            }).catch(err => console.error('Internal completion notification failed:', err))
           }
         } catch (err) { console.error('[Submit/Sync] Background error:', err) }
       })

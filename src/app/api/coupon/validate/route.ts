@@ -4,10 +4,11 @@ import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 
 export async function POST(request: Request) {
   try {
-    const { code, email, organization_slug } = await request.json()
+    const { code, organization_slug } = await request.json()
     const supabase = createServerSupabaseClient()
+    const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : ''
 
-    if (!code) {
+    if (!normalizedCode) {
       return NextResponse.json(
         { valid: false, error: 'Coupon code is required' },
         { status: 400 }
@@ -28,10 +29,10 @@ export async function POST(request: Request) {
     const { data: coupon, error } = await supabase
       .from('coupons')
       .select('*')
-      .eq('code', code.toUpperCase())
+      .eq('code', normalizedCode)
       .eq('organization_id', organization.id)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
     if (error || !coupon) {
       return NextResponse.json(
@@ -57,35 +58,6 @@ export async function POST(request: Request) {
         { valid: false, error: 'This coupon has expired' },
         { status: 400 }
       )
-    }
-
-    if (email) {
-      const { data: student } = await supabase
-        .from('students')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .eq('organization_id', organization.id)
-        .single()
-      
-      if (student) {
-        const { data: assessment } = await supabase
-          .from('assessments')
-          .select('id')
-          .eq('student_id', student.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single()
-
-        if (assessment) {
-          await supabase
-            .from('assessments')
-            .update({ 
-              payment_status: coupon.discount_type === 'free' ? 'free' : 'paid',
-              coupon_code: code.toUpperCase()
-            })
-            .eq('id', assessment.id)
-        }
-      }
     }
 
     return NextResponse.json({

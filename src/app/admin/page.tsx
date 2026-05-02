@@ -806,6 +806,24 @@ export default function SuperAdminDashboard() {
       toast.error("Coupon code is required")
       return
     }
+    if (newCoupon.discountType !== "free") {
+      const discountValue = Number(newCoupon.discountValue)
+      if (!Number.isFinite(discountValue) || discountValue < 0) {
+        toast.error("Enter a valid discount amount")
+        return
+      }
+      if (newCoupon.discountType === "percentage" && discountValue > 100) {
+        toast.error("Percentage discounts cannot exceed 100%")
+        return
+      }
+    }
+    if (newCoupon.maxUses) {
+      const maxUses = Number(newCoupon.maxUses)
+      if (!Number.isInteger(maxUses) || maxUses < 1) {
+        toast.error("Max uses must be a positive whole number")
+        return
+      }
+    }
     setIsCreatingCoupon(true)
     try {
       const res = await fetch("/api/admin/coupons", {
@@ -817,6 +835,8 @@ export default function SuperAdminDashboard() {
           discount_value: newCoupon.discountType === "free" ? 100 : parseFloat(newCoupon.discountValue) || 0,
           max_uses: newCoupon.maxUses ? parseInt(newCoupon.maxUses) : null,
           valid_until: newCoupon.expiresAt || null,
+          description: newCoupon.description.trim() || null,
+          notes: newCoupon.notes.trim() || null,
         }),
       })
       const data = await res.json()
@@ -837,11 +857,15 @@ export default function SuperAdminDashboard() {
 
   const toggleCouponStatus = async (id: string, isActive: boolean) => {
     try {
-      await fetch("/api/admin/coupons", {
+      const response = await fetch("/api/admin/coupons", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, is_active: isActive }),
       })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to update coupon")
+      }
       setCoupons(prev => prev.map(c => c.id === id ? { ...c, is_active: isActive } : c))
     } catch {
       toast.error("Failed to update coupon")
@@ -3195,7 +3219,7 @@ export default function SuperAdminDashboard() {
                             <SelectContent>
                               <SelectItem value="free">Free Access (100% off)</SelectItem>
                               <SelectItem value="percentage">Percentage Discount</SelectItem>
-                              <SelectItem value="fixed_amount">Fixed Amount Off</SelectItem>
+                              <SelectItem value="fixed">Fixed Amount Off</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

@@ -42,10 +42,11 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const assessmentBaseUrl = buildOrgAssessmentUrl(org.slug, undefined, null, org.free_assessments)
-    const assessmentUrl = (!org.free_assessments && coupon_code)
-      ? `${assessmentBaseUrl}?code=${coupon_code}`
-      : assessmentBaseUrl
+    const assessmentUrl = new URL(buildOrgAssessmentUrl(org.slug, undefined, null, org.free_assessments))
+    if (!org.free_assessments && coupon_code) {
+      assessmentUrl.searchParams.set("coupon", String(coupon_code).trim().toUpperCase())
+      assessmentUrl.searchParams.set("email", email)
+    }
 
     // 2. Prepare White-labeled Email
     const fromName = org.custom_email_from || org.name
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
           <h1>Hello ${first_name ? escapeHtml(first_name) : ""}!</h1>
           <p>You have been invited by ${escapeHtml(org.name)} to take a student assessment.</p>
           ${message ? `<p>Message: ${escapeHtml(message)}</p>` : ""}
-          <p><a href="${assessmentUrl}">Click here to start your assessment</a></p>
+          <p><a href="${escapeHtml(assessmentUrl.toString())}">Click here to start your assessment</a></p>
         `
       })
 

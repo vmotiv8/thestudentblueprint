@@ -18,6 +18,7 @@ export async function GET() {
           id,
           is_completed,
           competitiveness_score,
+          coupon_code,
           coupon_code_used,
           payment_status,
           created_at
@@ -37,7 +38,7 @@ export async function GET() {
 
     const orgPerformance = coupons.map((coupon) => {
       const couponAssessments = assessments.filter(
-        (a) => a.coupon_code_used === coupon.code
+        (a) => a.coupon_code === coupon.code || a.coupon_code_used === coupon.code
       )
 
       const completedCount = couponAssessments.filter((a) => a.is_completed).length

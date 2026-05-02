@@ -175,6 +175,8 @@ CREATE TABLE IF NOT EXISTS coupons (
   discount_value NUMERIC(10,2) NOT NULL DEFAULT 0,
   max_uses INT,
   current_uses INT NOT NULL DEFAULT 0,
+  description TEXT,
+  notes TEXT,
   valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   valid_until TIMESTAMPTZ,
   is_active BOOLEAN NOT NULL DEFAULT true,

@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     const rawFormData = body.formData as Record<string, Record<string, unknown>> | undefined
     const currentSection = typeof body.currentSection === 'number' ? body.currentSection : null
     const couponCode = body.couponCode as string | undefined
+    const normalizedCouponCode = couponCode ? couponCode.trim().toUpperCase() : null
     const organization_slug = body.organization_slug as string | undefined
 
     console.log('[AssessmentSave] Request:', { assessmentId: assessmentId || 'new', section: currentSection, org_slug: organization_slug, hasFormData: !!rawFormData })
@@ -42,12 +43,18 @@ export async function POST(request: Request) {
     console.log('[AssessmentSave] Resolved org:', { id: organization.id, slug: organization.slug })
 
     // Validate coupon if provided
-    let validatedCoupon: { discount_type: string } | null = null
-    if (couponCode) {
+    let validatedCoupon: {
+      id: string
+      discount_type: string
+      max_uses: number | null
+      current_uses: number
+      valid_until: string | null
+    } | null = null
+    if (normalizedCouponCode) {
       const { data: coupon } = await supabase
         .from('coupons')
         .select('id, discount_type, max_uses, current_uses, valid_until, is_active')
-        .eq('code', couponCode.toUpperCase())
+        .eq('code', normalizedCouponCode)
         .eq('organization_id', organization.id)
         .eq('is_active', true)
         .single()
@@ -64,6 +71,34 @@ export async function POST(request: Request) {
       validatedCoupon = coupon
     }
 
+    const incrementCouponUsage = async () => {
+      if (!validatedCoupon) return null
+
+      const previousUses = validatedCoupon.current_uses || 0
+      if (validatedCoupon.max_uses && previousUses >= validatedCoupon.max_uses) {
+        return NextResponse.json({ error: 'Coupon has reached its usage limit' }, { status: 400 })
+      }
+
+      const { data, error: incrementError } = await supabase
+        .from('coupons')
+        .update({ current_uses: previousUses + 1 })
+        .eq('id', validatedCoupon.id)
+        .eq('current_uses', previousUses)
+        .select('id, current_uses')
+        .maybeSingle()
+
+      if (incrementError) {
+        console.error('[AssessmentSave] Coupon usage increment failed:', incrementError)
+        return NextResponse.json({ error: 'Coupon usage conflict. Please try again.' }, { status: 409 })
+      }
+      if (!data) {
+        return NextResponse.json({ error: 'Coupon usage changed. Please try again.' }, { status: 409 })
+      }
+
+      validatedCoupon.current_uses = data.current_uses
+      return null
+    }
+
     const studentTypeFromForm = (formData?.basicInfo?.studentType as string) || undefined
 
     if (assessmentId) {
@@ -77,7 +112,20 @@ export async function POST(request: Request) {
       if (organization.free_assessments) {
         updateData.payment_status = 'free'
       } else if (validatedCoupon) {
-        updateData.coupon_code = couponCode!.toUpperCase()
+        const { data: existingAssessment } = await supabase
+          .from('assessments')
+          .select('coupon_code, coupon_code_used')
+          .eq('id', assessmentId)
+          .eq('organization_id', organization.id)
+          .maybeSingle()
+        const existingCouponCode = existingAssessment?.coupon_code || existingAssessment?.coupon_code_used || null
+        if (existingCouponCode !== normalizedCouponCode) {
+          const incrementResponse = await incrementCouponUsage()
+          if (incrementResponse) return incrementResponse
+        }
+
+        updateData.coupon_code = normalizedCouponCode
+        updateData.coupon_code_used = normalizedCouponCode
         updateData.payment_status = validatedCoupon.discount_type === 'free' ? 'free' : 'paid'
       }
 
@@ -295,7 +343,7 @@ export async function POST(request: Request) {
     if (isExistingStudent && student) {
       const { data: existingAssessment } = await supabase
         .from('assessments')
-        .select('id')
+        .select('id, coupon_code, coupon_code_used')
         .eq('student_id', student.id)
         .eq('organization_id', organization.id)
         .in('status', ['in_progress', 'partial'])
@@ -310,6 +358,16 @@ export async function POST(request: Request) {
           ...(studentTypeFromForm && { student_type: studentTypeFromForm }),
         }
         if (organization.free_assessments) updateData.payment_status = 'free'
+        if (validatedCoupon) {
+          const existingCouponCode = existingAssessment.coupon_code || existingAssessment.coupon_code_used || null
+          if (existingCouponCode !== normalizedCouponCode) {
+            const incrementResponse = await incrementCouponUsage()
+            if (incrementResponse) return incrementResponse
+          }
+          updateData.coupon_code = normalizedCouponCode
+          updateData.coupon_code_used = normalizedCouponCode
+          updateData.payment_status = validatedCoupon.discount_type === 'free' ? 'free' : 'paid'
+        }
 
         await supabase
           .from('assessments')
@@ -325,6 +383,11 @@ export async function POST(request: Request) {
       }
     }
 
+    if (validatedCoupon) {
+      const incrementResponse = await incrementCouponUsage()
+      if (incrementResponse) return incrementResponse
+    }
+
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
       .insert({
@@ -334,7 +397,8 @@ export async function POST(request: Request) {
         responses: formData,
         current_section: currentSection || 1,
         student_type: studentTypeFromForm || 'high_school',
-        coupon_code: validatedCoupon ? couponCode!.toUpperCase() : null,
+        coupon_code: validatedCoupon ? normalizedCouponCode : null,
+        coupon_code_used: validatedCoupon ? normalizedCouponCode : null,
         payment_status: organization.free_assessments
           ? 'free'
           : (validatedCoupon ? (validatedCoupon.discount_type === 'free' ? 'free' : 'paid') : 'unpaid'),

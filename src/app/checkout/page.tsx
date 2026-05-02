@@ -109,29 +109,62 @@ export default function CheckoutPage() {
     if (!tenantLoaded) return
     const params = new URLSearchParams(window.location.search)
     const codeFromUrl = params.get('code')
+    const couponFromUrl = params.get('coupon') || params.get('coupon_code')
+    const emailFromUrl = params.get('email')
+
+    if (couponFromUrl) {
+      setCouponCode(couponFromUrl.toUpperCase().trim())
+      if (emailFromUrl) setEmail(emailFromUrl)
+      return
+    }
+
     if (codeFromUrl) {
       // Automatically trigger resume with this code
       const autoResume = async () => {
+        const normalizedCode = codeFromUrl.trim().toUpperCase()
         setIsResuming(true)
         try {
           const response = await fetch("/api/assessment/resume", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code: codeFromUrl.trim().toUpperCase() })
+            body: JSON.stringify({ code: normalizedCode })
           })
           const data = await response.json()
           if (data.success && data.assessment) {
             sessionStorage.setItem("resumeAssessment", JSON.stringify(data))
-            const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}&code=${codeFromUrl.trim().toUpperCase()}` : `?code=${codeFromUrl.trim().toUpperCase()}`
+            const orgParam = tenant?.slug ? `?org=${encodeURIComponent(tenant.slug)}&code=${normalizedCode}` : `?code=${normalizedCode}`
             router.push(`/assessment${orgParam}`)
             return
           }
         } catch (e) {
           console.error("Auto-resume failed:", e)
         }
+
+        try {
+          const couponResponse = await fetch("/api/coupon/validate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: normalizedCode,
+              email: emailFromUrl || undefined,
+              organization_slug: tenant?.slug,
+            }),
+          })
+          const couponData = await couponResponse.json()
+          if (couponData.valid) {
+            setCouponCode(couponData.code)
+            if (emailFromUrl) setEmail(emailFromUrl)
+            toast.success("Coupon code loaded. Enter your email and apply it to continue.")
+            setIsResuming(false)
+            return
+          }
+        } catch (e) {
+          console.error("Coupon prefill failed:", e)
+        }
+
         setIsResuming(false)
         // If auto-resume failed, pre-fill the code field so user can try manually
-        setResumeCode(codeFromUrl.toUpperCase())
+        setResumeCode(normalizedCode)
       }
       autoResume()
     }

@@ -186,7 +186,7 @@ interface Coupon {
   code: string
   discount_type: string
   discount_value: number
-  used_count: number
+  current_uses: number
   max_uses: number | null
   is_active: boolean
   valid_until: string | null
@@ -460,6 +460,13 @@ export default function AgencyDashboard() {
       toast.error("Coupon code is required")
       return
     }
+    if (newCoupon.max_uses) {
+      const maxUses = Number(newCoupon.max_uses)
+      if (!Number.isInteger(maxUses) || maxUses < 1) {
+        toast.error("Max uses must be a positive whole number")
+        return
+      }
+    }
 
     setIsCreatingCoupon(true)
     try {
@@ -514,6 +521,9 @@ export default function AgencyDashboard() {
       if (response.ok) {
         toast.success(`Coupon ${!currentStatus ? 'activated' : 'deactivated'}`)
         fetchData()
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.error || "Failed to update coupon")
       }
     } catch {
       toast.error("Failed to update coupon")
@@ -877,7 +887,7 @@ export default function AgencyDashboard() {
                       <div>
                         <p className="text-sm font-bold text-[#5a7a9a] mb-2 uppercase tracking-widest">Active Coupons</p>
                         <p className="text-5xl font-black text-[#0a192f] mb-2">{stats.activeCoupons}</p>
-                        <p className="text-sm font-bold text-[#5a7a9a]">{coupons.reduce((acc, c) => acc + c.used_count, 0)} total uses</p>
+                        <p className="text-sm font-bold text-[#5a7a9a]">{coupons.reduce((acc, c) => acc + (c.current_uses || 0), 0)} total uses</p>
                       </div>
                       <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600">
                         <Ticket className="w-7 h-7" />
@@ -1230,9 +1240,9 @@ export default function AgencyDashboard() {
                         <div className="space-y-3">
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-[#5a7a9a] font-bold">Usage</span>
-                            <span className="text-[#0a192f] font-black">{coupon.used_count} / {coupon.max_uses || '∞'}</span>
+                            <span className="text-[#0a192f] font-black">{coupon.current_uses || 0} / {coupon.max_uses || '∞'}</span>
                           </div>
-                          <Progress value={coupon.max_uses ? (coupon.used_count / coupon.max_uses) * 100 : 0} className="h-1.5" />
+                          <Progress value={coupon.max_uses ? ((coupon.current_uses || 0) / coupon.max_uses) * 100 : 0} className="h-1.5" />
                           
                           {coupon.valid_until && (
                             <div className="flex items-center gap-2 text-xs text-[#5a7a9a] mt-4 pt-4 border-t border-[#e5e0d5]">

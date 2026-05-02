@@ -50,16 +50,18 @@ export async function POST(request: Request) {
       org.domain && org.domain_verified ? org.domain : null,
       org.free_assessments
     )
-    const assessmentUrl = (!org.free_assessments && couponCode)
-      ? `${assessmentBaseUrl}?code=${couponCode}`
-      : assessmentBaseUrl
+    const assessmentUrl = new URL(assessmentBaseUrl)
+    if (!org.free_assessments && couponCode) {
+      assessmentUrl.searchParams.set('coupon', String(couponCode).trim().toUpperCase())
+      assessmentUrl.searchParams.set('email', email)
+    }
 
     const fromName = org.custom_email_from || org.name
 
     try {
       const emailResult = await sendStudentInviteEmail({
         to: email,
-        assessmentUrl,
+        assessmentUrl: assessmentUrl.toString(),
         couponCode: couponCode || null,
         message: message || null,
         orgName: org.name,
@@ -75,7 +77,7 @@ export async function POST(request: Request) {
           error: emailResult.error,
           orgId: org.id,
           orgName: org.name,
-          assessmentUrl,
+          assessmentUrl: assessmentUrl.toString(),
           timestamp: new Date().toISOString(),
         })
         return NextResponse.json(

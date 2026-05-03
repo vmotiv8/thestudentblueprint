@@ -79,12 +79,31 @@ function SuccessContent() {
           setPageState("error")
         }
       } else if (couponCode) {
-        // Coupon flow: email from query param, editable
-        const emailParam = searchParams.get("email") || ""
-        setEmail(decodeURIComponent(emailParam))
-        setEmailReadOnly(false)
-        localStorage.setItem("studentblueprint_coupon", couponCode)
-        setPageState("form")
+        try {
+          const response = await fetch("/api/coupon/validate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: couponCode,
+              organization_slug: orgSlug || undefined,
+            }),
+          })
+          const data = await response.json()
+
+          if (!response.ok || !data.valid || data.payment_required) {
+            setPageState("error")
+            return
+          }
+
+          // Free coupon flow: email from query param, editable
+          const emailParam = searchParams.get("email") || ""
+          setEmail(decodeURIComponent(emailParam))
+          setEmailReadOnly(false)
+          localStorage.setItem("studentblueprint_coupon", data.code)
+          setPageState("form")
+        } catch {
+          setPageState("error")
+        }
       } else if (isFreeOrg) {
         // Free org flow: no email pre-filled
         setEmailReadOnly(false)

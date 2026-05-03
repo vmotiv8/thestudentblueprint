@@ -241,7 +241,6 @@ function AssessmentContent() {
       const resumeId = searchParams.get("resume")
       const sessionId = searchParams.get("session_id")
       const resumeCode = searchParams.get("code")
-      const couponUsed = localStorage.getItem("studentblueprint_coupon")
 
       let verified = isFreeOrg
       let dataLoaded = false
@@ -254,11 +253,6 @@ function AssessmentContent() {
           verified = true
           localStorage.setItem("studentblueprint_paid_email", data.email || "")
         }
-      }
-
-      if (couponUsed) {
-        setIsPaid(true)
-        verified = true
       }
 
       // Try resuming by code (from URL ?code=XXXXX)

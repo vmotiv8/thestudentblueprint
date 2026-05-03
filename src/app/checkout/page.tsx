@@ -41,6 +41,13 @@ export default function CheckoutPage() {
     referral_code: string
     partner_id: string
   } | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string
+    discount_type: "percentage" | "fixed" | "free"
+    discount_value: number
+    discounted_price: number
+    payment_required: boolean
+  } | null>(null)
 
   // Extract org slug from query params or URL path (middleware rewrites keep original browser URL)
   const getOrgSlug = () => {
@@ -227,10 +234,20 @@ export default function CheckoutPage() {
           email,
           organization_slug: tenant?.slug,
           referral_code: referralData?.referral_code || undefined,
+          coupon_code: appliedCoupon?.payment_required ? appliedCoupon.code : undefined,
         }),
       })
 
       const data = await response.json()
+
+      if (data.free && data.coupon) {
+        const params = new URLSearchParams()
+        params.set("coupon", data.coupon)
+        params.set("email", email)
+        if (tenant?.slug) params.set("org", tenant.slug)
+        router.push(`/payment/success?${params.toString()}`)
+        return
+      }
 
       if (data.url) {
         window.location.href = data.url
@@ -289,15 +306,25 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (data.valid) {
-        toast.success("Coupon applied! Redirecting...")
-        localStorage.setItem("studentblueprint_coupon", data.code)
-        setTimeout(() => {
+        if (!data.payment_required) {
+          toast.success("Free coupon applied! Redirecting...")
+          localStorage.setItem("studentblueprint_coupon", data.code)
           const params = new URLSearchParams()
           params.set("coupon", data.code)
           if (email) params.set("email", email)
           if (tenant?.slug) params.set("org", tenant.slug)
           router.push(`/payment/success?${params.toString()}`)
-        }, 1000)
+          return
+        }
+
+        setAppliedCoupon({
+          code: data.code,
+          discount_type: data.discount_type,
+          discount_value: Number(data.discount_value || 0),
+          discounted_price: Number(data.discounted_price),
+          payment_required: true,
+        })
+        toast.success("Coupon applied. Your price has been updated.")
       } else {
         toast.error(data.error || "Invalid coupon code")
       }
@@ -320,6 +347,16 @@ export default function CheckoutPage() {
   ]
 
   const primaryColor = tenant?.primary_color || "#1e3a5f"
+  const basePrice = Number(tenant?.assessment_price || 497)
+  const referralPrice = referralData?.discounted_price != null ? Number(referralData.discounted_price) : null
+  const couponPrice = appliedCoupon?.discounted_price != null ? Number(appliedCoupon.discounted_price) : null
+  const displayPrice = Math.min(
+    basePrice,
+    ...(referralPrice !== null ? [referralPrice] : []),
+    ...(couponPrice !== null ? [couponPrice] : [])
+  )
+  const hasDiscount = displayPrice < basePrice
+  const formatCurrency = (value: number) => `$${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(2)}`
 
   if (isCheckingPayment) {
     return (
@@ -424,20 +461,20 @@ export default function CheckoutPage() {
               </div>
                 <CardContent className="p-6 pt-8">
                   <div className="mb-8 flex items-baseline gap-2">
-                    {referralData?.discounted_price != null ? (
-                      <>
-                        <span className="text-2xl font-bold line-through text-[#5a7a9a]/60">
-                          ${tenant?.assessment_price || "497"}
-                        </span>
-                        <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
-                          ${referralData.discounted_price}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
-                        ${tenant?.assessment_price || "497"}
-                      </span>
-                    )}
+	                    {hasDiscount ? (
+  	                      <>
+  	                        <span className="text-2xl font-bold line-through text-[#5a7a9a]/60">
+ 	                          {formatCurrency(basePrice)}
+  	                        </span>
+  	                        <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
+ 	                          {formatCurrency(displayPrice)}
+  	                        </span>
+  	                      </>
+  	                    ) : (
+  	                      <span className="text-5xl font-bold" style={{ color: tenant?.primary_color || "#1e3a5f" }}>
+	                        {formatCurrency(displayPrice)}
+  	                      </span>
+  	                    )}
                     <span className="text-lg text-[#5a7a9a] ml-1">USD</span>
                   </div>
 
@@ -495,9 +532,9 @@ export default function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        Pay ${referralData?.discounted_price != null ? referralData.discounted_price : (tenant?.assessment_price || "497")}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
+	                        Pay {formatCurrency(displayPrice)}
+	                        <ArrowRight className="w-4 h-4 ml-2" />
+	                      </>
                     )}
 
                 </Button>
@@ -514,13 +551,16 @@ export default function CheckoutPage() {
                     <Tag className="w-4 h-4" />
                     Have a coupon code?
                   </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      className="border-[#e5e0d5] uppercase"
-                    />
+	                  <div className="flex gap-2">
+	                    <Input
+	                      placeholder="Enter code"
+	                      value={couponCode}
+	                      onChange={(e) => {
+	                        setCouponCode(e.target.value.toUpperCase())
+	                        setAppliedCoupon(null)
+	                      }}
+	                      className="border-[#e5e0d5] uppercase"
+	                    />
                     <Button
                       variant="outline"
                       onClick={handleCouponSubmit}
@@ -530,8 +570,14 @@ export default function CheckoutPage() {
                       {isValidatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
                     </Button>
                   </div>
-                  <p className="text-xs text-[#5a7a9a]">Enter a valid coupon code to skip payment</p>
-                </div>
+	                  {appliedCoupon ? (
+	                    <p className="text-xs font-semibold text-emerald-700">
+	                      {appliedCoupon.code} applied. New price: {formatCurrency(displayPrice)}
+	                    </p>
+	                  ) : (
+	                    <p className="text-xs text-[#5a7a9a]">Free coupons skip payment; discount coupons update the price.</p>
+	                  )}
+	                </div>
               </CardContent>
             </Card>
           </motion.div>

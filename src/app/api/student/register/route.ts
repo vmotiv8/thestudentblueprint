@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 import { sendResumeCodeEmail } from '@/lib/resend'
 import { applyRateLimit } from '@/lib/rate-limit'
+import { stripe } from '@/lib/stripe'
 
 export async function POST(request: Request) {
   // Issue #2: Rate limiting
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
     // Determine payment status
     let paymentStatus: 'paid' | 'free' | 'unpaid' = 'unpaid'
     const normalizedCouponCode = couponCode ? couponCode.trim().toUpperCase() : null
+    let paidSessionCouponCode: string | null = null
     let validatedCoupon: {
       id: string
       discount_type: string
@@ -73,6 +75,25 @@ export async function POST(request: Request) {
 
       if (payment?.status === 'completed') {
         paymentStatus = 'paid'
+      } else {
+        try {
+          const session = await stripe.checkout.sessions.retrieve(
+            sessionId,
+            organization.stripe_connect_account_id
+              ? { stripeAccount: organization.stripe_connect_account_id }
+              : undefined
+          )
+
+          if (
+            session.payment_status === 'paid' &&
+            session.metadata?.organization_id === organization.id
+          ) {
+            paymentStatus = 'paid'
+            paidSessionCouponCode = session.metadata?.coupon_code || null
+          }
+        } catch (stripeError) {
+          console.error('[StudentRegister] Stripe session verification failed:', stripeError)
+        }
       }
     }
 
@@ -96,7 +117,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Coupon has expired' }, { status: 400 })
       }
 
-      paymentStatus = coupon.discount_type === 'free' ? 'free' : 'paid'
+      if (coupon.discount_type === 'free') {
+        paymentStatus = 'free'
+      } else if (paymentStatus !== 'paid') {
+        return NextResponse.json({ error: 'Payment is required for this discount coupon' }, { status: 402 })
+      } else if (paidSessionCouponCode && paidSessionCouponCode !== normalizedCouponCode) {
+        return NextResponse.json({ error: 'Coupon does not match this payment session' }, { status: 400 })
+      }
       validatedCoupon = coupon
     }
 

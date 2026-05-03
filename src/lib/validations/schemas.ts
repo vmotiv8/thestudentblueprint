@@ -190,6 +190,7 @@ export const checkoutSchema = z.object({
   email: emailSchema.optional(),
   organization_slug: slugSchema.optional(),
   referral_code: z.string().min(4).max(10).transform(val => val.toUpperCase().trim()).optional(),
+  coupon_code: couponCodeSchema.optional(),
 })
 
 export const couponValidateSchema = z.object({

@@ -114,12 +114,16 @@ export async function POST(request: Request) {
       } else if (validatedCoupon) {
         const { data: existingAssessment } = await supabase
           .from('assessments')
-          .select('coupon_code, coupon_code_used')
+          .select('coupon_code, coupon_code_used, payment_status')
           .eq('id', assessmentId)
           .eq('organization_id', organization.id)
           .maybeSingle()
         const existingCouponCode = existingAssessment?.coupon_code || existingAssessment?.coupon_code_used || null
-        if (existingCouponCode !== normalizedCouponCode) {
+        if (validatedCoupon.discount_type !== 'free') {
+          if (existingAssessment?.payment_status !== 'paid' || existingCouponCode !== normalizedCouponCode) {
+            return NextResponse.json({ error: 'Payment is required for this discount coupon' }, { status: 402 })
+          }
+        } else if (existingCouponCode !== normalizedCouponCode) {
           const incrementResponse = await incrementCouponUsage()
           if (incrementResponse) return incrementResponse
         }
@@ -343,7 +347,7 @@ export async function POST(request: Request) {
     if (isExistingStudent && student) {
       const { data: existingAssessment } = await supabase
         .from('assessments')
-        .select('id, coupon_code, coupon_code_used')
+        .select('id, coupon_code, coupon_code_used, payment_status')
         .eq('student_id', student.id)
         .eq('organization_id', organization.id)
         .in('status', ['in_progress', 'partial'])
@@ -360,7 +364,11 @@ export async function POST(request: Request) {
         if (organization.free_assessments) updateData.payment_status = 'free'
         if (validatedCoupon) {
           const existingCouponCode = existingAssessment.coupon_code || existingAssessment.coupon_code_used || null
-          if (existingCouponCode !== normalizedCouponCode) {
+          if (validatedCoupon.discount_type !== 'free') {
+            if (existingAssessment.payment_status !== 'paid' || existingCouponCode !== normalizedCouponCode) {
+              return NextResponse.json({ error: 'Payment is required for this discount coupon' }, { status: 402 })
+            }
+          } else if (existingCouponCode !== normalizedCouponCode) {
             const incrementResponse = await incrementCouponUsage()
             if (incrementResponse) return incrementResponse
           }
@@ -384,6 +392,9 @@ export async function POST(request: Request) {
     }
 
     if (validatedCoupon) {
+      if (validatedCoupon.discount_type !== 'free') {
+        return NextResponse.json({ error: 'Payment is required for this discount coupon' }, { status: 402 })
+      }
       const incrementResponse = await incrementCouponUsage()
       if (incrementResponse) return incrementResponse
     }

@@ -7,6 +7,17 @@ import { validateRequest, checkoutSchema } from '@/lib/validations'
 import { applyRateLimit } from '@/lib/rate-limit'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
+function getDiscountedPrice(basePrice: number, discountType: string, discountValue: number) {
+  if (discountType === 'free') return 0
+  if (discountType === 'percentage') {
+    return Math.max(0, basePrice * (1 - discountValue / 100))
+  }
+  if (discountType === 'fixed') {
+    return Math.max(0, basePrice - discountValue)
+  }
+  return basePrice
+}
+
 export async function POST(request: Request) {
   // Apply standard rate limiting for checkout (30 per minute per IP)
   const rateLimitResponse = await applyRateLimit(request, 'standard', 'checkout')
@@ -20,7 +31,7 @@ export async function POST(request: Request) {
       return validation.error
     }
 
-    const { email, organization_slug, referral_code } = validation.data
+    const { email, organization_slug, referral_code, coupon_code } = validation.data
 
     const organization = organization_slug
       ? await getOrganizationBySlug(organization_slug)
@@ -57,12 +68,14 @@ export async function POST(request: Request) {
       )
     }
 
+    const supabase = createServerSupabaseClient()
+
     // Check for referral discount
     let finalPrice = assessmentPrice
     let referralPartnerId: string | null = null
+    let appliedCouponCode: string | null = null
 
     if (referral_code) {
-      const supabase = createServerSupabaseClient()
       const { data: partner } = await supabase
         .from('referral_partners')
         .select(`
@@ -89,8 +102,56 @@ export async function POST(request: Request) {
       }
     }
 
+    if (coupon_code) {
+      const { data: coupon } = await supabase
+        .from('coupons')
+        .select('id, code, discount_type, discount_value, max_uses, current_uses, valid_until')
+        .eq('code', coupon_code)
+        .eq('organization_id', organization.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (!coupon) {
+        return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 })
+      }
+      if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
+        return NextResponse.json({ error: 'This coupon has reached its usage limit' }, { status: 400 })
+      }
+      if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
+        return NextResponse.json({ error: 'This coupon has expired' }, { status: 400 })
+      }
+
+      const couponPrice = getDiscountedPrice(
+        assessmentPrice,
+        coupon.discount_type,
+        Number(coupon.discount_value || 0)
+      )
+
+      if (couponPrice <= 0) {
+        return NextResponse.json({
+          free: true,
+          coupon: coupon.code,
+          error: 'This coupon makes the assessment free. Continue through the coupon flow instead of payment.',
+        })
+      }
+
+      finalPrice = Math.min(finalPrice, couponPrice)
+      appliedCouponCode = coupon.code
+    }
+
+    if (finalPrice < 0.5 || finalPrice > 10000) {
+      return NextResponse.json(
+        { error: 'Discounted assessment price is outside the allowed range ($0.50 - $10,000)' },
+        { status: 400 }
+      )
+    }
+
     const priceInCents = Math.round(finalPrice * 100)
     const origin = getOriginFromRequest(request)
+    const successUrl = new URL(`${origin}/payment/success`)
+    successUrl.searchParams.set('session_id', '{CHECKOUT_SESSION_ID}')
+    successUrl.searchParams.set('org', organization.slug)
+    if (appliedCouponCode) successUrl.searchParams.set('coupon', appliedCouponCode)
 
     // Build Stripe checkout session options
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -110,7 +171,7 @@ export async function POST(request: Request) {
         },
       ],
       customer_email: email || undefined,
-      success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}&org=${organization.slug}`,
+      success_url: successUrl.toString().replace('%7BCHECKOUT_SESSION_ID%7D', '{CHECKOUT_SESSION_ID}'),
       cancel_url: `${origin}/payment/cancel?org=${organization.slug}`,
       metadata: {
         product: 'assessment',
@@ -118,6 +179,9 @@ export async function POST(request: Request) {
         organization_slug: organization.slug,
         ...(referral_code ? { referral_code } : {}),
         ...(referralPartnerId ? { referral_partner_id: referralPartnerId } : {}),
+        ...(appliedCouponCode ? { coupon_code: appliedCouponCode } : {}),
+        original_price: assessmentPrice.toFixed(2),
+        final_price: finalPrice.toFixed(2),
       },
     }
 

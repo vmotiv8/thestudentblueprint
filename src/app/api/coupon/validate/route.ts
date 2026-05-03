@@ -2,6 +2,17 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { getOrganizationBySlug, getDefaultOrganization } from '@/lib/tenant'
 
+function getDiscountedPrice(basePrice: number, discountType: string, discountValue: number) {
+  if (discountType === 'free') return 0
+  if (discountType === 'percentage') {
+    return Math.max(0, basePrice * (1 - discountValue / 100))
+  }
+  if (discountType === 'fixed') {
+    return Math.max(0, basePrice - discountValue)
+  }
+  return basePrice
+}
+
 export async function POST(request: Request) {
   try {
     const { code, organization_slug } = await request.json()
@@ -60,11 +71,21 @@ export async function POST(request: Request) {
       )
     }
 
+    const assessmentPrice = Number(organization.assessment_price || 0)
+    const discountedPrice = getDiscountedPrice(
+      assessmentPrice,
+      coupon.discount_type,
+      Number(coupon.discount_value || 0)
+    )
+
     return NextResponse.json({
       valid: true,
       code: coupon.code,
       discount_type: coupon.discount_type,
-      discount_value: coupon.discount_value
+      discount_value: coupon.discount_value,
+      original_price: assessmentPrice,
+      discounted_price: Math.round(discountedPrice * 100) / 100,
+      payment_required: discountedPrice > 0,
     })
 
   } catch (error) {
